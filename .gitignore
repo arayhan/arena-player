@@ -1,0 +1,16 @@
+# deps / build
+node_modules/
+.next/
+out/
+
+# env — never commit real keys
+.env
+.env.local
+.env*.local
+
+# claude personal overrides
+.claude/settings.local.json
+
+# misc
+*.log
+.DS_Store
