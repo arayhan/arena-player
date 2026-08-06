@@ -48,6 +48,12 @@ This file lives at `db/migrations/<timestamp>_create_bookings.sql` once the Phas
 2. Run the migration above in the Neon SQL editor.
 3. Copy the **pooled** connection string (contains `-pooler` in the host) into `DATABASE_URL`. The direct string exhausts connections fast under concurrent serverless route invocations — this is not optional.
 
+## Neon MCP (optional, for Claude Code tooling — not part of the app)
+
+`.mcp.json` at the repo root wires up Neon's MCP server so Claude Code can inspect/manage the Neon project directly. This needs a Neon **platform API key** — generated in the Neon console under API Keys — which is a *different* credential from `DATABASE_URL` (that one is for the Postgres connection itself; this one is for project/branch management). The key is never committed: `.mcp.json` references `${NEON_API_KEY}`, and you set the actual value in your own shell environment before starting Claude Code.
+
+The exact package/command in `.mcp.json` (`@neondatabase/mcp-server-neon`) is written from training knowledge, not freshly verified against Neon's current docs — if it fails to connect, check `https://neon.tech/docs` for the current setup command before assuming something else is broken.
+
 ## Error-code contract
 
 ```
