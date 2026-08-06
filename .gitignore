@@ -2,14 +2,17 @@
 node_modules/
 .next/
 out/
+next-env.d.ts
+*.tsbuildinfo
 
 # env — never commit real keys
 .env
 .env.local
 .env*.local
 
-# claude personal overrides
+# claude personal overrides + temp screenshots
 .claude/settings.local.json
+.claude/screenshots/
 
 # misc
 *.log
