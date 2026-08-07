@@ -18,11 +18,15 @@ Neon Postgres (bookings, reached only from route handlers) + R2 (proofs, private
 
 **`POST /api/bookings` is provisional** pending the deferred backend discussion. The presigned-URL option on that agenda has the browser PUT the proof straight to R2 and then POST only the resulting object key — which removes multipart from this diagram entirely. Do not treat the multipart shape as settled.
 
-Booking flow: select slot → open wa.me (placeholder number) in new tab AND route to `/booking?date=…&time=…` → submit form with proof → slot becomes PENDING → admin confirms via WhatsApp manually. Selecting a slot holds nothing; only a successful POST does.
+Booking flow: select slot → open `wa.me` (placeholder number) — **WhatsApp only, the site does not also navigate**. The `/booking?date=…&time=…` link comes back through WhatsApp: typed by the admin until the bot phase ships, sent by the bot after. Then submit form with proof → slot becomes PENDING → admin confirms manually.
+
+Two consequences that shape the code: selecting a slot **holds nothing** — only a successful POST does. And `/booking` is **only ever reached by a pasted link**, so malformed or stale query params are the normal case, not an edge case (all four states are spec'd in [PRD.md](PRD.md)).
 
 ## API contract
 
 Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build against MSW handlers implementing exactly these shapes — agents must read this section rather than inventing response bodies.
+
+> **MSW must be retired in Phase 4.** It registers a service worker, so a stray `mockServiceWorker.js` in a production build intercepts real requests and serves fake availability — failing silently, as a working-looking site showing wrong data. Gate registration on `NODE_ENV`, confirm the file is absent from the built output, handle unregistering for browsers that already loaded the dev site, and verify in the network panel that production makes real calls. Full checklist in [PRD.md](PRD.md) Phase 4.
 
 **`GET /api/availability?date=YYYY-MM-DD` — FIRM.** Nothing on the backend agenda changes it.
 
@@ -38,9 +42,39 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 { "error": "invalid_date" }
 ```
 
-`status` is one of `available` | `pending` | `booked`. Today's slots whose start time has passed come back as `booked` — the client renders them disabled, never hidden.
+`status` is one of `available` | `pending` | `booked`.
 
-**`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the file part with a `proofKey` string.
+**Status mapping — the database has four states, this API has three.** Write it down or it gets guessed:
+
+| Row state in `bookings` | API `status` | Why |
+|---|---|---|
+| no row for that slot | `available` | Never booked |
+| `pending` | `pending` | Awaiting admin confirmation |
+| `confirmed` | `booked` | Taken |
+| `rejected` | `available` | Admin declined — **the slot is free again** |
+| `expired` | `available` | Pending lapsed past 24h — **the slot is free again** |
+
+`rejected` and `expired` mapping to `available` is the half that gets guessed wrong. Guessing `booked` there blocks slots that are genuinely open, and nothing errors — the client just renders a full day that is actually empty. This matches `uniq_active_slot`, whose `WHERE status IN ('pending', 'confirmed')` clause defines the same two active states and nothing else.
+
+**One override sits on top of the table:** for today's date, any slot whose start hour has passed returns `booked` regardless of row state. The client renders those disabled, never hidden.
+
+**`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
+
+Request — `multipart/form-data`. Field names are the contract: the form, the MSW handler, and the Phase 4 route handler must all use exactly these, and the `fields` keys in a 400 response are these same names.
+
+| Field | Type | Required | Rule |
+|---|---|---|---|
+| `date` | string | yes | `YYYY-MM-DD`, inside the 14-day window |
+| `slot` | string | yes | Exact member of `TIME_SLOTS` — `"18.00 - 20.00"`, not `"18.00-20.00"` |
+| `teamName` | string | yes | 2–60 chars after trim |
+| `phone` | string | yes | Indonesian mobile, `08xx` or `62xx` as typed. **Server normalises to `628xxxxxxxxx` before insert** — the client sends what the user typed |
+| `notes` | string | no | ≤ 280 chars |
+| `proof` | File | yes | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `lib/proof.ts` — never retyped here or in the form |
+| `website` | string | yes (empty) | Honeypot. Must be present and empty. Non-empty → respond **201 with a fabricated id** and write nothing. A 400 tells the bot what tripped it |
+
+`slot` is validated against `TIME_SLOTS`, not a regex. The `uniq_active_slot` index compares `time_slot` as text, so a near-miss format silently books the same slot twice — see [database.md](database.md).
+
+The honeypot's fake 201 is the one place this API lies on purpose. Everywhere else, a status code means what it says.
 
 ```jsonc
 // 201
@@ -49,9 +83,32 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 { "error": "slot_taken" }
 // 400 — validation failure
 { "error": "validation_failed", "fields": { "phone": "invalid_format" } }
+// 429 — rate limited (see abuse protection in PRD.md)
+{ "error": "rate_limited" }
 ```
 
-The 409 is the one the UI must handle visibly: it maps to "Yah, slot ini baru saja diambil orang lain." with a link back to `/#order`.
+Two error states the UI must handle visibly, and they are **not** interchangeable:
+
+- **409** → "Yah, slot ini baru saja diambil orang lain." with a link back to `/#order`. The slot is gone; offer another.
+- **429** → a distinct Indonesian message saying to wait and retry. Nothing is wrong with their booking. Showing the 409 copy here would tell a legitimate user their slot was taken when it was not.
+
+MSW must mock all four codes, or Phase 3 builds UI for states it has never seen.
+
+## Framework decision (FINAL)
+
+**Next.js 15, App Router.** TanStack Start was evaluated and rejected — locked, do not revisit without a new planning conversation.
+
+TanStack Start is not the weaker framework; it lost on this project's constraints:
+
+- **Handover.** Paid project, 14-day bug warranty, then someone else maintains it. Next.js developers are abundant; TanStack Start developers are scarce. That asymmetry outlives every technical argument.
+- **`next/font` and `next/image` are load-bearing.** design-system.md leans on `next/font` for zero-CLS webfont loading and `next/image` for reserved space, and both feed hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s, hero *text* as the LCP element). Switching frameworks means hand-rolling those guarantees.
+- **Maturity** matters during a warranty period on a tight budget.
+
+Its one real advantage here — TanStack Router's type-safe `validateSearch` mapping neatly onto the four `/booking` param states — is worth roughly 15 lines of zod parsing in Next. Not enough.
+
+**Corollary: `next/font` and `next/image` are not freely swappable.** They are the mechanism by which two hard rules are satisfied. Replacing either means proposing a replacement for the CLS and LCP guarantees, not just a different import.
+
+The one thing that would have justified revisiting — a deploy target unable to run Next.js — is now ruled out: Sumopod runs Node apps.
 
 ## Database & storage decision (FINAL)
 
@@ -64,13 +121,39 @@ Rationale: Neon's HTTP-based serverless driver fits Next.js route handlers (no c
 **`GET /api/availability?date=`**
 1. Validate `date` is `YYYY-MM-DD` and inside the 14-day window → 400 otherwise, never 500.
 2. Lazy expiry first, same request, scoped to that date: flip pending rows older than 24h to `expired`.
-3. Select active rows for the date, map onto the 9 canonical `TIME_SLOTS`.
+3. Select active rows for the date, map onto the 9 canonical `TIME_SLOTS` (mapping table above).
 4. Respond `[{ slot, status }]` with `Cache-Control: public, s-maxage=30`.
 
-**`POST /api/bookings`** — steps 1–2 are **provisional**; presigned-URL upload would move the R2 write to the browser and leave this handler validating an object key instead.
-1. Multipart parse → honeypot check → field validation → proof validation.
-2. Upload proof to R2 first.
-3. Insert the booking row. Success → 201. Unique violation → 409 (see below) + best-effort delete of the just-uploaded proof.
+> **UNRESOLVED — steps 2 and 4 undercut each other. On the Phase 4 agenda; do not implement either half without settling it.**
+>
+> Step 2 makes this a **write**. Step 4 makes it **cacheable by shared caches**. A cache hit never reaches the origin, so it never runs the expiry — the only mechanism that frees an abandoned slot is starved exactly when nobody is browsing.
+>
+> Concretely: a pending booking due to expire at 03:00 on a quiet night stays `pending` until the next request that misses the cache. The slot is held by a booking nobody paid for, and it looks correct from every angle — no error, no log line, no failing test. It costs the client bookable hours.
+>
+> Secondary issue: HTTP defines GET as safe. A GET that writes misbehaves under browser prefetch, link scanners, and repeated back-navigation, all of which fire without a user intending anything.
+>
+> Three candidate resolutions, none chosen yet:
+>
+> 1. **Move expiry to a scheduled job.** GET becomes a pure read and cacheable without contradiction. Costs a cron surface the project does not have yet.
+> 2. **Run expiry on POST instead**, where a write already happens and caching never applies. Free, but expiry then only runs when someone books.
+> 3. **Drop `s-maxage`**, keeping expiry inline. Simplest, and costs origin load the 30s cache exists to avoid.
+>
+> Whoever settles this must also confirm the deployment target actually has a shared cache in front of it — on Sumopod it may not, which shrinks the problem to browser caching but does not remove it.
+
+**`POST /api/bookings`** — steps 2–3 are **provisional**; presigned-URL upload would move the R2 write to the browser and leave this handler validating an object key instead.
+
+1. **Rate limit check first — before parsing anything.** Over limit → 429 and return. Parsing a 2MB multipart body before deciding to reject is most of the cost the limit exists to avoid, so ordering here is the whole point, not a detail.
+2. Multipart parse → honeypot → field validation → proof validation (size and MIME server-side; client checks are UX, not protection). Any failure → 400, **before** anything reaches R2.
+3. Upload proof to R2.
+4. Insert the booking row. Success → 201. Unique violation → 409 + best-effort delete of the just-uploaded proof.
+
+The ordering is cheapest-rejection-first throughout: refuse abusers before parsing, refuse invalid input before paying for storage, and only then touch the database.
+
+**Orphaned proofs need a sweeper, and best-effort delete is not one.** Step 3 succeeds before step 4 runs, so any death in between — serverless timeout, redeploy mid-request, process crash — leaves an object in R2 that no row points at. The 409 path calls `deleteProof()`, but a process that died cannot call anything.
+
+Nothing in this system ever notices. R2 has no orphan report, and the admin app queries the database, which has no record of the file. It accumulates quietly for the lifetime of the bucket, and this bucket gets handed to the client.
+
+Fix costs no code: an **R2 lifecycle rule** deleting objects under the `proofs/` prefix older than 48h that were never referenced. Since `proofKey()` already namespaces by date, an age-based rule is enough. Confirm at handover that it is configured — it lives in the R2 dashboard, not in this repo, so it is exactly the kind of thing that gets lost between the two.
 
 ## Anti-double-booking (non-negotiable)
 
@@ -80,7 +163,7 @@ The partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE 
 
 - **Neon date/timestamptz parsing**: the driver's default type parsers return JS `Date` objects for `DATE`/`TIMESTAMPTZ` columns, which silently corrupts `booking_date` by one day on an Asia/Jakarta machine when serialized. Must override both OID parsers to pass raw strings through. This is a blocker-class bug, found and fixed once already — see database.md for the exact fix.
 - **R2 checksum headers**: the AWS SDK's default flexible-checksum behavior gets rejected by R2 on some upload paths. The `S3Client` config needs explicit checksum settings.
-- ~~**`@/` alias is bundler-only**~~ — **no longer applies.** This was true while the verification scripts ran under plain Node. They run under Vitest now, which resolves `@/` via `tsconfig` paths, so `lib/` imports normally. Kept here struck through because the old rule is quoted in several places and anyone who remembers it needs to see that it was retired, not forgotten.
+- **`server-only` is how hard rule 4 stops being honour-system.** `import "server-only"` at the top of `lib/db/client.ts` and `lib/storage/r2.ts` makes the **build fail** the moment any client component imports either one, directly or through a chain. Without it, a stray import inlines `DATABASE_URL` or an R2 secret into the client bundle and nothing complains — the site works, and the credential ships to every visitor. A written rule is a request; this is enforcement. It is listed in the package table for this reason alone.
 
 ### GSAP gotchas (the cost of dropping Framer Motion)
 
@@ -121,8 +204,16 @@ Where the initial-load number comes from — all figures approximate, **replace 
 | GSAP + ScrollTrigger + `@gsap/react` | ~35 |
 | TanStack Query | ~13 |
 | axios | ~13 |
-| **Subtotal before any app code** | **~151** |
-| Headroom for components | ~50 |
+| zod | ~13 |
+| react-hook-form | ~9 |
+| zustand | ~1 |
+| Dates + icons — libraries unchosen, decided in 1a task 1 | ~5–8 |
+| **Subtotal before any app code** | **~179–182** |
+| **Headroom left for every component on both pages** | **~18–21** |
+
+**This is tight and must be re-measured before it is trusted.** ~18–21KB for all component code across a 5-section landing page plus a form is not obviously enough. Every figure above is an estimate; the first real `pnpm build` in Phase 1a is what settles it.
+
+**A budget nothing measures is a wish.** Phase 1a task 8 must land the enforcement alongside the numbers: a `pnpm check:budget` that fails on breach, so a dependency added in Phase 2 is rejected by a command rather than by whoever happens to remember this table. Next.js already prints per-route First Load JS on every build; the check is reading that output and comparing it, not new tooling. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 200KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
 
 The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) — by arithmetic, not by naming them. It still permits the effect: a hand-written GLSL fragment shader on a fullscreen quad costs ~3–5KB with no library at all, and OGL is ~10KB. A gradient-mesh or noise-field hero — which is what most light-theme Awwwards heroes actually are — fits comfortably. Reach for the shader, not the engine.
 
@@ -154,12 +245,21 @@ arena-player-web/
 │   ├── design-system.md
 │   ├── database.md
 │   ├── PROGRESS.md            # shared agent log, append-only
-│   └── tasks/                 # empty until Phase 1 build starts
+│   ├── references/            # gitignored scratch — deleted after use, README only
+│   └── tasks/                 # empty until the Phase 1a build starts
 ├── .claude/
 │   ├── agents/
 │   ├── skills/                # arena-gotchas, arena-database, arena-design
-│   ├── hooks/notify.ps1
+│   ├── hooks/
+│   │   ├── notify.ps1             # Stop/Notification/SubagentStop toast
+│   │   ├── inject-gotchas.ps1     # SessionStart — injects the trap list
+│   │   └── check-claudemd.ps1     # Stop — nudges when CLAUDE.md drifts
 │   └── settings.json
+├── public/                     # served as-is; nothing secret ever goes here
+│   ├── logo.svg                # AP monogram placeholder — TODO(content)
+│   ├── favicon.ico             # derived from the logo
+│   ├── og-image.png            # derived from the logo
+│   └── mockServiceWorker.js    # MSW, dev only — MUST be absent from prod builds
 ├── db/
 │   ├── migrations/            # SQL run manually in the Neon SQL editor
 │   └── README.md
@@ -170,7 +270,7 @@ arena-player-web/
 │       ├── availability/route.ts
 │       └── bookings/route.ts
 ├── components/
-├── mocks/                      # MSW handlers implementing the API contract above
+├── mocks/                      # MSW handlers — dev only, retired in Phase 4
 ├── lib/                        # *.test.ts colocated beside the module each one covers
 │   ├── api/                    # axios instance + TanStack Query hooks
 │   ├── db/client.ts            # Neon client, OID parser override
@@ -180,8 +280,10 @@ arena-player-web/
 │   ├── dates.test.ts
 │   ├── slots.ts                # canonical TIME_SLOTS
 │   ├── slots.test.ts
-│   ├── proof.ts                # shared upload constraints
-│   ├── validation.ts
+│   ├── store/                  # zustand — client state only, see the scope rule in CLAUDE.md
+│   ├── proof.ts                # shared upload constraints (MIME + size)
+│   ├── proof.test.ts
+│   ├── validation.ts           # zod schemas, shared client/server
 │   ├── validation.test.ts
 │   └── env.ts
 ├── scripts/
@@ -189,24 +291,31 @@ arena-player-web/
 └── vitest.config.ts
 ```
 
-All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during the Phase 1 build (`docs/tasks/step-01` onward) — not part of this scaffolding pass.
+All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during **Phase 1a** — not part of this scaffolding pass.
 
-## Package versions (starting point — check for patch updates when step-01 actually runs)
+## Package versions — resolve every one at install
+
+**No pinned versions here, deliberately.** An earlier draft pinned `next`, `react`, `@aws-sdk/client-s3`, and `pnpm` to exact figures that were never verified against the registry. A wrong pin fails `pnpm install` on day one of Phase 1a with a confusing error, and false precision reads as "someone checked this" when nobody did.
+
+Resolve each at install, then **record the actual resolved versions back into this table** — same moment the performance budget above gets replaced with measured figures. Both are estimates waiting on the same first `pnpm install`.
 
 | Package | Version |
 |---|---|
-| `next` | `^15.5.22` |
-| `react` / `react-dom` | `^19.2.8` |
+| `next` | latest 15.x — resolve at install |
+| `react` / `react-dom` | latest 19.x — resolve at install |
 | `gsap` | latest — resolve at install, verify license |
 | `@gsap/react` | latest — resolve at install |
 | `axios` | latest — resolve at install |
+| `zod` | latest — resolve at install |
+| `react-hook-form` | latest — resolve at install |
+| `zustand` | latest — resolve at install |
 | `@tanstack/react-query` | latest v5 — resolve at install |
 | `msw` (dev) | latest v2 — resolve at install |
 | `vitest` (dev) | latest v3 — resolve at install |
-| `@neondatabase/serverless` | `^1.1.0` |
-| `@aws-sdk/client-s3` | `^3.1098.0` |
-| `server-only` | `^0.0.1` |
-| pnpm (`packageManager`) | `pnpm@11.17.0` |
+| `@neondatabase/serverless` | latest v1 — resolve at install |
+| `@aws-sdk/client-s3` | latest v3 — resolve at install |
+| `server-only` | latest — resolve at install |
+| pnpm (`packageManager`) | resolve at install, then pin the exact version |
 
 ## `lib/` import convention
 

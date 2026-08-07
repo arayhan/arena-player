@@ -29,14 +29,18 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 
 | # | Task | Output |
 |---|------|--------|
-| 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md) |
+| 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form` or `zod` |
 | 2 | Scaffolding | Next.js 15 + TypeScript + Tailwind installed via pnpm, runs at `localhost:3000` |
-| 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
+| 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
 | 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `app/` |
 | 5 | Lock the API contract | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md) |
 | 6 | Slot + date primitives | `lib/slots.ts` (canonical `TIME_SLOTS`) and `lib/dates.ts` (Asia/Jakarta helpers, today + 13 days), each with its colocated `*.test.ts` |
 | 7 | Mock layer + data plumbing | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance |
 | 8 | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `lib/motion.ts` wrapping `gsap.matchMedia()` |
+
+**`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of *new* defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
+
+A `SessionStart` hook already injects the `arena-gotchas` trap list, so "every agent must load this once per session" is guaranteed rather than honor-system.
 
 Task 5 is what keeps Phase 3 from dead-ending. Without a written contract, the form phase would invent response shapes that the backend phase then has to match or break.
 
@@ -67,7 +71,7 @@ This is also where benchmark references get consumed: read them, write the findi
 
 Tasks 4 and 5 are **one artifact, not two**. The design system page *is* the prototype; it then serves as the component reference Phase 2 builds from. Building a separate throwaway prototype would mean paying for the UI twice.
 
-Hero copy (task 2) is drafted in-house and user-approved — unlike the Ketentuan, which is verbatim client content. If the client later supplies their own wording, that is a `TODO(phase2)` swap in the same bucket as the WA number and bank details.
+Hero copy (task 2) is drafted in-house and user-approved — unlike the Ketentuan, which is verbatim client content. If the client later supplies their own wording, that is a `TODO(content)` swap in the same bucket as the WA number and bank details.
 
 ### Client checkpoint — the cheapest rework you will ever buy
 
@@ -127,7 +131,7 @@ Cheaper than the 1b checkpoint was, more expensive than nothing — which is why
 | 3 | Validation | Required fields, Indonesian phone format (08xx/62xx), image-only ≤2MB |
 | 4 | Submission | Success state, taken-slot state, error states |
 | 5 | API integration | TanStack Query mutation over the axios instance, against the Phase 1a mock |
-| 6 | End-to-end journey check | Walk landing → slot select → wa.me → `/booking` → success as one continuous flow. The WA number is still a `TODO(phase2)` placeholder, so this verifies **link construction, the message template, and the params handed to `/booking`** — not a real conversation. Do not report the placeholder as a failure |
+| 6 | End-to-end journey check | **Two legs, not one continuous flow** — WhatsApp is a deliberate break in the chain. Leg 1: landing → slot select → correct `wa.me` URL and message template. Leg 2: open `/booking?date=…&time=…` directly (as the admin's pasted link would) → fill → submit → success. Also verify all four param states from the Product Spec: valid, missing, expired, unavailable. The WA number is a `TODO(content)` placeholder — do not report that as a failure |
 
 **Skills:** `/impeccable` for design — the form is the conversion point, and a polished landing page handing off to a plain form is where the quality gap shows. `/qa` for task 6.
 
@@ -146,17 +150,23 @@ Cheaper than the 1b checkpoint was, more expensive than nothing — which is why
 
 # Product spec
 
-The full functional spec for everything Phases 1a–3 build. Phase boundaries above say *when*; this section says *what*.
+The full functional spec for everything Phases 1a–**4** build. Phase boundaries above say *when*; this section says *what*.
 
-Explicitly EXCLUDED from this repo: the admin application. Excluded until later phases: WhatsApp bot integration, production deploy, real client content.
+Note the split: the routes, sections, and form below are Phases 1a–3 and run against the mock. **The data model, API route behaviour, and anti-double-booking are Phase 4** — specified here because the contract has to be known before the UI is built against it, not because they ship earlier.
+
+Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4: WhatsApp bot integration, production deploy, real client content.
 
 ## Tech stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind CSS
-- Neon Postgres (serverless) + Cloudflare R2 (payment proofs). Both accessed only from route handlers via env vars, zero hardcoded keys. Developer's own accounts for Phase 1; ownership transferred to the client later.
+- Neon Postgres (serverless) + Cloudflare R2 (payment proofs). Both accessed only from route handlers via env vars, zero hardcoded keys. Developer's own accounts until the handover discussion; ownership transferred to the client then.
 - GSAP + ScrollTrigger (with `@gsap/react`) for animation — chosen over Framer Motion for pinned and scrubbed scroll timelines, which is what the heavy scroll-driven direction below actually needs. Not both: two animation runtimes for one job is ~35KB of redundancy
 - axios for frontend HTTP calls, wrapped by TanStack Query — the query layer supplies caching, request dedup, retry, and loading/error state that raw axios would otherwise be hand-rolled per component
 - MSW for the mock API layer that Phases 1a–3 develop against
+- **zod** for validation — one schema serving client and, later, server. Bought deliberately ahead of Phase 4 so the "which rules are shared" question on its agenda is already answered
+- **react-hook-form** for `/booking` — the form has a file upload, per-field errors, `aria-describedby` wiring, and focus-on-submit, all of which are fiddly to hand-roll correctly
+- **zustand** for client state. Note the scope: server state is TanStack Query's, the two selections could be `useState`, and cross-page state travels via `/booking?date=…&time=…` query params. Keep the store small — if it starts duplicating server data or URL state, that is the signal it has outgrown its purpose
+- **Undecided, and settled in Phase 1a task 1**: date handling (native `Intl` in a tested `lib/dates.ts` vs a library) and the icon library. Both must clear the performance budget in [architecture.md](architecture.md)
 - Fonts: Orbitron (next/font/google) for display/headings, a clean sans (e.g. Inter) for body
 - No auth at all in this repo (the admin app, which is where auth belongs, lives in a separate repo)
 
@@ -183,15 +193,26 @@ Full token table, typography, and animation budget: [design-system.md](design-sy
    - Time slot grid: 06.00–08.00 through 22.00–24.00 (2-hour slots, 9 per day), fetched from `GET /api/availability` — the MSW mock in Phases 2–3, real Neon data once the backend lands
    - NO prices shown in this section — pricing belongs on `/booking`
    - Slot states: available (selectable), PENDING (disabled, label "Menunggu Konfirmasi"), BOOKED (disabled)
-   - On submit with a selected slot: open `https://wa.me/<PLACEHOLDER_NUMBER>?text=<template>` in a new tab, where template = "Halo, saya mau booking lapangan Arena Player tanggal {DD MMM YYYY} jam {slot}". Simultaneously route the user to `/booking?date=...&time=...`.
+   - On submit with a selected slot: open `https://wa.me/<PLACEHOLDER_NUMBER>?text=<template>` — **WhatsApp only, one destination**. Template = "Halo, saya mau booking lapangan Arena Player tanggal {DD MMM YYYY} jam {slot}".
+   - **The site does NOT navigate to `/booking` itself.** WhatsApp is the single handoff. The `/booking` link comes back to the user through WhatsApp: manually typed by the admin until the bot phase ships, automatically by the bot afterwards. Same URL either way — `/booking?date=…&time=…`.
+   - Rationale for one destination rather than two: on mobile `wa.me` deep-links into the WhatsApp app rather than opening a tab, so pairing it with a same-tab navigation is exactly the combination that in-app webviews and popup blockers handle inconsistently — and the Instagram in-app browser is the primary traffic. One user action, one destination, no race between them.
 3. **Rules ("Ketentuan")** — static content, exact 10 rules listed below (keep verbatim in Indonesian — it is site content).
 4. **Location & Contact** — arena address (placeholder), Google Maps embed (placeholder coords), operating hours 06.00–24.00, WhatsApp contact button.
 5. **CTA Footer + Footer** — big closing CTA "Pesan Lapangan" scrolling back to `#order`, then logo, copyright, minimal links. Built as one unit in Phase 2.
 
 ### `/booking` — Booking form
 
+**Entry is always a link carrying query params** — pasted by the admin over WhatsApp, or sent by the bot later. Nothing on `/` links here directly, so malformed and stale params are the normal case, not the edge case. Handle all four:
+
+| Params | Behaviour |
+|---|---|
+| Valid `date` + `time` | Normal — locked summary card, form enabled |
+| Missing or unparseable | Friendly message + button to `/#order` to pick a slot. Never a blank form or a crash |
+| Date outside the 14-day window, or a slot already past | Same treatment as missing — the link has expired, say so plainly |
+| Slot no longer available | Allowed to proceed; the 409 on submit is the authority. Checking here would be a check-then-insert race |
+
 - Reads `date` and `time` from query params, shown as a locked summary card (user can go back to change them, not edit inline)
-- Fields: Nama Tim (required), Nomor WhatsApp (required, validate Indonesian format 08xx/62xx), notes (optional)
+- Fields: Nama Tim (required), Nomor WhatsApp (required, accepts `08xx` / `62xx` / `+62xx`, **normalised to `628xxxxxxxxx` before storage**), notes (optional, **max 500 characters**)
 - Payment info card: bank account number + account holder name (placeholders), instruction text "Transfer DP 50% dari harga sewa. Nominal dikonfirmasi admin via WhatsApp."
   - **OPEN DECISION** — pricing on this page. The current wording shows no number at all; the admin quotes it over WhatsApp. If an actual rupiah amount should render here instead, the client must supply the rate card (flat rate vs peak/off-peak vs weekend), and the "no prices in the UI" hard rule in CLAUDE.md narrows to "no prices on `/`". Unresolved — do not render a number until it is.
 - Payment proof upload: required, image only (jpg/png/webp), max 2MB, uploaded to the private R2 bucket
@@ -204,13 +225,24 @@ Full token table, typography, and animation budget: [design-system.md](design-sy
 create table bookings (
   id uuid primary key default gen_random_uuid(),
   booking_date date not null,
-  time_slot text not null, -- e.g. '06.00 - 08.00'
+  time_slot text not null,
   team_name text not null,
-  phone text not null,
+  phone text not null,          -- normalised to 628xxxxxxxxx, never as-typed
   notes text,
-  proof_url text not null, -- R2 object KEY in the private bucket, not a URL
-  status text not null default 'pending', -- pending | confirmed | rejected | expired
-  created_at timestamptz not null default now()
+  proof_key text not null,      -- R2 object KEY in the private bucket, NOT a URL
+  status text not null default 'pending',
+  created_at timestamptz not null default now(),
+
+  -- The unique index below compares time_slot as TEXT. Without this constraint
+  -- '06.00 - 08.00' and '06.00-08.00' are different rows that book the same slot,
+  -- and the race guard silently does nothing. lib/slots.ts canonicalises in app
+  -- code; this is what enforces it in the database.
+  constraint time_slot_canonical check (time_slot in (
+    '06.00 - 08.00','08.00 - 10.00','10.00 - 12.00','12.00 - 14.00','14.00 - 16.00',
+    '16.00 - 18.00','18.00 - 20.00','20.00 - 22.00','22.00 - 24.00'
+  )),
+  constraint status_valid check (status in ('pending','confirmed','rejected','expired')),
+  constraint notes_length check (notes is null or length(notes) <= 500)
 );
 
 -- Anti double-booking: only one ACTIVE booking per slot.
@@ -219,19 +251,38 @@ create unique index uniq_active_slot
   where status in ('pending', 'confirmed');
 ```
 
+Three deliberate choices in that schema:
+
+- **`time_slot_canonical`** — the race guard is a unique index on a text column, so it only protects when the string is byte-identical. This constraint is what makes the most expensive bug in the project impossible to reintroduce by formatting drift. The list must stay in lockstep with `lib/slots.ts`.
+- **`proof_key`, not `proof_url`** — it stores an R2 object key. Naming it `_url` invites someone to write `<img src={proof_key}>` and get a broken image with no obvious cause.
+- **`phone` normalised to `628xxxxxxxxx`** — accept `08xx`, `62xx`, or `+62xx` at the boundary, store one form. This is the format `wa.me` and the WhatsApp API both use, so the later bot can match an inbound number to a booking with a direct lookup instead of fuzzy matching.
+
 Full migration file, gotchas, and error-code contract: [database.md](database.md).
 
 Key behaviors:
 
 - A slot becomes PENDING only AFTER the form (with proof) is successfully submitted. Selecting a slot on the landing page holds nothing.
 - Insert must rely on the partial unique index; on conflict return 409 to the client. Never check-then-insert without the constraint.
-- Auto-expire: pending bookings older than 24 hours become `expired` (freeing the slot). Lazy expiry on read in the availability API is acceptable — no cron required.
+- Auto-expire: pending bookings older than 24 hours become `expired` (freeing the slot). **Where that expiry runs is UNRESOLVED** — lazy-on-read was assumed, but it contradicts the 30s shared cache below. See the open question in [architecture.md](architecture.md) and the Phase 4 agenda; do not build either half before it is settled.
 - Availability API: given a date, return the 9 slots with computed status. Cache no longer than 30s.
+- **Cancellation is manual.** Ketentuan rule 2 grants cancellation up to 1×24h, but there is no user-facing cancel route in this repo — the user messages the admin on WhatsApp and the admin changes the status from the admin app. Stated so nobody builds a cancel flow that was never scoped.
+- **The 30s cache slightly increases 409s, deliberately.** `Cache-Control: public, s-maxage=30` means a CDN may serve availability up to 30s stale, so a user can see a slot as available that was taken moments ago. That is accepted: the 409 path exists and has designed UI. The alternative — no caching — costs a database round trip on every date-pill tap. **Its second effect is not accepted and not yet resolved:** the same cache hit also skips the lazy expiry, per the row above.
+
+### Abuse protection (specified now, built in Phase 4)
+
+`POST /api/bookings` is public and unauthenticated by design — there is no auth in this repo. The honeypot stops naive bots and nothing else. Without the following, a trivial script can hold **all 126 slots** (9 × 14 days) in `pending` until lazy expiry releases them 24h later, and can burn unbounded R2 storage with 2MB uploads:
+
+- **Per-IP rate limit** on submissions. A real user submits once; anything beyond a handful per hour is not a customer.
+- **Reject before the R2 write** — size and MIME are validated server-side *before* anything is uploaded, so a rejected file never costs storage. Client-side checks are UX, not protection.
+- **Return 429** with a friendly Indonesian message, distinct from the 409 taken-slot path.
+
+Not a hypothetical worth dismissing on a booking site: holding every slot costs the client real revenue for a day, and the attack needs no skill.
 
 ## API routes (Next.js route handlers)
 
 - `GET /api/availability?date=YYYY-MM-DD` → `[{ slot, status }]` (runs lazy expiry first)
-- `POST /api/bookings` → validates fields, uploads proof, inserts booking; 409 on slot conflict
+- `POST /api/bookings` → validates fields, uploads proof, inserts booking; 409 on slot conflict, 429 when rate-limited
+- **Availability is one date per request, and that constrains the design.** Showing an availability hint on the date pills — "3 slot tersisa", or greying out fully-booked days — would need 14 requests on page load. Phase 1b must not specify such an indicator without also specifying a bulk endpoint, which does not currently exist. Design against this limit or change the limit deliberately; do not discover it in Phase 2.
 - Neon is reachable only from server-side route handlers via `DATABASE_URL` (never `NEXT_PUBLIC_`-prefixed); there is no browser-facing database client and nothing to lock down with row-level policies — the API surface itself is the only write path. R2 credentials are equally server-only; the browser never touches Neon or R2 directly.
 
 ## Design direction (important)
@@ -270,21 +321,27 @@ PERATURAN SEWA LAPANGAN
 9. Luka, cidera, dan kecelakaan yang dialami pemain bukan tanggung jawab Arena Player
 10. Perhatikan barang bawaan. Segala kerusakan atau kehilangan bukan tanggung jawab pihak Arena Player
 
-## Placeholders to swap in Phase 2 (mark clearly in code with `// TODO(phase2)`)
+## Placeholders — mark in code with `// TODO(content)`
+
+Swapped in the **Real content + WhatsApp bot** phase, which comes **after Phase 4** — not during Phase 2. The marker deliberately names the work rather than a phase number: it was once `TODO(phase2)`, and the frontend-first re-cut made "Phase 2" mean the landing page, so the old name pointed at the wrong phase entirely. Naming it `content` survives any future renumbering.
+
+Complete list — `rg "TODO\(content\)"` must find every one of these and nothing else:
 
 - WhatsApp number (wa.me link)
 - Bank account number + holder name
 - Arena address + Google Maps coordinates
 - Real photos/gallery assets if the client provides any
+- Logo file — SVG monogram placeholder until the client supplies theirs; favicon + OG image derive from it
+- Hero copy — ships drafted and user-approved; only a swap if the client wants their own wording
 
 ## Binding clarifications
 
 - Package manager: pnpm. Lockfile `pnpm-lock.yaml`; never commit `package-lock.json`.
 - Date window: today + 13 days, timezone Asia/Jakarta. Today's slots whose start time has passed render disabled (visible, not hidden).
-- Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_url` column stores the object KEY (not a public URL). Admin views proofs via the Cloudflare dashboard; signed URLs are the admin repo's problem, not this one's.
-- Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(phase2)` item.
+- Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). Admin views proofs via the Cloudflare dashboard; signed URLs are the admin repo's problem, not this one's.
+- Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
 - Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Prep rule still stands: shareable code (slot math, date helpers, validation) lives in `lib/` and never imports from `app/`, so it can be extracted and shared with the admin repo later without a rewrite.
-- HTTP client on the frontend: axios (Phase 3 decision — the form talks to the API through it).
+- HTTP client on the frontend: axios wrapped by TanStack Query. The shared instance and `QueryClientProvider` are **built in Phase 1a task 6**; Phase 2's slot grid and Phase 3's form both consume them. No bare `fetch` in a component.
 
 ## Definition of Done — Phases 1a–3
 
@@ -301,6 +358,8 @@ Phase 1a:
 Phase 1b:
 
 - [ ] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
+- [ ] Hero copy chosen — Indonesian headline, subheadline, meta description
+- [ ] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts
 - [ ] Any benchmark reference files read, findings captured in design-system.md, source files deleted
 - [ ] Design system HTML renders every token, type scale, and component state — all three slot states plus the date pill
 - [ ] The same page is clickable through the landing → order → form journey
@@ -312,11 +371,12 @@ Phase 2:
 - [ ] All 5 landing sections render, responsive 375px → 1440px
 - [ ] Order section reachable within 1–2 scrolls at 375px, anchor `#order` works from both CTAs
 - [ ] Slot grid reads the mock; all three states render correctly
-- [ ] Slot select → wa.me opens with the correct template AND `/booking` receives params
+- [ ] Slot select → `wa.me` opens with the correct number and message template, and the page does **not** also navigate — WhatsApp is the single destination
 - [ ] No pricing anywhere on `/`
 - [ ] Every section executes the 1b art direction — one visual language across all five, not five improvisations
 - [ ] Per-section gate passed as each merged: `prefers-reduced-motion` respected, Lighthouse mobile ≥ 85, keyboard navigation working, no CLS
 - [ ] OG meta tags + title/description + favicon generated from the logo
+- [ ] **Client has seen the landing page on a real phone and signed off**
 
 Phase 3:
 
@@ -350,8 +410,10 @@ Agenda for the discussion:
 | Layered architecture | Route handler → service → repository boundaries, and how those interact with the existing `lib/` extraction boundary |
 | Validation | Which rules are shared client/server, which are server-only, and where the shared ones live |
 | **File upload** | **Presigned URL** — browser PUTs straight to R2, then POSTs the object key. This supersedes the multipart flow currently drawn in [architecture.md](architecture.md) and is why `POST /api/bookings` is marked provisional |
+| **Where expiry runs** | Lazy-on-read, scheduled job, or on-POST. Lazy-on-read is starved by the 30s shared cache — a cache hit never reaches the origin, so nothing frees an abandoned slot on a quiet night. Full statement of the problem and the three candidate fixes: [architecture.md](architecture.md) |
+| **Orphaned R2 objects** | Upload succeeds before the insert, so a crash in between leaves a file no row points at and nothing ever notices. Likely an R2 lifecycle rule on the `proofs/` prefix — confirm it is configured at handover, since it lives in the R2 dashboard and not in this repo |
 
-Already locked, carried in unchanged — anti-double-booking via the `uniq_active_slot` partial index with its 409 contract, and lazy expiry of pending bookings older than 24h. Both are non-negotiable; see [database.md](database.md).
+Already locked, carried in unchanged — anti-double-booking via the `uniq_active_slot` partial index with its 409 contract, and the 24h expiry *rule itself*. Non-negotiable; see [database.md](database.md). Only the **mechanism** that runs the expiry is open, per the agenda row above.
 
 ### Retiring MSW — required, not cleanup
 
@@ -366,7 +428,7 @@ Required in this phase:
 
 ## Real content + WhatsApp bot
 
-- Replace all `TODO(phase2)` placeholders: WA number, bank account, address, maps coords, photos
+- Replace all six `TODO(content)` placeholders: WA number, bank account, address, maps coords, photos, logo file, hero copy (only if the client wants their own wording — it already ships drafted)
 - WhatsApp bot auto-reply via Fonnte or Wablas (client's account, client's monthly cost): when a user messages the booking template, the bot replies with the `/booking` link carrying the same date/time params
 - Optional: gallery section if the client provides photos
 - Acceptance: full user journey works end-to-end with real data — landing → WA → bot reply → form → success
@@ -375,11 +437,11 @@ Open questions: which WA bot provider and plan; final bank account details and e
 
 ## Deploy + handover
 
-- Production deploy. Target is the client's Sumopod account; fallback is Vercel free tier if Sumopod cannot run Next.js (to be confirmed)
+- Production deploy to the client's Sumopod account. **Confirmed: Sumopod runs Node apps**, so `next build` with `output: 'standalone'` deploys there directly. Vercel free tier is retained only as a contingency, not an expected branch
 - Neon project + Cloudflare R2 account ownership transfer (or credential handover) to a client-owned account
 - Handover: env var documentation, 14-day bug warranty starts at launch
 
-Open questions: Sumopod plan capabilities (Node.js/Next.js support, subdomain config); who holds the Neon/R2 accounts long-term.
+Open questions: subdomain configuration on Sumopod — only Node capability was confirmed, and subdomains matter for `admin.arena-player.com` in the other repo; who holds the Neon/R2 accounts long-term.
 
 ---
 
