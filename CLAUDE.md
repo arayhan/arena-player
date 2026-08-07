@@ -93,20 +93,7 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - Parallel sessions: `claude --worktree <branch-name>`.
 - `lib/` never imports from `app/` (extraction boundary — lets slot/date/validation code be shared with the separate admin repo later).
 - No attribution trailers on commits.
-
-## Asking questions
-
-**Always use the `AskUserQuestion` tool, never a plain-text question.** The user wants to click an option rather than type a reply. This applies to every question — scope, approach, design, naming, tradeoffs, motion effects, anything.
-
-- Give real, distinct options with the recommended one first, labelled `(Recommended)`.
-- Use the `preview` field whenever the options are concrete enough to show — layouts, code shapes, motion, config.
-- "Other" is added automatically, so the user can always type instead when none of the options fit.
-- Batch related questions into one call (up to 4) rather than asking serially.
-
-Two unavoidable exceptions:
-
-1. **Plan approval uses `ExitPlanMode`**, not `AskUserQuestion` — the harness requires it.
-2. **Pure free-form values** (a phone number, a bank account, a URL) have nothing to enumerate. Ask those plainly and say why there are no options.
+- Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
 
 ## Hard rules (violations = rework)
 
@@ -119,3 +106,4 @@ Two unavoidable exceptions:
 7. **Performance**: LCP < 2.5s mobile, Lighthouse mobile Performance ≥ 85, order section reachable within 1–2 scrolls at 375px. Verified per section as it merges, not batched to the end of the phase.
 8. Every non-trivial `lib/` module gets a colocated Vitest `*.test.ts`, run by `pnpm check:lib`. Never claim something works without running the check and quoting output.
 9. **Stack is fixed** — Next 15, TypeScript, Tailwind, GSAP, TanStack Query + axios, MSW, zod, react-hook-form, zustand. Dates and icons are the only open choices, decided in Phase 1a task 1. Anything else needs user approval and must clear the budget in docs/architecture.md. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
+10. **One writing session per worktree.** Two sessions editing this repo simultaneously shipped two defects in one day — overstated contrast ratios and a WCAG 1.4.11 failure — because neither could see the other's work. Commit before handing off, or use `claude --worktree <branch>`. And **`.impeccable/critique/` is gitignored**, so a graded review of a design artifact is invisible to `git log` and to the next session: read it before editing anything under `docs/DESIGN.*`. That exact blind spot is what produced both defects.
