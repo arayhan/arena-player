@@ -62,6 +62,21 @@
   --color-border:var(--grey-200);
   --color-keyline:var(--navy-900);
   --color-focus:var(--blue-600);
+  --color-fg-inverse:var(--white);
+  --color-wash:var(--blue-50);            /* the hover tint */
+  --color-accent-strong:var(--navy-900);  /* heaviest actionable surface */
+  --color-accent-strong-hover:var(--navy-700);
+  --color-disabled-bg:var(--grey-200);
+  /* State colour needs a semantic layer of its own, or every component that
+     shows a state has to reach for a raw hue and re-theming misses all of it. */
+  --color-warning-surface:var(--amber-100);
+  --color-warning-line:var(--amber-300);
+  --color-warning-strong:var(--amber-800);
+  --color-danger-surface:var(--red-100);
+  --color-danger-line:var(--red-300);
+  --color-danger-strong:var(--red-800);
+  --color-success-fg:var(--navy-900);     /* success carries on weight + copy,
+                                             not on the interactive blue */
 
   --text-display:clamp(2rem, 1.12rem + 3.76vw, 4.5rem);
   --text-h2:clamp(1.625rem, 1.14rem + 2.07vw, 3rem);
@@ -104,40 +119,44 @@
                                             Red is `booked` here, so the
                                             highlight role goes to Signal Blue
                                             and the state meaning survives. */
-  --inventory-tag:var(--amber-300);
+  --inventory-tag:var(--color-warning-line);
+  --inventory-tag-fg:var(--color-fg);
 
   --slot-bg:var(--color-bg);
   --slot-fg:var(--color-fg);
   --slot-border:var(--color-interactive);
-  --slot-hover-bg:var(--blue-50);
+  --slot-hover-bg:var(--color-wash);
   --slot-selected-bg:var(--color-interactive);
   --slot-selected-fg:var(--color-bg);
-  --slot-pending-bg:var(--amber-100);
-  --slot-pending-border:var(--amber-300);
-  --slot-pending-fg:var(--amber-800);
-  --slot-booked-bg:var(--red-100);
-  --slot-booked-border:var(--red-300);
-  --slot-booked-fg:var(--red-800);
+  --slot-pending-bg:var(--color-warning-surface);
+  --slot-pending-border:var(--color-warning-line);
+  --slot-pending-fg:var(--color-warning-strong);
+  --slot-booked-bg:var(--color-danger-surface);
+  --slot-booked-border:var(--color-danger-line);
+  --slot-booked-fg:var(--color-danger-strong);
   --slot-min-height:56px;
 
   --pill-bg:var(--color-bg);
   --pill-fg:var(--color-fg);
   --pill-border:var(--color-border);
-  --pill-hover-bg:var(--blue-50);
+  --pill-hover-bg:var(--color-wash);
   --pill-selected-bg:var(--color-interactive);
-  --pill-selected-fg:var(--color-bg);
+  --pill-selected-fg:var(--color-fg-inverse);
+  /* Full white, not white at .85 — the tinted version computed 4.20:1 and
+     failed AA. The day label separates by size, not by transparency. */
+  --pill-selected-fg-soft:var(--color-fg-inverse);
   --pill-disabled-bg:var(--color-bg-subtle);
   --pill-disabled-fg:var(--color-fg-muted);
 
   --button-height:48px;
-  --button-primary-bg:var(--navy-900);
+  --button-primary-bg:var(--color-accent-strong);
   --button-primary-fg:var(--color-bg);
-  --button-primary-hover-bg:var(--navy-700);
+  --button-primary-hover-bg:var(--color-accent-strong-hover);
   --button-primary-active-bg:var(--color-interactive-pressed);
-  --button-secondary-fg:var(--navy-900);
-  --button-secondary-border:var(--navy-900);
+  --button-secondary-fg:var(--color-accent-strong);
+  --button-secondary-border:var(--color-accent-strong);
   --button-secondary-hover-bg:var(--color-bg-subtle);
-  --button-disabled-bg:var(--grey-200);
+  --button-disabled-bg:var(--color-disabled-bg);
   --button-disabled-fg:var(--color-fg-muted);
 
   --input-height:48px;
@@ -147,13 +166,17 @@
   /* red-800, not red-300. A border that is a state's ONLY visual signal must
      clear 3:1 (WCAG 1.4.11). red-300 on white is 1.90:1 and fails; red-800
      is 8.31:1. The fill is the second, non-border signal. */
-  --input-error-border:var(--red-800);
-  --input-error-bg:var(--red-100);
-  --input-error-fg:var(--red-800);
+  --input-error-border:var(--color-danger-strong);
+  --input-error-bg:var(--color-danger-surface);
+  --input-error-fg:var(--color-danger-strong);
   --input-disabled-bg:var(--color-bg-subtle);
   --input-disabled-fg:var(--color-fg-muted);
 
   --swatch-demo-bg:var(--color-page);
+  --result-error-surface:var(--color-danger-surface);
+  --result-error-line:var(--color-danger-strong);
+  --result-error-fg:var(--color-danger-strong);
+  --result-ok-fg:var(--color-success-fg);
   --card-bg:var(--color-bg);
   --card-border:var(--color-border);
 }
@@ -180,12 +203,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .step{padding:var(--space-12) 0;scroll-margin-top:var(--space-4)}
 .step__head{display:grid;grid-template-columns:auto 1fr;gap:var(--space-4);
   align-items:start;margin-bottom:var(--space-6)}
+.step__n--mark{display:grid;place-items:center;color:var(--new-part)}
+.elapsed__caret{display:inline-grid;place-items:center}
 .step__n{font-family:var(--font-manual);font-size:var(--text-step);font-weight:800;
   line-height:.8;color:var(--step-numeral);letter-spacing:-.05em;
   font-variant-numeric:tabular-nums}
 .step__title{padding-top:var(--space-1)}
 .step__lede{color:var(--color-fg-muted);font-size:var(--text-sm);max-width:66ch;
   margin:var(--space-2) 0 0}
+/* The source world marks the part each step introduces so you can see at a
+   glance what is being added. --new-part is that role. */
+.new-tag{display:inline-flex;align-items:center;gap:var(--space-1);
+  font-family:var(--font-manual);font-size:var(--text-xs);font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--new-part);
+  border:2px solid var(--new-part);border-radius:var(--radius-sharp);
+  padding:1px var(--space-2);margin-top:var(--space-2);white-space:nowrap}
 
 /* The plate. Every content block is a white panel with a navy keyline,
    the way a manual boxes what you are meant to look at. */
@@ -198,7 +230,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 /* The guide arrow. A dashed manual guide that wipes in left to right.
    clip-path rather than stroke-dashoffset: the dashes ARE the idiom, and
    animating dashoffset on a dashed path makes them march instead of draw. */
-.arrow{display:block;width:100%;height:36px;overflow:visible;margin-bottom:calc(var(--stud) * -1)}
+.arrow{display:block;width:240px;max-width:100%;height:36px;overflow:visible;
+  margin:0 0 calc(var(--stud) * -1)}
 .arrow path{fill:none;stroke:var(--new-part);stroke-width:2;stroke-linecap:round}
 .arrow polygon{fill:var(--new-part)}
 
@@ -232,7 +265,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .part{border:var(--keyline) solid var(--plate-keyline);border-radius:var(--radius-card);
   overflow:hidden;background:var(--plate-bg);position:relative}
 .part__no{position:absolute;top:0;left:0;background:var(--inventory-tag);
-  color:var(--navy-900);font-family:var(--font-manual);font-weight:700;
+  color:var(--inventory-tag-fg);font-family:var(--font-manual);font-weight:700;
   font-size:var(--text-xs);padding:2px var(--space-2);
   border-right:var(--keyline) solid var(--plate-keyline);
   border-bottom:var(--keyline) solid var(--plate-keyline);
@@ -251,14 +284,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .toc b{font-variant-numeric:tabular-nums;color:var(--color-fg-muted);font-weight:700}
 
 /* --- slot cell --------------------------------------------------- */
-.slot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+.slot{display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:var(--space-1) var(--space-3);
   width:100%;min-height:var(--slot-min-height);padding:var(--space-4);
   border-radius:var(--radius-sharp);background:var(--slot-bg);
   border:1px solid var(--slot-border);color:var(--slot-fg);
   font-family:var(--font-body);font-size:var(--text-body);text-align:left;
   cursor:pointer;transition:background var(--dur-base) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out)}
-.slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em}
+.slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em;white-space:nowrap}
 .slot__state{font-size:var(--text-sm);white-space:nowrap}
 .slot:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--slot-hover-bg)}
 .slot[aria-pressed=true]{background:var(--slot-selected-bg);
@@ -281,7 +315,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   border-color:var(--color-interactive)}
 .pill[aria-pressed=true]{background:var(--pill-selected-bg);border-color:transparent;
   color:var(--pill-selected-fg)}
-.pill[aria-pressed=true] .pill__day{color:rgb(255 255 255 / .85)}
+.pill[aria-pressed=true] .pill__day{color:var(--pill-selected-fg-soft)}
 /* aria-disabled, NEVER native `disabled` — native removes it from the tab
    order, so a keyboard user never learns the date is unavailable. */
 .pill[aria-disabled=true]{background:var(--pill-disabled-bg);color:var(--pill-disabled-fg);
@@ -334,12 +368,15 @@ th,td{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px so
 th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
   font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
 
+.skeleton{height:var(--slot-min-height);border-radius:var(--radius-sharp);
+  background:var(--color-bg-subtle);border:1px solid var(--color-border)}
 .decisions{margin:var(--space-4) 0 0;padding-left:var(--space-6)}
 .decisions li{margin-bottom:var(--space-3);max-width:66ch}
 
 /* --- Alur: the finished model ---------------------------------- */
 .frames{display:grid;gap:var(--space-8);margin-top:var(--space-6)}
-@media(min-width:900px){.frames{grid-template-columns:repeat(3,1fr);align-items:start}}
+@media(min-width:900px){.frames{grid-template-columns:repeat(2,375px);align-items:start;justify-content:space-between}}
+@media(min-width:1240px){.frames{grid-template-columns:repeat(3,375px)}}
 .frame__cap{font-family:var(--font-manual);font-size:var(--text-xs);color:var(--color-fg-muted);
   margin:0 0 var(--space-2);text-transform:uppercase;letter-spacing:.08em;
   font-variant-numeric:tabular-nums}
@@ -368,6 +405,10 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 .summary{border:1px solid var(--color-border);border-radius:var(--radius-sharp);
   padding:var(--space-3);margin-bottom:var(--space-3);font-size:var(--text-sm)}
 .result__mark{font-family:var(--font-manual);font-weight:700;margin:0 0 var(--space-1)}
+.result__mark--ok{color:var(--result-ok-fg)}
+.result__mark--error{color:var(--result-error-fg)}
+.note--error{color:var(--result-error-fg)}
+.frame__screen--error{border-color:var(--result-error-line);background:var(--result-error-surface)}
 
 /* Production equivalent lives in lib/motion.ts via gsap.matchMedia().
    This block is the behaviour that wrapper must produce. */
@@ -433,6 +474,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         <li><a href="#date-pills"><b>05</b> Date pills</a></li>
         <li><a href="#forms"><b>06</b> Buttons &amp; inputs</a></li>
         <li><a href="#foundations"><b>07</b> Spacing &amp; motion</a></li>
+        <li><a href="#states"><b>08</b> Waiting &amp; failure</a></li>
         <li><a href="#alur"><b>—</b> Finished model</a></li>
       </ul>
     </nav>
@@ -473,12 +515,17 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">00</div>
       <div class="step__title">
         <h2>Parts inventory</h2>
+        <p class="new-tag">15 raw parts</p>
         <p class="step__lede">
           Fifteen primitives. Raw values, named for what they <em>are</em>. No component ever
           reaches for one of these directly — that is what steps 01 and 02 are for.
         </p>
       </div>
     </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
     <div class="inv settle">
       <div class="part"><span class="part__no">01</span><div class="part__chip" style="background:var(--navy-900)"></div>
         <div class="part__meta"><span class="part__name">navy-900</span><span class="part__val">#011A43 · from the logo</span></div></div>
@@ -537,6 +584,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">01</div>
       <div class="step__title">
         <h2>Name each part for its job</h2>
+        <p class="new-tag">+ 20 names</p>
         <p class="step__lede">
           The semantic layer. A part stops being <code>navy-900</code> and becomes
           “the foreground”. Re-theming edits this layer and nothing else.
@@ -578,6 +626,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">02</div>
       <div class="step__title">
         <h2>Assign the named parts to components</h2>
+        <p class="new-tag">+ 40 assignments</p>
         <p class="step__lede">
           The step that usually gets skipped. Every component rule on this page reads from a
           <code>--slot-*</code>, <code>--pill-*</code>, <code>--button-*</code> or
@@ -590,7 +639,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <polygon points="214,24 228,30 214,36"/>
     </svg>
     <div class="plate settle">
-      <p style="margin:0"><code>--navy-900</code> → <code>--color-fg</code> → <code>--button-primary-bg</code></p>
+      <p style="margin:0"><code>--navy-900</code> → <code>--color-accent-strong</code> → <code>--button-primary-bg</code></p>
       <p class="note stack-4">
         Three hops, one direction. A component that reaches straight to
         <code>var(--navy-900)</code> looks identical today and breaks the moment the theme
@@ -607,6 +656,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">03</div>
       <div class="step__title">
         <h2>Lettering</h2>
+        <p class="new-tag">+ 6 sizes</p>
         <p class="step__lede">
           Ratio 1.25 at 375px growing to 1.5 at 1440px via <code>clamp()</code>. No breakpoint
           jumps. <strong>Resize the window to watch it move.</strong>
@@ -614,6 +664,10 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         </p>
       </div>
     </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
     <div class="plate settle">
       <div style="font-family:var(--font-display);font-size:var(--text-display);line-height:1.1;font-weight:900;letter-spacing:-.02em" lang="id">Pesan Lapangan</div>
       <p class="spec-label">--text-display · Orbitron 900 · 32→72px</p>
@@ -638,6 +692,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">04</div>
       <div class="step__title">
         <h2>The slot cell</h2>
+        <p class="new-tag">+ 5 states</p>
         <p class="step__lede">
           One column, full-width rows, for one measurable reason: <strong>“Menunggu Konfirmasi”
           is 20 characters.</strong> A 3-column grid at 375px gives ~110px per cell and the
@@ -651,7 +706,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <polygon points="214,24 228,30 214,36"/>
     </svg>
     <div class="plate settle">
-      <div class="grid" role="group" aria-label="Slot waktu" style="max-width:520px">
+      <div class="grid" role="group" aria-label="Slot waktu" lang="id" style="max-width:520px">
         <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span></button>
         <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Tersedia</span></button>
         <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
@@ -683,6 +738,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">05</div>
       <div class="step__title">
         <h2>Date pills</h2>
+        <p class="new-tag">+ 4 states</p>
         <p class="step__lede">
           The only fully round shape in the system, and its roundness is functional: the row
           reads as horizontally scrollable without an arrow or a fade.
@@ -691,8 +747,12 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         </p>
       </div>
     </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
     <div class="plate plate--tight settle">
-      <div class="pills" role="group" aria-label="Tanggal">
+      <div class="pills" role="group" aria-label="Tanggal" lang="id">
         <button class="pill" type="button" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">7 Agu</span></button>
         <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">8 Agu</span></button>
         <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sab</span><span class="pill__date" lang="id">9 Agu</span></button>
@@ -711,12 +771,17 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">06</div>
       <div class="step__title">
         <h2>Buttons &amp; inputs</h2>
+        <p class="new-tag">+ 3 controls</p>
         <p class="step__lede">
           48px tall throughout, comfortably above the 44px tap minimum.
           <strong>Tab through this plate</strong> to check every focus state.
         </p>
       </div>
     </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
     <div class="plate settle">
       <div class="grid cols-2">
         <div>
@@ -755,12 +820,17 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">07</div>
       <div class="step__title">
         <h2>Spacing, radius, motion</h2>
+        <p class="new-tag">+ spacing, depth, motion</p>
         <p class="step__lede">
           Components use 4/8/12/16. Section rhythm only ever uses 48/64/96/128 — fine control
           where it matters, strict rhythm where it shows.
         </p>
       </div>
     </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
     <div class="plate settle">
       <div class="grid cols-2">
         <div>
@@ -818,10 +888,69 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
   </div>
 </section>
 
+<section class="step" id="states">
+  <div class="wrap">
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">08</div>
+      <div class="step__title">
+        <h2>Waiting, empty, and failed</h2>
+        <p class="new-tag">+ 3 states</p>
+        <p class="step__lede">
+          The three states with no happy-path screen. Every one of them is reachable on a
+          mid-range Android in an in-app browser, so none of them is an edge case — and a
+          grid with no story for “the request failed” renders as a day that looks fully
+          booked.
+        </p>
+      </div>
+    </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
+    <div class="plate settle">
+      <div class="grid cols-2">
+        <div>
+          <h3 class="sub-h">Loading</h3>
+          <p class="note">Skeleton rows at the real 56px height, so nothing shifts when data lands.</p>
+          <div class="grid stack-3" aria-busy="true" aria-label="Memuat slot" lang="id">
+            <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="sub-h">Submitting</h3>
+          <p class="note">The button names what is happening and stops accepting a second press.</p>
+          <button class="btn btn--primary stack-3" type="button" aria-disabled="true" lang="id">Mengirim…</button>
+          <p class="note stack-3">
+            <code>aria-disabled</code> here, not native <code>disabled</code>: the control keeps
+            its place in the tab order so focus does not jump while the request is in flight.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="sub-h stack-8">Failed</h3>
+      <p class="note">Never an empty grid. An empty grid reads as “fully booked”, which is the one wrong answer.</p>
+      <div class="frame__screen frame__screen--error stack-3" style="max-width:100%">
+        <p class="result__mark result__mark--error" lang="id">Gagal memuat jadwal</p>
+        <p class="note note--error" style="margin:0" lang="id">
+          Koneksi bermasalah. Coba lagi.
+        </p>
+        <button class="btn btn--secondary stack-4" type="button" lang="id">Coba lagi</button>
+      </div>
+
+      <h3 class="sub-h stack-8">Empty</h3>
+      <p class="note">Distinct from failed, and distinct from full. The day was never configured.</p>
+      <div class="plate plate--tight stack-3">
+        <p style="margin:0" lang="id"><strong>Belum ada jadwal untuk tanggal ini.</strong></p>
+        <p class="note" style="margin:var(--space-2) 0 0" lang="id">Silakan pilih tanggal lain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="step" id="alur">
   <div class="wrap">
     <div class="step__head">
-      <div class="step__n" aria-hidden="true">✓</div>
+      <div class="step__n step__n--mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13 L9.5 18.5 L20 5.5"/></svg></div>
       <div class="step__title">
         <h2>Finished model — <span lang="id">Alur</span></h2>
         <p class="step__lede">
@@ -835,10 +964,10 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
     <div class="frames">
       <!-- Frame 1 — the order section, per .impeccable/surfaces/app-page-tsx.md -->
       <div class="settle">
-        <p class="frame__cap">1 · Memilih jam</p>
+        <p class="frame__cap" lang="id">1 · Memilih jam</p>
         <div class="frame__screen">
           <p class="scarcity" lang="id">Hari ini · sisa 2 slot</p>
-          <div class="pills stack-3">
+          <div class="pills stack-3" role="group" aria-label="Tanggal" lang="id">
             <button class="pill" type="button" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">Hari ini</span></button>
             <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">Besok</span></button>
             <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Pilih</span><span class="pill__date" lang="id">Tanggal</span></button>
@@ -847,14 +976,14 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
                old design made the day read as sold out — the worst outcome for a product
                measured on filling empty slots. -->
           <button class="elapsed" type="button" aria-expanded="false" aria-controls="elapsed-list">
-            <span class="elapsed__caret" aria-hidden="true">›</span>
+            <span class="elapsed__caret" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L16 12 L9 19"/></svg></span>
             <span lang="id">Sudah lewat (6)</span>
           </button>
           <div class="elapsed-list" id="elapsed-list">
             <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
             <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
           </div>
-          <div class="grid">
+          <div class="grid" role="group" aria-label="Slot waktu" lang="id">
             <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">18.00 - 20.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
             <button class="slot" type="button" aria-pressed="false"><span class="slot__time">20.00 - 22.00</span><span class="slot__state" lang="id">Tersedia</span></button>
             <button class="slot" type="button" aria-pressed="false"><span class="slot__time">22.00 - 24.00</span><span class="slot__state" lang="id">Tersedia</span></button>
@@ -869,7 +998,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 
       <!-- Frame 2 — the handoff. WhatsApp only; the site does not also navigate. -->
       <div class="settle">
-        <p class="frame__cap">2 · WhatsApp terbuka</p>
+        <p class="frame__cap" lang="id">2 · WhatsApp terbuka</p>
         <div class="frame__screen">
           <p class="frame__cap" style="margin-bottom:var(--space-3)">Arena Player</p>
           <div class="wa" lang="id">
@@ -888,17 +1017,17 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <!-- Frame 3 — the form outcome, including the 409 that is the whole reason the
            anti-double-booking index exists. -->
       <div class="settle">
-        <p class="frame__cap">3 · Formulir &amp; hasil</p>
+        <p class="frame__cap" lang="id">3 · Formulir &amp; hasil</p>
         <div class="frame__screen">
           <div class="summary" lang="id"><strong>7 Agu 2026 · 20.00 - 22.00</strong></div>
           <div>
-            <p class="result__mark" style="color:var(--color-interactive)" lang="id">Berhasil</p>
+            <p class="result__mark result__mark--ok" lang="id">Berhasil</p>
             <p class="note" style="margin:0" lang="id">Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp.</p>
           </div>
         </div>
-        <div class="frame__screen stack-6" style="border-color:var(--red-800);background:var(--red-100)">
-          <p class="result__mark" style="color:var(--red-800)" lang="id">Slot sudah diambil</p>
-          <p class="note" style="margin:0;color:var(--red-800)" lang="id">
+        <div class="frame__screen frame__screen--error stack-6">
+          <p class="result__mark result__mark--error" lang="id">Slot sudah diambil</p>
+          <p class="note note--error" style="margin:0" lang="id">
             Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain.
           </p>
           <button class="btn btn--secondary stack-4" type="button" lang="id">Pilih jam lain</button>
@@ -920,7 +1049,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
     document.querySelectorAll(selector).forEach(function (el) {
       el.addEventListener('click', function () {
         if (el.getAttribute('aria-disabled') === 'true') return;
-        var scope = el.closest('[role=group]') || document;
+        var scope = el.closest('[role=group]') || el.closest('.frame__screen') || document;
         var wasPressed = el.getAttribute('aria-pressed') === 'true';
         scope.querySelectorAll(selector).forEach(function (sibling) {
           if (sibling.getAttribute('aria-disabled') === 'true') return;
