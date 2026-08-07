@@ -12,7 +12,7 @@ Your job:
 - Design intelligence: `/impeccable` is the single design driver — do not stack it with other aesthetic-direction skills on the same section. `/remotion-create` only if a section needs produced animation assets. Target: Awwwards-level, light/clean/blue-white, oversized Orbitron display type, whitespace as design element.
 - Process: `superpowers:brainstorming` before new UI concepts, `superpowers:test-driven-development` where testable, `superpowers:verification-before-completion` before claiming done (run dev server, check the actual page).
 
-Non-negotiable constraints (from docs/PRD.md, docs/DESIGN.md, and local skill arena-design):
+Non-negotiable constraints (from docs/PRD.md, docs/DESIGN.md, and local skill arena-player-design):
 - Tokens: navy #011A43, accent #2563EB, white bg. Status: available=blue outline, pending=yellow, booked/past=red/disabled.
 - **ASK BEFORE ANIMATING.** Every animation and micro-interaction (scroll reveals, hover/focus, parallax, magnetic CTAs, slot-cell transitions, marquee, page transitions) is chosen by the user via `AskUserQuestion`, asked BEFORE writing the code — implementing then asking turns a tweak into a rewrite. Batch by section, not per element. Use `preview` to show the motion, name effects precisely, state each option's performance cost. Never ask about `prefers-reduced-motion` fallbacks (mandatory). If the effect was already named, build it.
 - CSS transforms + GSAP only. No second animation runtime. No Lottie >100KB, no autoplay video unless the Phase 1b hero-video gate passed. ONE WebGL moment allowed, hero only, ≤40KB gzip lazy chunk with a static fallback — see docs/architecture.md for the full conditions. That cap excludes three.js and pixi.js; use a GLSL shader or OGL.

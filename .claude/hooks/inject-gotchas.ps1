@@ -1,6 +1,6 @@
 # SessionStart hook — injects the project's non-negotiable traps into context.
 #
-# Why this exists: .claude/skills/arena-gotchas/SKILL.md says "every agent must load
+# Why this exists: .claude/skills/arena-player-gotchas/SKILL.md says "every agent must load
 # this once per session before touching source files." That was honor-system, and an
 # honor-system rule is one nobody notices being skipped. This makes it guaranteed.
 #
@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 
 try {
     $lines = @(
-        'ARENA PLAYER - non-negotiable traps (full detail: .claude/skills/arena-gotchas, docs/PRD.md, docs/architecture.md)',
+        'ARENA PLAYER - non-negotiable traps (full detail: .claude/skills/arena-player-gotchas, docs/PRD.md, docs/architecture.md)',
         '',
         'PHASES: 1a engineering foundation -> 1b design foundation -> 2 landing / -> 3 form /booking -> 4 backend (MANDATORY, nothing real works without it).',
         'Phases 2-3 run against the MSW mock, never real Neon data. Admin app is a separate repo - never add auth or admin routes here.',

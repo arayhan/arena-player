@@ -1,5 +1,5 @@
 ---
-name: arena-gotchas
+name: arena-player-gotchas
 description: Use before writing ANY code in arena-player-web. Project-wide gotchas — booking race condition, forbidden content, phase boundaries, placeholder conventions. Every agent must load this once per session before touching source files.
 ---
 
@@ -33,7 +33,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 ## The race condition (most expensive bug in this project)
 
 - Anti double-booking = partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE status IN ('pending','confirmed')`.
-- **NEVER check-then-insert.** Insert, catch unique violation (Postgres code `23505`), return HTTP 409. Full contract in `arena-database` skill.
+- **NEVER check-then-insert.** Insert, catch unique violation (Postgres code `23505`), return HTTP 409. Full contract in `arena-player-database` skill.
 - Slot becomes PENDING only AFTER successful form submit with proof upload. Selecting a slot on the landing page holds nothing.
 - Expiry: the **rule** is locked — pending older than 24h becomes `expired` and frees the slot. **Where it runs is UNRESOLVED.** Lazy-on-read was the original assumption and it is starved by the 30s shared cache: a cache hit never reaches the origin, so on a quiet night nothing frees an abandoned slot and it stays held. Three candidates (scheduled job, on-POST, drop the cache) are written out in docs/architecture.md. Do not build either half before it is settled.
 - All of the above is **backend behaviour, Phase 4**. In Phases 2–3 the grid and form talk to the MSW mock in `mocks/`. Never invent response shapes — read the API contract section in docs/architecture.md.

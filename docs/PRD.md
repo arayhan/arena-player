@@ -40,7 +40,7 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 
 **`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of *new* defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
 
-A `SessionStart` hook already injects the `arena-gotchas` trap list, so "every agent must load this once per session" is guaranteed rather than honor-system.
+A `SessionStart` hook already injects the `arena-player-gotchas` trap list, so "every agent must load this once per session" is guaranteed rather than honor-system.
 
 Task 5 is what keeps Phase 3 from dead-ending. Without a written contract, the form phase would invent response shapes that the backend phase then has to match or break.
 

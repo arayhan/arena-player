@@ -257,7 +257,7 @@ arena-player-web/
 │       └── …                  # step files land when each phase's build starts
 ├── .claude/
 │   ├── agents/
-│   ├── skills/                # arena-gotchas, arena-database, arena-design
+│   ├── skills/                # arena-player-gotchas, arena-player-database, arena-player-design
 │   ├── hooks/
 │   │   ├── notify.ps1             # Stop/Notification/SubagentStop toast
 │   │   ├── inject-gotchas.ps1     # SessionStart — injects the trap list

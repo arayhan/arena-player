@@ -1,5 +1,5 @@
 ---
-name: arena-design
+name: arena-player-design
 description: Use before any UI, styling, animation, or design work in arena-player-web. Brand tokens, animation budget, and performance guardrails.
 ---
 
