@@ -31,3 +31,7 @@ docs/references/*
 *.log
 .DS_Store
 .gstack/
+
+# hook session markers — per-session state, never shared
+.claude/.session-head
+.claude/.claudemd-nudged

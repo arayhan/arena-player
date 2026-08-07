@@ -33,8 +33,24 @@ try {
     try {
         Set-Location (Join-Path $PSScriptRoot '..\..')
 
-        # Whole working tree, not just staged: tracked modifications plus untracked adds.
-        $changed = @(& git diff --name-only HEAD 2>$null)
+        # Already nudged this session. Firing every turn until CLAUDE.md is touched
+        # would train the reader to ignore it, which is worse than not firing.
+        if (Test-Path '.claude/.claudemd-nudged') { exit 0 }
+
+        # Changes COMMITTED since the session started, plus whatever is still in the
+        # working tree. The commit half is the important half: this project commits
+        # after every work step, so by the time a turn ends the tree is usually clean
+        # and a working-tree-only check stays silent forever. It did, for a whole
+        # session, before this was fixed.
+        $changed = @()
+        if (Test-Path '.claude/.session-head') {
+            $base = (Get-Content '.claude/.session-head' -First 1).Trim()
+            if ($base) {
+                $committed = @(& git diff --name-only $base HEAD 2>$null)
+                if ($LASTEXITCODE -eq 0) { $changed += $committed }
+            }
+        }
+        $changed += @(& git diff --name-only HEAD 2>$null)
         $changed += @(& git ls-files --others --exclude-standard 2>$null)
 
         if ($LASTEXITCODE -ne 0 -and -not $changed) { exit 0 }
@@ -46,11 +62,16 @@ try {
     $changed = $changed | Where-Object { $_ }
     if (-not $changed) { exit 0 }
 
+    # Hooks and settings are watched because CLAUDE.md DESCRIBES them. Changing this
+    # script's own behaviour silently invalidated that description once already, and
+    # nothing caught it - the hook could not see edits to itself.
     $watched = $changed | Where-Object {
         $_ -like 'docs/PRD.md' -or
         $_ -like 'docs/architecture.md' -or
         $_ -like '.claude/skills/*' -or
-        $_ -like '.claude/agents/*'
+        $_ -like '.claude/agents/*' -or
+        $_ -like '.claude/hooks/*' -or
+        $_ -like '.claude/settings.json'
     }
 
     if (-not $watched) { exit 0 }
@@ -69,9 +90,20 @@ file" section: phase structure, a hard rule, tech stack, folder structure, a
 cross-cutting convention, install/run commands, or repo scope.
 
 Task detail, DoD checkboxes, and rationale prose do NOT qualify - if this was one of
-those, say "deliberate, no CLAUDE.md update needed" and finish. This nudge fires once
-per turn and will not repeat.
+those, say "deliberate, no CLAUDE.md update needed" and finish. This nudge fires ONCE
+PER SESSION and will not ask again, so answer it rather than deferring.
 "@
+
+    # Mark before writing, so a failure to write cannot cause a repeat every turn.
+    try {
+        Push-Location -Path $PSScriptRoot
+        try {
+            Set-Location (Join-Path $PSScriptRoot '..\..')
+            Set-Content -Path '.claude/.claudemd-nudged' -Value '1' -Encoding ascii
+        }
+        finally { Pop-Location }
+    }
+    catch { }
 
     [Console]::Error.WriteLine($msg)
     exit 2

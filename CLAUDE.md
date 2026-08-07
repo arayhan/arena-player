@@ -34,7 +34,7 @@ This file is **what an agent must know before touching code and cannot discover 
 - Rationale or explanation prose
 - Anything an agent can look up in the PRD at the moment they need it
 
-A `Stop` hook nudges once per turn when `docs/PRD.md`, `docs/architecture.md`, `.claude/skills/**`, or `.claude/agents/**` changed and this file did not. It cannot judge whether the change crossed the threshold above — answering "deliberate, no update needed" is a valid and expected response.
+A `Stop` hook nudges **once per session** when `docs/PRD.md`, `docs/architecture.md`, `.claude/skills/**`, `.claude/agents/**`, `.claude/hooks/**`, or `.claude/settings.json` changed and this file did not. It counts work **committed since the session started** as well as the working tree — an earlier version checked only uncommitted changes and therefore never fired once, because the commit-after-every-step convention above leaves the tree clean by the time a turn ends. It cannot judge whether a change crossed the threshold above; answering "deliberate, no update needed" is valid and expected.
 
 ## Phases
 

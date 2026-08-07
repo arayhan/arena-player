@@ -38,10 +38,37 @@ try {
         'intercepts real requests and serves fake availability, failing silently.',
         '',
         'VERIFICATION: run the command, quote the decisive output line, then claim done. Never assert without evidence.',
-        'Append to docs/PROGRESS.md after every completed task.'
+        'Append to docs/PROGRESS.md after every completed task.',
+        '',
+        'ONE WRITING SESSION PER WORKTREE. Two sessions editing this repo at once shipped two defects in a day.',
+        'Commit before handing off, or use claude --worktree. .impeccable/critique/ is gitignored, so a graded',
+        'review of a design artifact is invisible to git log - read it before editing anything under docs/DESIGN.*'
     )
 
     $lines -join "`n" | Write-Output
+
+    # Record the session's starting commit so the Stop hook can diff against it.
+    # Without this the Stop check only sees the working tree, which is empty by the
+    # time a turn ends under this project's commit-after-every-step convention -
+    # so it never fired once across an entire session. Both marker files are
+    # gitignored and their absence is handled: the Stop hook degrades to a
+    # working-tree check rather than erroring.
+    try {
+        Push-Location -Path $PSScriptRoot
+        try {
+            Set-Location (Join-Path $PSScriptRoot '..\..')
+            $head = (& git rev-parse HEAD 2>$null)
+            if ($LASTEXITCODE -eq 0 -and $head) {
+                Set-Content -Path '.claude/.session-head' -Value $head.Trim() -Encoding ascii
+            }
+            # A new session gets a fresh nudge budget.
+            Remove-Item -Path '.claude/.claudemd-nudged' -ErrorAction SilentlyContinue
+        }
+        finally { Pop-Location }
+    }
+    catch {
+        # A missing marker is not a reason to fail the injection.
+    }
 }
 catch {
     # Never block a session over a context-injection failure.
