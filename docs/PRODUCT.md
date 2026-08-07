@@ -57,6 +57,7 @@ The mechanism is the anti-double-booking guarantee: a partial unique index is th
 - The "Ketentuan" section is verbatim client content — 10 rules, exact wording, never paraphrased or translated.
 - **Open decision — pricing.** No price renders anywhere today. Whether `/booking` becomes an exception needs the client's rate card (flat vs peak/off-peak vs weekend). Until answered, no number appears on either page.
 - **Open decision — subdomain configuration on Sumopod.** Node capability is confirmed; subdomain support is not, and it matters for the separate admin app.
+- **Open decision — does the git repository transfer to the client at handover?** Not abstract: it decides whether internal-facing material is client-visible. `docs/PROGRESS.md` carries candid working notes, the plan documents record rejected approaches, and `/impeccable critique` writes graded self-assessments of the work. Until it is answered the conservative default applies — critique snapshots are gitignored. Sits alongside the open "who holds the Neon/R2 accounts long-term" question; both are handover-scope.
 - Performance is a product constraint, not a preference: the order section must be usable fast on a mid-range Android inside an in-app browser.
 
 ### Conflict to resolve — elapsed slots read as "fully booked"
@@ -65,7 +66,11 @@ The mechanism is the anti-double-booking guarantee: a partial unique index is th
 
 With same-day booking confirmed as the primary journey, it becomes a direct conflict with the success goal. Someone opening the page at 19.00 sees 06.00 through 18.00 all labelled **"Terisi"** — the day looks sold out when six of those hours were simply never available to them. A page that makes today look full is the worst possible outcome for a product measured on filling empty slots.
 
-Resolving it needs a distinct `past` status in the API contract, which is a Phase 4 change to a contract currently marked FIRM. Recorded here as product truth; the decision belongs to the backend discussion.
+**Resolved in the order-section brief — and it needs no API change.** The client already knows the current time and the canonical slot starts from `lib/slots.ts` / `lib/dates.ts`, so it can compute "elapsed" locally and stop *displaying* those hours as "Terisi". `GET /api/availability` returning `booked` is harmless once the client owns the label. The contract stays FIRM.
+
+The design response: elapsed hours for today collapse into a single expandable `Sudah lewat (N)` row at the top of the list, so the section opens on what is actually bookable, the day never reads as sold out, and nothing is hidden. See `.impeccable/surfaces/app-page-tsx.md`.
+
+Worth noting what this corrects: it was recorded here as a Phase 4 blocker on a contract marked FIRM. It was never a backend problem — it was a display problem wearing a backend costume.
 
 ## Brand Commitments
 

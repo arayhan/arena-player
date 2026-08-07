@@ -177,8 +177,8 @@ Inherited navy and blue over near-white neutrals, with amber and red reserved en
 
 Status colours are **triples**, never single hues. Each is a surface, a border, and a text colour chosen together so the label passes AA.
 
-- **Pending Amber** (`amber-100` / `amber-300` / `amber-800`): 7.4:1 for "Menunggu Konfirmasi".
-- **Booked Red** (`red-100` / `red-300` / `red-800`): 7.9:1 for "Terisi".
+- **Pending Amber** (`amber-100` / `amber-300` / `amber-800`): 6.37:1 for "Menunggu Konfirmasi".
+- **Booked Red** (`red-100` / `red-300` / `red-800`): 6.80:1 for "Terisi".
 
 ### Neutral
 

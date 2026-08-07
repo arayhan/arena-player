@@ -37,7 +37,7 @@
         "role": "tertiary",
         "displayName": "Pending Ink",
         "canonical": "#92400E",
-        "note": "7.4:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
+        "note": "6.37:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
       },
       "red-100": { "role": "tertiary", "displayName": "Booked Surface", "canonical": "#FEE2E2" },
       "red-300": { "role": "tertiary", "displayName": "Booked Border", "canonical": "#FCA5A5" },
@@ -45,7 +45,7 @@
         "role": "tertiary",
         "displayName": "Booked Ink",
         "canonical": "#991B1B",
-        "note": "7.9:1 on red-100."
+        "note": "6.80:1 on red-100."
       },
       "white": { "role": "neutral", "displayName": "Page White", "canonical": "#FFFFFF" },
       "grey-50": { "role": "neutral", "displayName": "Band Grey", "canonical": "#F9FAFB" },

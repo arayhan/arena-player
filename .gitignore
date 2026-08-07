@@ -19,6 +19,14 @@ next-env.d.ts
 docs/references/*
 !docs/references/README.md
 
+# impeccable — NOT a blanket ignore. .impeccable/design.json is design authority
+# (tonal ramps, semantic map, component HTML/CSS, the named rules) and IS tracked.
+# Critique snapshots are point-in-time graded assessments that go stale the moment
+# they are acted on; ignoring keeps them local, where /impeccable polish still reads them.
+# live/ is machine-local config (dev command, port) and must never be committed.
+.impeccable/critique/
+.impeccable/live/
+
 # misc
 *.log
 .DS_Store
