@@ -203,7 +203,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .step{padding:var(--space-12) 0;scroll-margin-top:var(--space-4)}
 .step__head{display:grid;grid-template-columns:auto 1fr;gap:var(--space-4);
   align-items:start;margin-bottom:var(--space-6)}
-.step__n--mark{display:grid;place-items:center;color:var(--new-part)}
+.step__n--mark{display:grid;place-items:center}
 .elapsed__caret{display:inline-grid;place-items:center}
 .step__n{font-family:var(--font-manual);font-size:var(--text-step);font-weight:800;
   line-height:.8;color:var(--step-numeral);letter-spacing:-.05em;
@@ -331,8 +331,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .btn--secondary{background:transparent;color:var(--button-secondary-fg);
   border-color:var(--button-secondary-border)}
 .btn--secondary:hover:not(:disabled){background:var(--button-secondary-hover-bg)}
-.btn:disabled{background:var(--button-disabled-bg);color:var(--button-disabled-fg);
-  border-color:transparent;cursor:not-allowed}
+.btn:disabled,.btn[aria-disabled=true]{background:var(--button-disabled-bg);
+  color:var(--button-disabled-fg);border-color:transparent;cursor:not-allowed}
+/* aria-disabled keeps the control focusable, so the press has to be stopped
+   here rather than by the browser. */
+.btn[aria-disabled=true]{pointer-events:none}
+.btn[aria-disabled=true]:hover{background:var(--button-disabled-bg)}
 
 /* --- inputs -------------------------------------------------------- */
 .field{display:flex;flex-direction:column;gap:var(--space-2)}
@@ -375,8 +379,15 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 
 /* --- Alur: the finished model ---------------------------------- */
 .frames{display:grid;gap:var(--space-8);margin-top:var(--space-6)}
-@media(min-width:900px){.frames{grid-template-columns:repeat(2,375px);align-items:start;justify-content:space-between}}
-@media(min-width:1240px){.frames{grid-template-columns:repeat(3,375px)}}
+@media(min-width:900px){.frames{grid-template-columns:repeat(2,375px);align-items:start;
+  justify-content:space-between}}
+/* Three 375px frames need 1173px of content; the page column is 1068. Rather
+   than shrink the frames -- their real width is the point -- the journey
+   section widens, and only above 1300px where that fits without scrolling. */
+@media(min-width:1300px){
+  #alur .wrap{max-width:1220px}
+  .frames{grid-template-columns:repeat(3,375px);gap:var(--space-6);justify-content:space-between}
+}
 .frame__cap{font-family:var(--font-manual);font-size:var(--text-xs);color:var(--color-fg-muted);
   margin:0 0 var(--space-2);text-transform:uppercase;letter-spacing:.08em;
   font-variant-numeric:tabular-nums}
@@ -894,9 +905,9 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">08</div>
       <div class="step__title">
         <h2>Waiting, empty, and failed</h2>
-        <p class="new-tag">+ 3 states</p>
+        <p class="new-tag">+ 4 states</p>
         <p class="step__lede">
-          The three states with no happy-path screen. Every one of them is reachable on a
+          The four states with no happy-path screen. Every one of them is reachable on a
           mid-range Android in an in-app browser, so none of them is an edge case — and a
           grid with no story for “the request failed” renders as a day that looks fully
           booked.
