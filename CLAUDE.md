@@ -11,6 +11,29 @@ Booking website for a mini soccer field. Users check slot availability, pick dat
 | [docs/database.md](docs/database.md) | Neon + R2 schema, error-code contract, every hard-won gotcha |
 | [docs/design-system.md](docs/design-system.md) | Tokens, typography, animation budget, mobile guardrails |
 
+## When to update this file
+
+This file is **what an agent must know before touching code and cannot discover from the code itself** — a pointer document plus hard rules, not a spec. Every line added costs attention on every future session, so length is a real cost: at ~95 lines it gets read, at 300 it gets skimmed, and a CLAUDE.md nobody reads is worse than a short one.
+
+**Update it when any of these change:**
+
+- Phase structure — a phase added, removed, or renumbered
+- A hard rule added, removed, or materially changed
+- Tech stack — a library swapped in or out
+- Folder structure
+- A cross-cutting convention every agent must follow (e.g. the `TODO(content)` marker)
+- Install/run commands
+- Repo scope — what belongs here versus the admin repo
+
+**Do NOT update it for:**
+
+- Task-level detail inside a phase
+- Definition-of-Done checkbox changes
+- Rationale or explanation prose
+- Anything an agent can look up in the PRD at the moment they need it
+
+A `Stop` hook nudges once per turn when `docs/PRD.md`, `docs/architecture.md`, `.claude/skills/**`, or `.claude/agents/**` changed and this file did not. It cannot judge whether the change crossed the threshold above — answering "deliberate, no update needed" is a valid and expected response.
+
 ## Phases
 
 Frontend-first. See [docs/PRD.md](docs/PRD.md) for the task breakdown per phase.
@@ -18,8 +41,8 @@ Frontend-first. See [docs/PRD.md](docs/PRD.md) for the task breakdown per phase.
 | Phase | Scope | Status |
 |---|---|---|
 | 1a | Engineering foundation — architecture, scaffold, DX, dev rules, API contract, MSW mock | Build now |
-| 1b | Design foundation — **art direction**, design system HTML doubling as the prototype | After 1a scaffold |
-| 2 | Landing page `/` — layout → order → hero → content → footer | After 1b |
+| 1b | Design foundation — **art direction** + hero copy, design system HTML doubling as the prototype. **Client checkpoint** | After 1a scaffold |
+| 2 | Landing page `/` — layout → order → hero → content → footer. **Client checkpoint** | After 1b |
 | 3 | Booking form `/booking` — layout → UI → validation → submission → TanStack Query + axios | After Phase 2 |
 | 4 | Backend — **mandatory**, nothing real works without it. Design discussion deferred | After Phase 3 |
 | — | WhatsApp bot, real content, deploy, handover | After Phase 4 |
@@ -40,6 +63,8 @@ pnpm dev                           # http://localhost:3000
 
 Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL editor — never assume one is applied.
 
+**Context7 MCP is wired up** (`.mcp.json`). Use it to check current API syntax rather than recalling it — several libraries here have breaking changes that training data gets wrong: MSW v2 (`http.get` / `HttpResponse.json`, not v1's `rest.get` / `res(ctx.json())`), TanStack Query v5 (`isPending`, object-form args), zod, `@gsap/react`'s `useGSAP`, and the Neon serverless driver.
+
 ## Folder structure
 
 ```
@@ -50,7 +75,7 @@ arena-player-web/
 ├── db/migrations/   # SQL, run manually
 ├── app/             # Next.js App Router — page.tsx, booking/page.tsx, api/
 ├── components/
-├── lib/             # db/storage clients, dates, slots, validation, api/ (axios + query hooks) + colocated *.test.ts
+├── lib/             # db/storage clients, dates, slots, validation (zod), motion, api/ (axios + query hooks), store/ (zustand) + colocated *.test.ts
 ├── mocks/           # MSW handlers implementing the API contract
 └── scripts/         # check-setup.test.ts — live Neon + R2 preflight, Phase 4
 ```
@@ -85,9 +110,10 @@ Two unavoidable exceptions:
 
 1. **Race condition**: anti double-booking relies only on the partial unique index `uniq_active_slot`. Never check-then-insert. Insert, catch `23505`, return 409.
 2. **No prices anywhere in the UI.** Whether `/booking` is an exception is an OPEN DECISION in the PRD — until it is answered, render no number on either page.
-3. **Placeholders** marked `// TODO(phase2)`, greppable: WA number, bank account + holder, address + maps coords, photos.
+3. **Placeholders** marked `// TODO(content)` — six categories, complete: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy. `rg "TODO\(content\)"` must find all six and nothing else. Named `content` not `phase2` because the re-cut made "Phase 2" the landing page; these swap after Phase 4.
 4. **`DATABASE_URL` and R2 secrets** never in client code, never `NEXT_PUBLIC_*`. Browser never touches Neon or R2 — only route handlers do.
 5. **Rules section** ("Ketentuan") verbatim Indonesian from the PRD. UI copy Indonesian, code/comments English.
 6. **Animation guardrails**: CSS transforms + GSAP only. Every animation goes through `lib/motion.ts` — GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned. **One** WebGL moment permitted, hero only, under the conditions in docs/architecture.md (dynamic import, static fallback, ≤ 40KB gzip, deletable in one commit) — that cap excludes three.js and pixi.js. No Lottie >100KB. No autoplay video unless the Phase 1b hero-video gate passes. No CLS. Stay inside the performance budget in docs/architecture.md.
 7. **Performance**: LCP < 2.5s mobile, Lighthouse mobile Performance ≥ 85, order section reachable within 1–2 scrolls at 375px. Verified per section as it merges, not batched to the end of the phase.
 8. Every non-trivial `lib/` module gets a colocated Vitest `*.test.ts`, run by `pnpm check:lib`. Never claim something works without running the check and quoting output.
+9. **Stack is fixed** — Next 15, TypeScript, Tailwind, GSAP, TanStack Query + axios, MSW, zod, react-hook-form, zustand. Dates and icons are the only open choices, decided in Phase 1a task 1. Anything else needs user approval and must clear the budget in docs/architecture.md. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
