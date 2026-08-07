@@ -73,7 +73,7 @@ Rendered top to bottom:
 
 ## Logo / asset placeholders
 
-Generated SVG AP monogram (navy `#011A43`) until the client provides the real logo file. Favicon + OG image generated from the same placeholder. Swap is a `TODO(phase2)` item — see [PRD.md](PRD.md) placeholder categories.
+Generated SVG AP monogram (navy `#011A43`) until the client provides the real logo file. Favicon + OG image generated from the same placeholder. Swap is a `TODO(content)` item — see [PRD.md](PRD.md) placeholder categories.
 
 ## Getting images made (workflow)
 
@@ -93,7 +93,7 @@ Then wire it up once the file lands.
 This is a booking page for a real venue that real customers pay to use.
 
 - **Fine**: abstract and decorative work — background textures, gradient meshes, grain, pattern, atmospheric shapes.
-- **Not fine**: anything a customer would reasonably read as *this specific field*. A generated photo of "a mini soccer field" on a booking page misleads someone into booking a facility they have not actually seen. Real venue photos come from the client, and stay `TODO(phase2)` until they arrive.
+- **Not fine**: anything a customer would reasonably read as *this specific field*. A generated photo of "a mini soccer field" on a booking page misleads someone into booking a facility they have not actually seen. Real venue photos come from the client, and stay `TODO(content)` until they arrive.
 
 ### Where visual files live
 

@@ -19,7 +19,7 @@ Review checklist specific to this project (see docs/database.md for the full con
 - The Neon DATE/TIMESTAMPTZ OID parser override is present and untouched — this is the single easiest regression to reintroduce silently.
 - R2 client sets `requestChecksumCalculation`/`responseChecksumValidation` to `WHEN_REQUIRED`.
 - No prices anywhere in UI strings.
-- `// TODO(phase2)` markers greppable and complete (wa number, bank account, address, maps, photos).
+- `// TODO(content)` markers greppable and complete (wa number, bank account, address, maps, photos).
 - `prefers-reduced-motion` respected in every animation.
 - Indonesian content verbatim from PRD (Rules section especially).
 

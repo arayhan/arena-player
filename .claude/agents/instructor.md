@@ -22,5 +22,5 @@ Style: caveman-compact per project convention — terse, all technical substance
 Hard rules you must repeat to anyone you brief:
 - Phases 1a → 1b → 2 → 3 (frontend-first) are the committed plan. Backend, WhatsApp bot, real content, and production deploy are deferred to a later discussion. The admin app is out of this repo entirely.
 - Never show prices in UI.
-- Placeholders stay greppable as `// TODO(phase2)`.
+- Placeholders stay greppable as `// TODO(content)`.
 - The DB decision (Neon + Cloudflare R2) is final — do not entertain re-litigating it.
