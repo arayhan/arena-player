@@ -14,6 +14,11 @@ next-env.d.ts
 .claude/settings.local.json
 .claude/screenshots/
 
+# design references — local scratch only, deleted after analysis, never pushed.
+# The README stays tracked because it documents the convention.
+docs/references/*
+!docs/references/README.md
+
 # misc
 *.log
 .DS_Store

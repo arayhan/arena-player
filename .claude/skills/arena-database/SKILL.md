@@ -23,5 +23,5 @@ Full detail: [docs/database.md](../../../docs/database.md). This skill is the sh
 - Migrations run manually in the Neon SQL editor. Never auto-applied, never `create table if not exists` as a silent fallback.
 - Use the **pooled** connection string (`-pooler` in host) — the direct string exhausts connections under concurrent serverless invocations.
 - R2 bucket is private, no public URLs ever. `proof_url` stores the object key. Upload before insert; on 409, best-effort delete the orphan (swallow its own errors).
-- `lib/` imports siblings with relative paths + explicit `.ts` extensions, not `@/` — plain Node (used by `scripts/check-lib.ts` / `scripts/check-setup.ts`) can't resolve the bundler alias.
-- Every non-trivial `lib/` function gets a `check-lib.ts` assertion.
+- `lib/` uses the `@/` alias normally. The old "relative paths + explicit `.ts` extensions" rule existed only because the verification scripts ran under plain Node; they run under Vitest now, which resolves `@/`, so the rule is retired.
+- Every non-trivial `lib/` function gets a colocated Vitest `*.test.ts` (`pnpm check:lib`). The live Neon + R2 preflight is `scripts/check-setup.test.ts` (`pnpm check:setup`, Phase 4) — keep it out of `lib/` so `check:lib` never needs credentials.

@@ -20,12 +20,14 @@ Communication protocol (all agents share this):
 
 Hard constraints from PRD (enforce on everyone):
 - `DATABASE_URL` and R2 secrets server-side only; browser never touches Neon or R2; no public writes to bookings.
-- No WebGL/three.js/Lottie>100KB/autoplay video. Framer Motion + CSS transforms only.
-- LCP < 2.5s mid-range mobile; booking grid interactive fast; design 375px-first.
+- CSS transforms + GSAP only, no second animation runtime. ONE capped WebGL moment allowed (hero, ≤40KB gzip lazy chunk, static fallback, deletable in one commit — full conditions in docs/architecture.md); that cap excludes three.js and pixi.js. No Lottie>100KB, no autoplay video unless the Phase 1b hero-video gate passed.
+- **Enforce the performance budget in docs/architecture.md on every dependency request.** It exists so "can we add X?" is answered by arithmetic, not taste. A request that breaks it is rejected or it replaces something.
+- LCP < 2.5s mid-range mobile; order section interactive fast; design 375px-first.
 - No new dependencies beyond the PRD's tech stack without user approval (AskUserQuestion).
-- Repo shape: flat single repo Phase 1; turborepo deferred to Phase 3 (Sumopod unknown). Enforce
-  the extraction boundary: `lib/` never imports from `app/` — it becomes `packages/shared` if
-  Phase 3 goes monorepo. Reject any PR/diff that violates this.
-- Binding decisions live in docs/PRD.md "Phase 1 clarifications" — treat as PRD content.
+- Repo shape: flat single repo, public site only. The admin app is out of scope here and lives in a
+  separate repo — reject any auth, admin route, or admin UI added to this one. Enforce the extraction
+  boundary: `lib/` never imports from `app/`, so slot/date/validation code can be shared with the
+  admin repo later. Reject any PR/diff that violates this.
+- Binding decisions live in docs/PRD.md "Binding clarifications" — treat as PRD content.
 - The DB decision (Neon + Cloudflare R2, see docs/architecture.md) is final — enforce it, don't reopen it.
-- Every non-trivial `lib/` function gets a `scripts/check-lib.ts` assertion — this is a required practice per docs/architecture.md, not optional polish.
+- Every non-trivial `lib/` function gets a colocated Vitest `*.test.ts`, run by `pnpm check:lib` — required practice per docs/architecture.md, not optional polish.

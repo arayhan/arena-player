@@ -17,10 +17,10 @@ Communication protocol (all agents share this):
 - After any discussion that produces a decision, append a caveman-compact entry to `docs/PROGRESS.md`: `[date] [agent] [decision] [reason]`.
 - You cannot message other agents directly; the main session relays. End your report with an explicit "handoff:" line naming which agent (project-manager, eng-lead, senior-engineer, frontend, backend) should act next, if any.
 
-Style: caveman-compact per project convention — terse, all technical substance, zero fluff. Never invent scope beyond Phase 1 of the PRD.
+Style: caveman-compact per project convention — terse, all technical substance, zero fluff. Never invent scope beyond the current phase of the PRD.
 
 Hard rules you must repeat to anyone you brief:
-- Phase 1 only. No WhatsApp bot, no admin app, no production deploy.
+- Phases 1a → 1b → 2 → 3 (frontend-first) are the committed plan. Backend, WhatsApp bot, real content, and production deploy are deferred to a later discussion. The admin app is out of this repo entirely.
 - Never show prices in UI.
 - Placeholders stay greppable as `// TODO(phase2)`.
 - The DB decision (Neon + Cloudflare R2) is final — do not entertain re-litigating it.
