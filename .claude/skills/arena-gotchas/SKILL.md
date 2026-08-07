@@ -35,7 +35,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 - Anti double-booking = partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE status IN ('pending','confirmed')`.
 - **NEVER check-then-insert.** Insert, catch unique violation (Postgres code `23505`), return HTTP 409. Full contract in `arena-database` skill.
 - Slot becomes PENDING only AFTER successful form submit with proof upload. Selecting a slot on the landing page holds nothing.
-- Lazy expiry: availability API flips pending>24h to `expired` BEFORE computing slot status. No cron.
+- Expiry: the **rule** is locked — pending older than 24h becomes `expired` and frees the slot. **Where it runs is UNRESOLVED.** Lazy-on-read was the original assumption and it is starved by the 30s shared cache: a cache hit never reaches the origin, so on a quiet night nothing frees an abandoned slot and it stays held. Three candidates (scheduled job, on-POST, drop the cache) are written out in docs/architecture.md. Do not build either half before it is settled.
 - All of the above is **backend behaviour, Phase 4**. In Phases 2–3 the grid and form talk to the MSW mock in `mocks/`. Never invent response shapes — read the API contract section in docs/architecture.md.
 
 ## MSW must never reach production (Phase 4 trap)
@@ -53,3 +53,5 @@ The likeliest way this project ships a broken deploy. MSW registers a **service 
 - Append to `docs/PROGRESS.md` after every completed task (caveman format: `[date] [agent] [what] [reason]`). It holds the **current phase only** — closed phases live in `docs/progress-archive/`, which you read only when tracing why an old decision was made, never as routine context.
 - Verification before completion: run the command, quote the decisive output line, then claim done. Never assert something works without evidence.
 - Start Claude sessions inside `arena-player-web/` — hooks load from session root.
+- **One writing session per worktree.** Two sessions editing this repo at once shipped two defects in a day — overstated contrast ratios, and a WCAG failure written into the design authority — because neither could see the other. Commit before handing off, or use `claude --worktree <branch>`.
+- **`.impeccable/critique/` is gitignored**, so a graded review of a design artifact is invisible to `git log` and to the next session. Read it before editing anything under `docs/DESIGN.*`. That blind spot is what caused both defects above.

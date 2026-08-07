@@ -21,9 +21,18 @@ Awwwards-level, light/clean/blue-white, oversized Orbitron display type, whitesp
 - **Performance**: LCP < 2.5s, Lighthouse mobile ≥ 85, no CLS. Stay inside the performance budget in docs/architecture.md.
 - **No prices anywhere.** Rules section verbatim Indonesian from the PRD.
 
-## Tokens (quick reference — full table in DESIGN.md)
+## Tokens — the rules, not the values
 
-Navy `#011A43`, accent `#2563EB`, white bg. Slot status: available = accent outline, pending = yellow ("Menunggu Konfirmasi"), booked/past = red/disabled.
+Navy `#011A43` and accent `#2563EB` are client brand commitments and stable. **Everything else lives in [DESIGN.md](../../../docs/DESIGN.md) → Colors and must not be copied here** — those values moved four times in a single day and this file has no way to notice when they move again.
+
+That is not hypothetical. An earlier version of this line named a single hue for the pending state, which was the unreadable-contrast failure DESIGN.md had already been rewritten to eliminate. The corrected value never reached this file, because a copied value has nothing checking it.
+
+The rules that do belong here, because they are stable:
+
+- **A state is a surface + border + ink triple, never a single hue.** A booking state the user cannot read is a booking state they will get wrong — "Menunggu Konfirmasi" is information, not decoration.
+- **Elapsed is not booked.** The client derives elapsed hours from the current time and the canonical slot starts, then collapses them into one row. They never render as taken — at 19.00 that made the whole day read as sold out, which is the worst outcome for a product measured on filling empty slots.
+- **Component CSS routes through the semantic tier.** A component rule reaching a raw hue is a defect, not a shortcut; a finish review caught exactly that as a P0 on the one page that teaches the layering rule.
+- **A border carrying a state by itself must clear 3:1** (WCAG 1.4.11). Pair it with a fill so the signal never depends on one property or on hue alone.
 
 ## Images and icons
 
