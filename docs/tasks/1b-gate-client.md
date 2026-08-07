@@ -1,5 +1,7 @@
 # Client checkpoint — Phase 1b (design foundation)
 
+**Decided by:** the client. Nobody on the build side can answer these.
+**Blocks:** Phase 2 (question 1, WhatsApp-only flow) · Phase 3 (question 2, pricing on `/booking`)
 **Status:** not yet held
 **Format:** live walkthrough / screen share. `docs/DESIGN.html` is in English; it is narrated in Indonesian.
 **Date held:** _____

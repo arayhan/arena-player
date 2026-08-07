@@ -251,9 +251,10 @@ arena-player-web/
 │   ├── database.md
 │   ├── PROGRESS.md            # shared agent log — CURRENT PHASE ONLY, append-only
 │   ├── progress-archive/      # closed phases; read only when tracing an old decision
-│   ├── checkpoint-1b.md       # client sign-off record for the 1b checkpoint
 │   ├── references/            # gitignored scratch — deleted after use, README only
-│   └── tasks/                 # empty until the Phase 1a build starts
+│   └── tasks/                 # <phase>-<step|gate>-<slug>.md, sorts into build order
+│       ├── 1b-gate-client.md  # client sign-off for the 1b checkpoint; blocks Phases 2 and 3
+│       └── …                  # step files land when each phase's build starts
 ├── .claude/
 │   ├── agents/
 │   ├── skills/                # arena-gotchas, arena-database, arena-design
