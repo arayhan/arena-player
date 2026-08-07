@@ -25,7 +25,7 @@ try {
         '',
         'CONTENT: no prices anywhere (whether /booking is an exception is an OPEN DECISION - until answered, render no number).',
         'Ketentuan is verbatim Indonesian, 10 rules, do not paraphrase. UI copy Indonesian, code and comments English.',
-        'Hero copy is decided in Phase 1b - if you are building the hero and it is not in design-system.md, ask rather than invent.',
+        'Hero copy is decided in Phase 1b - if you are building the hero and it is not in DESIGN.md, ask rather than invent.',
         '',
         'PLACEHOLDERS: marker is TODO(content), NOT TODO(phase2) - the re-cut made "Phase 2" mean the landing page.',
         'Six categories: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy.',

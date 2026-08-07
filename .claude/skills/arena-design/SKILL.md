@@ -5,7 +5,7 @@ description: Use before any UI, styling, animation, or design work in arena-play
 
 # Arena Player — design gotchas
 
-Full detail: [docs/design-system.md](../../../docs/design-system.md). This skill is the quick-reference — consult the doc for the complete token table, content map, and rationale, this file should not drift from it.
+Full detail: [docs/DESIGN.md](../../../docs/DESIGN.md). This skill is the quick-reference — consult the doc for the complete token table, content map, and rationale, this file should not drift from it.
 
 ## Direction
 
@@ -21,7 +21,7 @@ Awwwards-level, light/clean/blue-white, oversized Orbitron display type, whitesp
 - **Performance**: LCP < 2.5s, Lighthouse mobile ≥ 85, no CLS. Stay inside the performance budget in docs/architecture.md.
 - **No prices anywhere.** Rules section verbatim Indonesian from the PRD.
 
-## Tokens (quick reference — full table in design-system.md)
+## Tokens (quick reference — full table in DESIGN.md)
 
 Navy `#011A43`, accent `#2563EB`, white bg. Slot status: available = accent outline, pending = yellow ("Menunggu Konfirmasi"), booked/past = red/disabled.
 
@@ -32,8 +32,8 @@ Navy `#011A43`, accent `#2563EB`, white bg. Slot status: available = accent outl
 - **AI imagery may be abstract/decorative only** (texture, gradient mesh, grain, pattern). Never anything a customer would read as a photo of the actual field — that misleads someone into booking a facility they have not seen. Real venue photos come from the client, `TODO(content)`.
 - Hero LCP element stays text/logo, never an image. All images via `next/image` with explicit dimensions (no CLS).
 - **Where files live**: reference/inspiration → `docs/references/` (gitignored scratch, deleted after use). Production assets → `public/`. Throwaway screenshots → `.claude/screenshots/` (gitignored).
-- **`docs/references/` is usually EMPTY — that is normal, not an absence of references.** Files there are consumed and deleted once the work they informed is done. The durable record is `docs/design-system.md`; read that for benchmark and direction findings, never conclude "no benchmark exists" from an empty folder. If a reference file IS present, read it, write findings into design-system.md **before** deleting, and never `git add` anything under that path.
+- **`docs/references/` is usually EMPTY — that is normal, not an absence of references.** Files there are consumed and deleted once the work they informed is done. The durable record is `docs/DESIGN.md`; read that for benchmark and direction findings, never conclude "no benchmark exists" from an empty folder. If a reference file IS present, read it, write findings into DESIGN.md **before** deleting, and never `git add` anything under that path.
 
 ## Consulting order for new sections
 
-1. `docs/design-system.md` (constraints, source of truth) → 2. `/impeccable` for direction and polish — the single named design driver, do not stack it with other aesthetic-direction skills on one section → 3. `/remotion-create` only for produced video assets. The constraints above override anything any skill suggests.
+1. `docs/DESIGN.md` (constraints, source of truth) → 2. `/impeccable` for direction and polish — the single named design driver, do not stack it with other aesthetic-direction skills on one section → 3. `/remotion-create` only for produced video assets. The constraints above override anything any skill suggests.

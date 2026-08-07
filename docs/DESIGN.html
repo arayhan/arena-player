@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena Player — Design System</title>
+
+<!--
+  REFERENCE ARTIFACT — not production code.
+
+  Two things here deliberately differ from the app and must NOT be copied into it:
+
+  1. Fonts load from a CDN <link>. Production uses next/font/google, which
+     self-hosts and eliminates webfont layout shift. That is load-bearing for
+     hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s) — see architecture.md,
+     "Framework decision (FINAL)". A CDN link is used here only because this
+     file has no build step.
+
+  2. Animation is plain CSS transitions. Production routes ALL motion through
+     lib/motion.ts wrapping gsap.matchMedia(), because GSAP has no built-in
+     prefers-reduced-motion handling. Calling gsap.to() directly in a component
+     is banned. The reduced-motion block at the end of this stylesheet is the
+     behaviour that wrapper must produce.
+
+  Source of truth is docs/DESIGN.md. If the two disagree, the .md wins.
+  Process rules (motion approval, image sourcing, asset locations) are in
+  docs/design-process.md — deliberately not here, because DESIGN.md follows the
+  DESIGN.md format spec, whose eight sections are strictly visual.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   LAYER 1 — PRIMITIVES. Raw values, named for what they ARE.
+   ============================================================ */
+:root {
+  --navy-900:#011A43; --navy-700:#0A2E6B;
+  --blue-600:#2563EB; --blue-700:#1D4ED8; --blue-50:#EFF6FF;
+  --white:#FFFFFF;
+  --grey-50:#F9FAFB; --grey-200:#E5E7EB; --grey-500:#6B7280;
+  --amber-100:#FEF3C7; --amber-300:#FCD34D; --amber-800:#92400E;
+  --red-100:#FEE2E2;   --red-300:#FCA5A5;   --red-800:#991B1B;
+
+/* ============================================================
+   LAYER 2 — SEMANTIC. Named for what they DO. Re-theming edits
+   only this layer.
+   ============================================================ */
+  --color-bg:var(--white);
+  --color-bg-subtle:var(--grey-50);
+  --color-fg:var(--navy-900);
+  --color-fg-muted:var(--grey-500);
+  --color-interactive:var(--blue-600);
+  --color-interactive-pressed:var(--blue-700);
+  --color-border:var(--grey-200);
+  --color-focus:var(--blue-600);
+
+  /* Fluid type — 1.25 ratio at 375px, 1.5 at 1440px */
+  --text-display:clamp(2rem, 1.12rem + 3.76vw, 4.5rem);
+  --text-h2:clamp(1.625rem, 1.14rem + 2.07vw, 3rem);
+  --text-h3:clamp(1.25rem, 0.99rem + 1.13vw, 2rem);
+  --text-body:clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
+  --text-sm:0.875rem;   /* fixed — shrinking below 14px is an a11y problem */
+  --text-xs:0.75rem;
+
+  --font-display:'Orbitron',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,sans-serif;
+
+  /* 4px base; section rhythm uses 48+ only */
+  --space-1:4px;  --space-2:8px;  --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
+  --space-24:96px; --space-32:128px;
+
+  --radius-sharp:2px; --radius-card:4px; --radius-pill:999px;
+
+  /* Navy-tinted, never black — black on blue-white reads as dirt */
+  --shadow-sm:0 1px 2px rgb(1 26 67 / .06);
+  --shadow-md:0 4px 12px rgb(1 26 67 / .08);
+
+  --dur-fast:160ms; --dur-base:280ms; --dur-slow:520ms;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+
+/* ============================================================
+   LAYER 3 — COMPONENT. One component's use of the semantic layer.
+   No component ever reaches past this to a raw hex.
+   ============================================================ */
+  --slot-available-border:var(--color-interactive);
+  --slot-pending-bg:var(--amber-100);
+  --slot-pending-border:var(--amber-300);
+  --slot-pending-fg:var(--amber-800);
+  --slot-booked-bg:var(--red-100);
+  --slot-booked-border:var(--red-300);
+  --slot-booked-fg:var(--red-800);
+  --slot-min-height:56px;
+  --button-height:48px;
+  --input-height:48px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--color-bg);color:var(--color-fg);
+  font-family:var(--font-body);font-size:var(--text-body);line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.25}
+h1{font-size:var(--text-display);line-height:1.1;font-weight:900;letter-spacing:-.02em}
+h2{font-size:var(--text-h2);font-weight:700}
+h3{font-size:var(--text-h3);font-weight:500}
+code{font-family:ui-monospace,'Cascadia Code',Menlo,monospace;font-size:var(--text-xs);
+  background:var(--color-bg-subtle);padding:2px 6px;border-radius:var(--radius-sharp)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 var(--space-4)}
+section{padding:var(--space-16) 0;border-top:1px solid var(--color-border)}
+section:first-of-type{border-top:0}
+.eyebrow{font-family:var(--font-display);font-size:var(--text-xs);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--color-interactive);margin-bottom:var(--space-2)}
+.note{color:var(--color-fg-muted);font-size:var(--text-sm);max-width:68ch}
+.grid{display:grid;gap:var(--space-3)}
+@media(min-width:720px){.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:repeat(3,1fr)}}
+
+/* --- swatches --- */
+.sw{border:1px solid var(--color-border);border-radius:var(--radius-card);overflow:hidden}
+.sw__chip{height:72px}
+.sw__meta{padding:var(--space-3);font-size:var(--text-xs);line-height:1.5}
+.sw__name{font-weight:600;display:block}
+.sw__val{color:var(--color-fg-muted);font-family:ui-monospace,monospace}
+
+/* --- slot cell: full-width row, sharp, 56px min --- */
+.slot{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+  width:100%;min-height:var(--slot-min-height);padding:var(--space-4);
+  border-radius:var(--radius-sharp);background:var(--white);
+  border:1px solid var(--slot-available-border);color:var(--color-fg);
+  font-family:var(--font-body);font-size:var(--text-body);text-align:left;
+  cursor:pointer;transition:background var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out);
+}
+.slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em}
+.slot__state{font-size:var(--text-sm);white-space:nowrap}
+.slot:hover:not([aria-disabled=true]):not(.is-selected){background:var(--blue-50)}
+.slot:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.slot.is-selected{background:var(--color-interactive);border-color:var(--color-interactive);color:var(--white)}
+.slot[data-state=pending]{background:var(--slot-pending-bg);border-color:var(--slot-pending-border);
+  color:var(--slot-pending-fg);cursor:not-allowed}
+.slot[data-state=booked]{background:var(--slot-booked-bg);border-color:var(--slot-booked-border);
+  color:var(--slot-booked-fg);cursor:not-allowed}
+
+/* --- date pill --- */
+.pills{display:flex;gap:var(--space-2);overflow-x:auto;overscroll-behavior-x:contain;
+  padding-bottom:var(--space-2);scrollbar-width:thin}
+.pill{flex:0 0 auto;min-width:64px;padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius-pill);border:1px solid var(--color-border);background:var(--white);
+  color:var(--color-fg);font-family:var(--font-body);text-align:center;cursor:pointer;
+  transition:background var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out)}
+.pill__day{display:block;font-size:var(--text-xs);color:var(--color-fg-muted)}
+.pill__date{display:block;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm)}
+.pill:hover:not(:disabled):not(.is-selected){background:var(--blue-50);border-color:var(--color-interactive)}
+.pill:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.pill.is-selected{background:var(--color-interactive);border-color:transparent;color:var(--white)}
+.pill.is-selected .pill__day{color:rgb(255 255 255 / .8)}
+.pill:disabled{background:var(--color-bg-subtle);color:var(--color-fg-muted);cursor:not-allowed}
+
+/* --- buttons --- */
+.btn{height:var(--button-height);padding:0 var(--space-6);border-radius:var(--radius-sharp);
+  font-family:var(--font-body);font-size:var(--text-body);font-weight:600;cursor:pointer;
+  border:1px solid transparent;transition:background var(--dur-fast) var(--ease-out)}
+.btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.btn--primary{background:var(--navy-900);color:var(--white)}
+.btn--primary:hover:not(:disabled){background:var(--navy-700)}
+.btn--primary:active:not(:disabled){background:var(--color-interactive-pressed)}
+.btn--secondary{background:transparent;color:var(--navy-900);border-color:var(--navy-900)}
+.btn--secondary:hover:not(:disabled){background:var(--color-bg-subtle)}
+.btn:disabled{background:var(--grey-200);color:var(--color-fg-muted);border-color:transparent;cursor:not-allowed}
+
+/* --- inputs --- */
+.field{display:flex;flex-direction:column;gap:var(--space-2)}
+.label{font-size:var(--text-sm);font-weight:500}
+.input{height:var(--input-height);padding:0 var(--space-3);border-radius:var(--radius-sharp);
+  border:1px solid var(--color-border);font-family:var(--font-body);font-size:var(--text-body);
+  background:var(--white);color:var(--color-fg)}
+.input:focus{outline:2px solid var(--color-focus);outline-offset:2px;border-color:var(--color-focus)}
+.input--error{border:2px solid var(--red-300)}
+.input:disabled{background:var(--color-bg-subtle);color:var(--color-fg-muted)}
+.err{font-size:var(--text-sm);color:var(--red-800)}
+
+.card{border:1px solid var(--color-border);border-radius:var(--radius-card);
+  padding:var(--space-4);background:var(--white);box-shadow:var(--shadow-sm)}
+table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+th,td{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--color-border)}
+th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
+  text-transform:uppercase;letter-spacing:.08em}
+
+/* Production equivalent lives in lib/motion.ts via gsap.matchMedia().
+   This block is the behaviour that wrapper must produce. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <section>
+    <p class="eyebrow">Arena Player</p>
+    <h1>Design System</h1>
+    <p class="note" style="margin-top:var(--space-4)">
+      Light, clean, blue-and-white — deliberately the inverse of the dark benchmark.
+      Every value below comes from <code>docs/DESIGN.md</code>, which is the source of truth.
+      This page renders the system; it does not define it.
+    </p>
+    <div class="card" style="margin-top:var(--space-6);background:var(--color-bg-subtle);box-shadow:none">
+      <strong>Reference artifact, not production code.</strong>
+      <p class="note" style="margin:var(--space-2) 0 0">
+        Fonts load from a CDN here because this file has no build step — production uses
+        <code>next/font/google</code> for self-hosting and zero layout shift. Motion here is plain CSS;
+        production routes all animation through <code>lib/motion.ts</code>. Copying either pattern into
+        the app breaks hard rules 6 and 7.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Layer 1</p>
+    <h2>Primitives</h2>
+    <p class="note">Raw values, named for what they are. Never referenced directly by a component.</p>
+    <div class="grid cols-3" style="margin-top:var(--space-6)">
+      <div class="sw"><div class="sw__chip" style="background:var(--navy-900)"></div>
+        <div class="sw__meta"><span class="sw__name">--navy-900</span><span class="sw__val">#011A43 · from the logo</span></div></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--navy-700)"></div>
+        <div class="sw__meta"><span class="sw__name">--navy-700</span><span class="sw__val">#0A2E6B · hover depth</span></div></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--blue-600)"></div>
+        <div class="sw__meta"><span class="sw__name">--blue-600</span><span class="sw__val">#2563EB · 5.17:1 on white</span></div></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--blue-700)"></div>
+        <div class="sw__meta"><span class="sw__name">--blue-700</span><span class="sw__val">#1D4ED8 · pressed</span></div></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--blue-50)"></div>
+        <div class="sw__meta"><span class="sw__name">--blue-50</span><span class="sw__val">#EFF6FF · hover wash</span></div></div>
+      <div class="sw"><div class="sw__chip" style="background:var(--grey-500)"></div>
+        <div class="sw__meta"><span class="sw__name">--grey-500</span><span class="sw__val">#6B7280 · 4.83:1, passes AA</span></div></div>
+    </div>
+
+    <h3 style="margin-top:var(--space-12)">Status colours are triples, not hues</h3>
+    <p class="note">
+      The earlier spec said “Pending: yellow”. Yellow text on white is about 1.4:1 and unreadable.
+      “Menunggu Konfirmasi” is information the user needs, so each status is a surface + border + text
+      set chosen to pass AA.
+    </p>
+    <div class="grid cols-2" style="margin-top:var(--space-4)">
+      <div class="card" style="background:var(--amber-100);border-color:var(--amber-300)">
+        <strong style="color:var(--amber-800)">Pending — 7.4:1</strong>
+        <p style="margin:var(--space-2) 0 0;color:var(--amber-800)">Menunggu Konfirmasi</p>
+      </div>
+      <div class="card" style="background:var(--red-100);border-color:var(--red-300)">
+        <strong style="color:var(--red-800)">Booked — 7.9:1</strong>
+        <p style="margin:var(--space-2) 0 0;color:var(--red-800)">Terisi</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Layer 2</p>
+    <h2>Semantic</h2>
+    <p class="note">Named for what they do. Re-theming edits this layer only.</p>
+    <table style="margin-top:var(--space-6)">
+      <tr><th>Token</th><th>Maps to</th><th>Purpose</th></tr>
+      <tr><td><code>--color-bg</code></td><td><code>--white</code></td><td>Page background</td></tr>
+      <tr><td><code>--color-fg</code></td><td><code>--navy-900</code></td><td>Body and heading text</td></tr>
+      <tr><td><code>--color-fg-muted</code></td><td><code>--grey-500</code></td><td>Secondary text</td></tr>
+      <tr><td><code>--color-interactive</code></td><td><code>--blue-600</code></td><td>Links, focus, available slots</td></tr>
+      <tr><td><code>--color-border</code></td><td><code>--grey-200</code></td><td>Hairlines</td></tr>
+      <tr><td><code>--color-focus</code></td><td><code>--blue-600</code></td><td>Focus ring — restyled, never removed</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <p class="eyebrow">Type</p>
+    <h2>Fluid scale</h2>
+    <p class="note">
+      Ratio 1.25 at 375px growing to 1.5 at 1440px via <code>clamp()</code> — restrained where space is
+      scarce, oversized where there is room. <strong>Resize this window to watch it move.</strong>
+      <code>--text-sm</code> and <code>--text-xs</code> deliberately do not scale.
+    </p>
+    <div style="margin-top:var(--space-8)">
+      <div style="font-family:var(--font-display);font-size:var(--text-display);line-height:1.1;font-weight:900;letter-spacing:-.02em">Pesan Lapangan</div>
+      <p class="sw__val" style="font-size:var(--text-xs)">--text-display · Orbitron 900 · 32→72px</p>
+      <div style="font-family:var(--font-display);font-size:var(--text-h2);font-weight:700;margin-top:var(--space-6)">Ketentuan</div>
+      <p class="sw__val" style="font-size:var(--text-xs)">--text-h2 · Orbitron 700 · 26→48px</p>
+      <div style="font-family:var(--font-display);font-size:var(--text-h3);font-weight:500;margin-top:var(--space-6)">Lokasi &amp; Kontak</div>
+      <p class="sw__val" style="font-size:var(--text-xs)">--text-h3 · Orbitron 500 · 20→32px</p>
+      <p style="margin-top:var(--space-6);max-width:60ch">Body copy in Inter. Orbitron is wide and geometric, so it takes tighter leading than Inter or it reads as loose — 1.1 for display, 1.6 for body.</p>
+      <p class="sw__val" style="font-size:var(--text-xs)">--text-body · Inter 400 · 16→18px</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Core component</p>
+    <h2>Slot cell</h2>
+    <p class="note">
+      One column, full-width rows. Chosen for one concrete reason: <strong>“Menunggu Konfirmasi” is 20
+      characters.</strong> A 3-column grid at 375px gives ~110px per cell and the label cannot fit at all;
+      2-column forces truncation. Full-width fits it at full size and yields a tap target well above 44px.
+      <strong>Click an available slot</strong> to see the selected state.
+    </p>
+    <div class="grid" style="margin-top:var(--space-6);max-width:520px">
+      <button class="slot" data-state="available"><span class="slot__time">06.00 - 08.00</span><span class="slot__state">Tersedia</span></button>
+      <button class="slot" data-state="available"><span class="slot__time">08.00 - 10.00</span><span class="slot__state">Tersedia</span></button>
+      <button class="slot" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state">Menunggu Konfirmasi</span></button>
+      <button class="slot" data-state="booked" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state">Terisi</span></button>
+      <button class="slot is-selected" data-state="available"><span class="slot__time">14.00 - 16.00</span><span class="slot__state">Dipilih</span></button>
+    </div>
+    <div class="card" style="margin-top:var(--space-6);background:var(--color-bg-subtle);box-shadow:none">
+      <p class="note" style="margin:0">
+        <strong>Past slots render identically to booked</strong> — not a shortcut.
+        <code>GET /api/availability</code> returns <code>booked</code> for today’s elapsed slots, so the
+        client genuinely cannot tell them apart. Distinguishing them would need an API change first.
+        Disabled cells stay <strong>visible, never hidden</strong>: a user needs to see that 18.00 is taken,
+        not wonder why the list skips it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Core component</p>
+    <h2>Date pills</h2>
+    <p class="note">
+      Fully rounded so the row reads as horizontally scrollable without a hint — the one place the pill
+      radius is used. <code>overscroll-behavior-x: contain</code> stops a swipe bouncing the page.
+      <strong>Click to select; scroll the row sideways.</strong>
+    </p>
+    <div class="pills" style="margin-top:var(--space-6)">
+      <button class="pill is-selected"><span class="pill__day">Kam</span><span class="pill__date">7 Agu</span></button>
+      <button class="pill"><span class="pill__day">Jum</span><span class="pill__date">8 Agu</span></button>
+      <button class="pill"><span class="pill__day">Sab</span><span class="pill__date">9 Agu</span></button>
+      <button class="pill"><span class="pill__day">Min</span><span class="pill__date">10 Agu</span></button>
+      <button class="pill"><span class="pill__day">Sen</span><span class="pill__date">11 Agu</span></button>
+      <button class="pill"><span class="pill__day">Sel</span><span class="pill__date">12 Agu</span></button>
+      <button class="pill" disabled><span class="pill__day">Rab</span><span class="pill__date">13 Agu</span></button>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Forms</p>
+    <h2>Buttons &amp; inputs</h2>
+    <div class="grid cols-2" style="margin-top:var(--space-6)">
+      <div>
+        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+          <button class="btn btn--primary">Pesan Lapangan</button>
+          <button class="btn btn--secondary">Tanya Admin</button>
+          <button class="btn btn--primary" disabled>Kirim</button>
+        </div>
+        <p class="note" style="margin-top:var(--space-3)">48px height — comfortably above the 44px tap minimum.</p>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label class="label" for="t">Nama Tim</label>
+          <input class="input" id="t" placeholder="Garuda FC">
+        </div>
+        <div class="field">
+          <label class="label" for="p">Nomor WhatsApp</label>
+          <input class="input input--error" id="p" value="12345" aria-describedby="pe" aria-invalid="true">
+          <span class="err" id="pe">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:var(--space-6);background:var(--color-bg-subtle);box-shadow:none">
+      <p class="note" style="margin:0">
+        Errors are tied to their field via <code>aria-describedby</code>, and focus rings are never removed —
+        both are Definition-of-Done items in Phase 3, not styling preferences.
+        <strong>Tab through this page</strong> to check every focus state.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Foundations</p>
+    <h2>Spacing, radius, motion</h2>
+    <div class="grid cols-2" style="margin-top:var(--space-6)">
+      <div>
+        <h3 style="font-size:var(--text-sm);font-family:var(--font-body);font-weight:600">Spacing — 4px base</h3>
+        <p class="note">Components use 4/8/12/16. Section rhythm only ever uses 48/64/96/128.</p>
+        <div style="display:flex;align-items:flex-end;gap:var(--space-2);margin-top:var(--space-3)">
+          <div style="width:4px;height:4px;background:var(--color-interactive)"></div>
+          <div style="width:8px;height:8px;background:var(--color-interactive)"></div>
+          <div style="width:16px;height:16px;background:var(--color-interactive)"></div>
+          <div style="width:32px;height:32px;background:var(--color-interactive)"></div>
+          <div style="width:48px;height:48px;background:var(--color-interactive)"></div>
+          <div style="width:64px;height:64px;background:var(--color-interactive)"></div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:var(--text-sm);font-family:var(--font-body);font-weight:600">Radius — mixed on purpose</h3>
+        <p class="note">Near-sharp geometry carries the Orbitron feel; only date pills go fully round.</p>
+        <div style="display:flex;gap:var(--space-3);margin-top:var(--space-3)">
+          <div style="width:72px;height:48px;background:var(--blue-50);border:1px solid var(--color-interactive);border-radius:var(--radius-sharp);display:grid;place-items:center;font-size:var(--text-xs)">2px</div>
+          <div style="width:72px;height:48px;background:var(--blue-50);border:1px solid var(--color-interactive);border-radius:var(--radius-card);display:grid;place-items:center;font-size:var(--text-xs)">4px</div>
+          <div style="width:88px;height:48px;background:var(--blue-50);border:1px solid var(--color-interactive);border-radius:var(--radius-pill);display:grid;place-items:center;font-size:var(--text-xs)">pill</div>
+        </div>
+      </div>
+    </div>
+    <table style="margin-top:var(--space-8)">
+      <tr><th>Motion token</th><th>Value</th><th>Use</th></tr>
+      <tr><td><code>--dur-fast</code></td><td>160ms</td><td>Hover, focus, colour change</td></tr>
+      <tr><td><code>--dur-base</code></td><td>280ms</td><td>Slot state change, pill selection</td></tr>
+      <tr><td><code>--dur-slow</code></td><td>520ms</td><td>Section reveal</td></tr>
+      <tr><td><code>--ease-out</code></td><td>cubic-bezier(.22,1,.36,1)</td><td>Entrances — GSAP <code>power3.out</code></td></tr>
+    </table>
+    <p class="note" style="margin-top:var(--space-4)">
+      In production every one of these routes through <code>lib/motion.ts</code>. GSAP has no built-in
+      reduced-motion handling, so a direct <code>gsap.to()</code> in a component is banned — that is exactly
+      how one component ships without the check.
+    </p>
+  </section>
+
+  <section style="padding-bottom:var(--space-24)">
+    <p class="eyebrow">Still open</p>
+    <h2>Not decided yet</h2>
+    <ul class="note">
+      <li><strong>Art direction (Phase 1b task 1)</strong> — section-transition language and what “surpass the benchmark” means concretely. This page is tokens and components, not the art direction.</li>
+      <li><strong>Hero copy (task 2)</strong> — Indonesian headline, subheadline, meta description.</li>
+      <li><strong>Icon library</strong> and <strong>date handling</strong> — Phase 1a task 1, both must clear the performance budget.</li>
+      <li><strong>Pricing on <code>/booking</code></strong> — needs the client’s rate card. Until answered, no number renders on either page.</li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+  // Demo interactivity only. Production state lives in zustand / TanStack Query.
+  document.querySelectorAll('.slot').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (el.getAttribute('aria-disabled') === 'true') return;
+      document.querySelectorAll('.slot.is-selected').forEach(function (s) {
+        s.classList.remove('is-selected');
+        s.querySelector('.slot__state').textContent = 'Tersedia';
+      });
+      el.classList.add('is-selected');
+      el.querySelector('.slot__state').textContent = 'Dipilih';
+    });
+  });
+  document.querySelectorAll('.pill').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (el.disabled) return;
+      document.querySelectorAll('.pill.is-selected').forEach(function (p) { p.classList.remove('is-selected'); });
+      el.classList.add('is-selected');
+    });
+  });
+</script>
+
+</body>
+</html>

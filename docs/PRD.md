@@ -61,13 +61,13 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 |---|------|--------|
 | 1 | **Establish the art direction** | A written direction: type scale, spacing rhythm, section-transition language, and what "surpass the benchmark, inverted to light blue-white" means concretely. Driven by `/impeccable` plus any benchmark/moodboard references |
 | 2 | **Draft the hero copy** | Indonesian headline, subheadline, and meta description — drafted as options, chosen by the user via `AskUserQuestion`. Decided here because copy and type scale are decided together: a 3-word headline and a 12-word one need different scales |
-| 3 | Analyze design system | Audit [design-system.md](design-system.md) against the direction and the brand tokens; resolve gaps before any pixel is drawn |
+| 3 | Analyze design system | Audit [DESIGN.md](DESIGN.md) against the direction and the brand tokens; resolve gaps before any pixel is drawn. Task 1's chosen direction becomes its Overview north star, which is deliberately left unset until then |
 | 4 | Design system HTML | One page rendering every token, type scale, and component state — including all three slot states and the date pill |
 | 5 | Make it walkable | Click handlers on that same page proving the landing → order → form journey |
 
 **Task 1 is the one that keeps Phase 2 coherent.** The tokens are already decided (navy, accent, white); what is not decided anywhere is the art direction. Without it, Phase 2 runs `/impeccable` section by section and each section improvises its own visual idea — five sections, five directions, no through-line. That is exactly how a site reads as templated despite every section being individually fine. The direction is written once here and Phase 2 executes it.
 
-This is also where benchmark references get consumed: read them, write the findings into [design-system.md](design-system.md), then delete the files per `docs/references/README.md`.
+This is also where benchmark references get consumed: read them, write the findings into [DESIGN.md](DESIGN.md), then delete the files per `docs/references/README.md`.
 
 Tasks 4 and 5 are **one artifact, not two**. The design system page *is* the prototype; it then serves as the component reference Phase 2 builds from. Building a separate throwaway prototype would mean paying for the UI twice.
 
@@ -170,7 +170,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 - Fonts: Orbitron (next/font/google) for display/headings, a clean sans (e.g. Inter) for body
 - No auth at all in this repo (the admin app, which is where auth belongs, lives in a separate repo)
 
-Full architecture, database, and design-system detail lives in [architecture.md](architecture.md), [database.md](database.md), and [design-system.md](design-system.md) — this PRD is the product spec, those are the implementation contracts.
+Full architecture, database, and design-system detail lives in [architecture.md](architecture.md), [database.md](database.md), and [DESIGN.md](DESIGN.md) — this PRD is the product spec, those are the implementation contracts.
 
 ## Brand / design tokens
 
@@ -181,7 +181,7 @@ Full architecture, database, and design-system detail lives in [architecture.md]
 - Logo: navy "AP" mark on white (file provided by owner)
 - Overall direction: light, clean, blue-and-white — the INVERSE of the dark benchmark site (bataskotapoint.com). Do not copy the benchmark's dark neon theme.
 
-Full token table, typography, and animation budget: [design-system.md](design-system.md).
+Full token table, typography, and animation budget: [DESIGN.md](DESIGN.md).
 
 ## Routes
 
@@ -360,7 +360,7 @@ Phase 1b:
 - [ ] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
 - [ ] Hero copy chosen — Indonesian headline, subheadline, meta description
 - [ ] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts
-- [ ] Any benchmark reference files read, findings captured in design-system.md, source files deleted
+- [ ] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted
 - [ ] Design system HTML renders every token, type scale, and component state — all three slot states plus the date pill
 - [ ] The same page is clickable through the landing → order → form journey
 - [ ] Hero-video gate decided either way

@@ -8,7 +8,7 @@ Drop-off point for visual reference material — benchmark screenshots, icon sty
 
 1. You drop a file in
 2. It gets read
-3. **Findings are written into a durable doc first** — `../design-system.md` for visual and motion conclusions, `../PRD.md` if it changes product scope
+3. **Findings are written into a durable doc first** — `../DESIGN.md` for visual and motion conclusions, `../PRD.md` if it changes product scope
 4. The file stays while the sections it informs are being built
 5. It gets deleted afterwards, with an explicit note naming what was removed
 

@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T00:00:00Z",
+  "title": "Design System: Arena Player",
+  "extensions": {
+    "colorMeta": {
+      "navy-900": {
+        "role": "primary",
+        "displayName": "Arena Navy",
+        "canonical": "#011A43",
+        "note": "Sampled from the client's logo. Inherited, not chosen.",
+        "tonalRamp": ["#000B1D", "#011232", "#011A43", "#0A2E6B", "#1B4894", "#3A6CBD", "#7699DB", "#C3D5F2"]
+      },
+      "navy-700": {
+        "role": "primary",
+        "displayName": "Navy Depth",
+        "canonical": "#0A2E6B",
+        "note": "Hover and pressed depth on navy surfaces. Never used for text."
+      },
+      "blue-600": {
+        "role": "secondary",
+        "displayName": "Signal Blue",
+        "canonical": "#2563EB",
+        "note": "Every interactive affordance. 5.17:1 on white.",
+        "tonalRamp": ["#0A1F52", "#12307D", "#1D4ED8", "#2563EB", "#5B8BF2", "#93B4F8", "#C7DAFC", "#EFF6FF"]
+      },
+      "blue-700": { "role": "secondary", "displayName": "Signal Blue Pressed", "canonical": "#1D4ED8" },
+      "blue-50": {
+        "role": "secondary",
+        "displayName": "Signal Wash",
+        "canonical": "#EFF6FF",
+        "note": "Hover fill. Light enough that navy text on it still passes AA, so hover never needs a text-colour change."
+      },
+      "amber-100": { "role": "tertiary", "displayName": "Pending Surface", "canonical": "#FEF3C7" },
+      "amber-300": { "role": "tertiary", "displayName": "Pending Border", "canonical": "#FCD34D" },
+      "amber-800": {
+        "role": "tertiary",
+        "displayName": "Pending Ink",
+        "canonical": "#92400E",
+        "note": "7.4:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
+      },
+      "red-100": { "role": "tertiary", "displayName": "Booked Surface", "canonical": "#FEE2E2" },
+      "red-300": { "role": "tertiary", "displayName": "Booked Border", "canonical": "#FCA5A5" },
+      "red-800": {
+        "role": "tertiary",
+        "displayName": "Booked Ink",
+        "canonical": "#991B1B",
+        "note": "7.9:1 on red-100."
+      },
+      "white": { "role": "neutral", "displayName": "Page White", "canonical": "#FFFFFF" },
+      "grey-50": { "role": "neutral", "displayName": "Band Grey", "canonical": "#F9FAFB" },
+      "grey-200": { "role": "neutral", "displayName": "Hairline", "canonical": "#E5E7EB" },
+      "grey-500": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#6B7280",
+        "note": "4.83:1 on white, passes AA."
+      }
+    },
+    "semanticLayer": {
+      "note": "DESIGN.md frontmatter carries primitives only, because a token may not reference another token in the same group. This is the layer a re-theme edits. Reference flows one direction: primitive to semantic to component.",
+      "map": {
+        "--color-bg": "white",
+        "--color-bg-subtle": "grey-50",
+        "--color-fg": "navy-900",
+        "--color-fg-muted": "grey-500",
+        "--color-interactive": "blue-600",
+        "--color-interactive-pressed": "blue-700",
+        "--color-border": "grey-200",
+        "--color-focus": "blue-600"
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline only. The single largest gesture on the page." },
+      "h2": { "displayName": "Section Heading", "purpose": "Section titles." },
+      "h3": { "displayName": "Sub-heading", "purpose": "Sub-headings and slot times." },
+      "body": { "displayName": "Body", "purpose": "All prose. Cap measure at 60-68ch." },
+      "sm": { "displayName": "Small", "purpose": "State labels, helper text, field labels. Fixed at 14px on purpose." },
+      "xs": { "displayName": "Caption", "purpose": "Captions and metadata. Fixed at 12px on purpose." },
+      "eyebrow": { "displayName": "Eyebrow", "purpose": "Uppercase section eyebrows in Signal Blue." }
+    },
+    "shadows": [
+      { "name": "shadow-sm", "value": "0 1px 2px rgb(1 26 67 / 0.06)", "purpose": "Resting cards. Reads as edge definition, not lift." },
+      { "name": "shadow-md", "value": "0 4px 12px rgb(1 26 67 / 0.08)", "purpose": "Raised or hovered surfaces." }
+    ],
+    "motion": [
+      { "name": "dur-fast", "value": "160ms", "purpose": "Hover, focus, colour change." },
+      { "name": "dur-base", "value": "280ms", "purpose": "Slot state change, pill selection." },
+      { "name": "dur-slow", "value": "520ms", "purpose": "Section reveal." },
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Entrances. GSAP power3.out." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.65, 0, 0.35, 1)", "purpose": "Movement between two states." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "375px", "note": "The design target, not a fallback. Instagram in-app browser on mid-range Android." },
+      { "name": "tablet", "value": "720px" },
+      { "name": "desktop", "value": "1440px" },
+      { "name": "container-max", "value": "1100px" }
+    ],
+    "borders": [
+      { "name": "hairline", "value": "1px solid #E5E7EB", "purpose": "Resting borders and dividers." },
+      { "name": "state", "value": "2px", "purpose": "Focus and error only. Weight change carries the state, so no state depends on colour alone." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Slot Cell - Available",
+      "kind": "custom",
+      "refersTo": "slot-available",
+      "description": "The signature component. Full-width row, time left, state right. One column is a hard constraint, not a preference.",
+      "html": "<button class=\"ds-slot\"><span class=\"ds-slot__time\">06.00 - 08.00</span><span class=\"ds-slot__state\">Tersedia</span></button>",
+      "css": ".ds-slot { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:56px; padding:16px; border-radius:2px; background:#FFFFFF; border:1px solid #2563EB; color:#011A43; font-family:Inter,system-ui,sans-serif; font-size:1rem; text-align:left; cursor:pointer; transition:background 280ms cubic-bezier(.22,1,.36,1), border-color 280ms cubic-bezier(.22,1,.36,1), color 280ms cubic-bezier(.22,1,.36,1); } .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:500; letter-spacing:.01em; } .ds-slot__state { font-size:.875rem; white-space:nowrap; } .ds-slot:hover { background:#EFF6FF; } .ds-slot:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+    },
+    {
+      "name": "Slot Cell - Selected",
+      "kind": "custom",
+      "refersTo": "slot-selected",
+      "description": "Selection holds nothing server-side. Only a successful POST does.",
+      "html": "<button class=\"ds-slot-selected\"><span class=\"ds-slot__time\">14.00 - 16.00</span><span class=\"ds-slot__state\">Dipilih</span></button>",
+      "css": ".ds-slot-selected { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:56px; padding:16px; border-radius:2px; background:#2563EB; border:1px solid #2563EB; color:#FFFFFF; font-family:Inter,system-ui,sans-serif; font-size:1rem; text-align:left; cursor:pointer; } .ds-slot-selected .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:500; } .ds-slot-selected .ds-slot__state { font-size:.875rem; white-space:nowrap; } .ds-slot-selected:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+    },
+    {
+      "name": "Slot Cell - Pending",
+      "kind": "custom",
+      "refersTo": "slot-pending",
+      "description": "The amber triple. 'Menunggu Konfirmasi' is 20 characters and is why the grid is one column.",
+      "html": "<button class=\"ds-slot-pending\" aria-disabled=\"true\"><span class=\"ds-slot__time\">10.00 - 12.00</span><span class=\"ds-slot__state\">Menunggu Konfirmasi</span></button>",
+      "css": ".ds-slot-pending { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; min-height:56px; padding:16px; border-radius:2px; background:#FEF3C7; border:1px solid #FCD34D; color:#92400E; font-family:Inter,system-ui,sans-serif; font-size:1rem; text-align:left; cursor:not-allowed; } .ds-slot-pending .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:500; } .ds-slot-pending .ds-slot__state { font-size:.875rem; white-space:nowrap; }"
+    },
+    {
+      "name": "Date Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "The only fully round shape in the system. Roundness signals that the row scrolls horizontally.",
+      "html": "<button class=\"ds-pill\"><span class=\"ds-pill__day\">Jum</span><span class=\"ds-pill__date\">8 Agu</span></button>",
+      "css": ".ds-pill { flex:0 0 auto; min-width:64px; padding:8px 16px; border-radius:9999px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:Inter,system-ui,sans-serif; text-align:center; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1); } .ds-pill__day { display:block; font-size:.75rem; color:#6B7280; } .ds-pill__date { display:block; font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:.875rem; } .ds-pill:hover { background:#EFF6FF; border-color:#2563EB; } .ds-pill:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Navy fill. Active state shifts to Signal Blue so the press reads as interactive rather than as more navy.",
+      "html": "<button class=\"ds-btn-primary\">Pesan Lapangan</button>",
+      "css": ".ds-btn-primary { height:48px; padding:0 24px; border-radius:2px; background:#011A43; color:#FFFFFF; border:1px solid transparent; font-family:Inter,system-ui,sans-serif; font-size:1rem; font-weight:600; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1); } .ds-btn-primary:hover { background:#0A2E6B; } .ds-btn-primary:active { background:#1D4ED8; } .ds-btn-primary:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outline variant for the lower-priority action in a pair.",
+      "html": "<button class=\"ds-btn-secondary\">Tanya Admin</button>",
+      "css": ".ds-btn-secondary { height:48px; padding:0 24px; border-radius:2px; background:transparent; color:#011A43; border:1px solid #011A43; font-family:Inter,system-ui,sans-serif; font-size:1rem; font-weight:600; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1); } .ds-btn-secondary:hover { background:#F9FAFB; } .ds-btn-secondary:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+    },
+    {
+      "name": "Input - Error",
+      "kind": "input",
+      "refersTo": "input-error",
+      "description": "Error state uses a 2px border weight plus a message, so the state never depends on colour alone. Message ties to the field via aria-describedby.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-p\">Nomor WhatsApp</label><input class=\"ds-input ds-input--error\" id=\"ds-p\" value=\"12345\" aria-describedby=\"ds-pe\" aria-invalid=\"true\"><span class=\"ds-err\" id=\"ds-pe\">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span></div>",
+      "css": ".ds-field { display:flex; flex-direction:column; gap:8px; font-family:Inter,system-ui,sans-serif; } .ds-label { font-size:.875rem; font-weight:500; color:#011A43; } .ds-input { height:48px; padding:0 12px; border-radius:2px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:inherit; font-size:1rem; } .ds-input--error { border:2px solid #FCA5A5; } .ds-input:focus { outline:2px solid #2563EB; outline-offset:2px; border-color:#2563EB; } .ds-err { font-size:.875rem; color:#991B1B; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Not yet established — art direction is Phase 1b task 1 and has not been decided.",
+    "overview": "What is settled is the world's polarity. bataskotapoint.com is a binding reference as an anti-reference: dark, neon, saturated. Arena Player is its inverse — light, clean, blue-and-white, with whitespace treated as a material rather than as leftover room. Navy #011A43 is sampled from the client's own logo, so the palette is inherited, not invented.\n\nThe system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on near-sharp geometry and generous white space. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added. The one fully-round shape in the entire system is the date pill, and its roundness is functional.\n\nDensity is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.",
+    "keyCharacteristics": [
+      "Light and blue-white, never dark — the anti-reference is binding",
+      "Oversized Orbitron display against Inter body; no third face",
+      "Near-sharp corners throughout; exactly one round shape, and it means something",
+      "Status is a colour triple, never a single hue",
+      "Navy-tinted shadows only; black shadows read as dirt on a blue-white page",
+      "Whitespace is the layout device, not a shortage of content"
+    ],
+    "rules": [
+      { "name": "The Three-Layer Rule", "body": "Reference flows one direction only: primitive to semantic to component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else.", "section": "colors" },
+      { "name": "The Status-Is-Information Rule", "body": "A booking state the user cannot read is a booking state they will get wrong. No status may be expressed as a single hue, and no status label may fall below AA.", "section": "colors" },
+      { "name": "The Fluid-Not-Stepped Rule", "body": "The scale runs a 1.25 ratio at 375px growing to 1.5 at 1440px via clamp(). There are no breakpoint jumps anywhere in the type system.", "section": "typography" },
+      { "name": "The Fixed-Small Rule", "body": "sm and xs deliberately do not scale. Shrinking a caption below 14px on mobile is an accessibility failure, and growing it on desktop makes it stop reading as secondary.", "section": "typography" },
+      { "name": "The Tight-Display Rule", "body": "Orbitron takes tighter leading than Inter or it reads as loose: 1.1 display, 1.25 headings, 1.6 body. Never apply body leading to Orbitron.", "section": "typography" },
+      { "name": "The Two-Scroll Rule", "body": "The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh, not vh, because in-app browsers report vh incorrectly.", "section": "layout" },
+      { "name": "The Horizontal-Containment Rule", "body": "The date row scrolls with overscroll-behavior-x: contain, so a sideways swipe never bounces the page underneath it.", "section": "layout" },
+      { "name": "The Tinted-Shadow Rule", "body": "Shadows are navy-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth.", "section": "elevation" },
+      { "name": "The One-Round-Shape Rule", "body": "Nothing but the date pill is fully round. The moment a second element takes the pill radius, the date row stops meaning 'this scrolls' and becomes just another style.", "section": "shapes" },
+      { "name": "The Visible-Unavailable Rule", "body": "Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it.", "section": "components" },
+      { "name": "The Focus-Is-Required Rule", "body": "Focus rings are restyled, never removed. Keyboard operability is a Phase 3 Definition-of-Done item, not a styling preference.", "section": "components" }
+    ],
+    "dos": [
+      "Do keep every reference flowing primitive to semantic to component. A hex code in a component file is a defect.",
+      "Do express every booking status as a surface + border + text triple that passes AA at the stated ratio.",
+      "Do route every animation through lib/motion.ts. GSAP has no built-in prefers-reduced-motion handling, so a direct gsap.to() in a component is banned.",
+      "Do animate transform and opacity only, and reserve space before animating in. No CLS.",
+      "Do keep the hero LCP element as text or logo, never an image.",
+      "Do tint shadows navy at low alpha.",
+      "Do let the date pill be the only fully round shape in the system."
+    ],
+    "donts": [
+      "Don't go dark, neon, or saturated. The anti-reference is binding, and this is the one direction the client has ruled out by name.",
+      "Don't render a price anywhere. Pricing is an unresolved client decision.",
+      "Don't turn the slot grid into 2 or 3 columns. The 20-character state label does not fit, and truncating it destroys the information the cell exists to carry.",
+      "Don't hide unavailable slots.",
+      "Don't add a third typeface, or apply body leading to Orbitron.",
+      "Don't load fonts from a CDN link in production — next/font is load-bearing for the no-CLS guarantee.",
+      "Don't use black shadows, or add a shadow where a hairline and a tonal band already separate two surfaces.",
+      "Don't add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.",
+      "Don't animate layout properties (width, height, top, left).",
+      "Don't invent art direction here. It is Phase 1b task 1 and belongs to that task."
+    ]
+  }
+}

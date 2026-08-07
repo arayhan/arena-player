@@ -6,10 +6,12 @@ Booking website for a mini soccer field. Users check slot availability, pick dat
 
 | Doc | Content |
 |---|---|
+| [docs/PRODUCT.md](docs/PRODUCT.md) | Product truth — who the user is, what the product is for, what must not be fabricated, and which decisions are still the client's. Upstream of the PRD |
 | [docs/PRD.md](docs/PRD.md) | Product spec — phases, routes, static content, Definition of Done |
 | [docs/architecture.md](docs/architecture.md) | System diagram, request flow, folder structure, verification-script practice |
 | [docs/database.md](docs/database.md) | Neon + R2 schema, error-code contract, every hard-won gotcha |
-| [docs/design-system.md](docs/design-system.md) | Tokens, typography, animation budget, mobile guardrails |
+| [docs/DESIGN.md](docs/DESIGN.md) | Visual system — tokens, typography, components, do's and don'ts. Follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/); frontmatter tokens are normative |
+| [docs/design-process.md](docs/design-process.md) | How design work runs — motion approval, image sourcing, animation budget, asset locations, consulting order |
 
 ## When to update this file
 
@@ -70,7 +72,7 @@ Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL 
 ```
 arena-player-web/
 ├── CLAUDE.md
-├── docs/            # PRD, architecture, database, design-system, PROGRESS.md, tasks/
+├── docs/            # PRODUCT, PRD, architecture, database, design-system, PROGRESS.md, tasks/
 ├── .claude/         # agents, skills, hooks, settings
 ├── db/migrations/   # SQL, run manually
 ├── app/             # Next.js App Router — page.tsx, booking/page.tsx, api/

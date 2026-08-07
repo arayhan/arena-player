@@ -101,7 +101,7 @@ MSW must mock all four codes, or Phase 3 builds UI for states it has never seen.
 TanStack Start is not the weaker framework; it lost on this project's constraints:
 
 - **Handover.** Paid project, 14-day bug warranty, then someone else maintains it. Next.js developers are abundant; TanStack Start developers are scarce. That asymmetry outlives every technical argument.
-- **`next/font` and `next/image` are load-bearing.** design-system.md leans on `next/font` for zero-CLS webfont loading and `next/image` for reserved space, and both feed hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s, hero *text* as the LCP element). Switching frameworks means hand-rolling those guarantees.
+- **`next/font` and `next/image` are load-bearing.** DESIGN.md leans on `next/font` for zero-CLS webfont loading and `next/image` for reserved space, and both feed hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s, hero *text* as the LCP element). Switching frameworks means hand-rolling those guarantees.
 - **Maturity** matters during a warranty period on a tight budget.
 
 Its one real advantage here — TanStack Router's type-safe `validateSearch` mapping neatly onto the four `/booking` param states — is worth roughly 15 lines of zod parsing in Next. Not enough.
@@ -167,7 +167,7 @@ The partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE 
 
 ### GSAP gotchas (the cost of dropping Framer Motion)
 
-Framer Motion handled `prefers-reduced-motion` for free via `useReducedMotion`. GSAP does not, and design-system.md mandates that check on **every** animated component — so the swap is only safe if the mechanism below replaces it. These are blocker-class if skipped.
+Framer Motion handled `prefers-reduced-motion` for free via `useReducedMotion`. GSAP does not, and [design-process.md](design-process.md) mandates that check on **every** animated component — so the swap is only safe if the mechanism below replaces it. These are blocker-class if skipped.
 
 - **Reduced motion is manual.** All animation goes through a single `gsap.matchMedia()` wrapper in `lib/motion.ts`. Calling `gsap.to()` directly inside a component is **banned** — that is precisely how the rule gets silently skipped on one component and ships.
 - **React cleanup needs `useGSAP()`** from `@gsap/react`. A bare `gsap.to()` inside `useEffect` leaks animations on remount under React 19 Strict Mode; the double-invoke in development makes this look intermittent rather than broken.
@@ -240,9 +240,12 @@ Vitest resolves `@/` through `tsconfig` paths, which removes that constraint ent
 arena-player-web/
 ├── CLAUDE.md
 ├── docs/
+│   ├── PRODUCT.md             # product truth + open decisions; NOT visual design
 │   ├── PRD.md
 │   ├── architecture.md        # this file
-│   ├── design-system.md
+│   ├── DESIGN.md              # visual system — DESIGN.md format spec, tokens are normative
+│   ├── DESIGN.html            # live render of DESIGN.md; reference artifact, NOT production
+│   ├── design-process.md      # how design work runs — motion approval, images, asset locations
 │   ├── database.md
 │   ├── PROGRESS.md            # shared agent log, append-only
 │   ├── references/            # gitignored scratch — deleted after use, README only

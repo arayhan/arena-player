@@ -22,3 +22,4 @@ docs/references/*
 # misc
 *.log
 .DS_Store
+.gstack/

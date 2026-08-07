@@ -22,7 +22,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 - **NEVER show prices anywhere in the UI.** Not in slots, not in the form, not in meta tags. The only price-adjacent text allowed is the payment instruction string from the PRD ("Transfer DP 50% dari harga sewa..."). Whether `/booking` becomes an exception is an **OPEN DECISION** in the PRD — until it is answered, render no number on either page.
 - Rules section ("Ketentuan") is **verbatim Indonesian** from the PRD — 10 rules, exact wording, do not translate or paraphrase.
 - UI language is Indonesian (buttons "Pesan Lapangan", states "Menunggu Konfirmasi", etc.). Code/comments in English.
-- **Hero copy is decided in Phase 1b, not invented at build time.** Headline, subheadline, and meta description are drafted and user-approved there. If you are building the hero and the copy is not in design-system.md, stop and ask — do not write your own.
+- **Hero copy is decided in Phase 1b, not invented at build time.** Headline, subheadline, and meta description are drafted and user-approved there. If you are building the hero and the copy is not in DESIGN.md, stop and ask — do not write your own.
 
 ## Placeholder convention
 
