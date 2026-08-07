@@ -5,11 +5,15 @@ description: Use before any UI, styling, animation, or design work in arena-play
 
 # Arena Player — design gotchas
 
-Full detail: [docs/DESIGN.md](../../../docs/DESIGN.md). This skill is the quick-reference — consult the doc for the complete token table, content map, and rationale, this file should not drift from it.
+Two docs, not one. [docs/DESIGN.md](../../../docs/DESIGN.md) is the visual system — tokens, type, components, do's and don'ts. [docs/design-process.md](../../../docs/design-process.md) is how design work *runs* — motion approval, image sourcing, the animation budget, asset locations, the landing page content map, and the consulting order. This skill is the quick-reference for both and should not drift from either.
 
-## Direction
+## Direction — mostly NOT decided yet
 
-Awwwards-level, light/clean/blue-white, oversized Orbitron display type, whitespace as a design element. INVERSE of the dark benchmark site — never dark neon.
+**Locked, and safe to build on:** light and blue-white, the deliberate inverse of the dark-neon benchmark the client named. Navy `#011A43` sampled from their logo. Orbitron display over Inter body. Whitespace as a material.
+
+**Not decided:** the art direction itself — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely. That is **Phase 1b task 1**, and `DESIGN.md` records its north star as deliberately unset until then.
+
+Do not mistake one for the other. `PRD.md` says the design "should feel like a winning Awwwards website" — that is the **ambition Phase 1b task 1 converts into a direction**, not the direction. If you are building a section and the art direction is not written in DESIGN.md, that task has not run: stop and say so rather than inventing one section's worth of it.
 
 ## Hard limits (do not violate)
 
@@ -43,6 +47,6 @@ The rules that do belong here, because they are stable:
 - **Where files live**: reference/inspiration → `docs/references/` (gitignored scratch, deleted after use). Production assets → `public/`. Throwaway screenshots → `.claude/screenshots/` (gitignored).
 - **`docs/references/` is usually EMPTY — that is normal, not an absence of references.** Files there are consumed and deleted once the work they informed is done. The durable record is `docs/DESIGN.md`; read that for benchmark and direction findings, never conclude "no benchmark exists" from an empty folder. If a reference file IS present, read it, write findings into DESIGN.md **before** deleting, and never `git add` anything under that path.
 
-## Consulting order for new sections
+## Consulting order
 
-1. `docs/DESIGN.md` (constraints, source of truth) → 2. `/impeccable` for direction and polish — the single named design driver, do not stack it with other aesthetic-direction skills on one section → 3. `/remotion-create` only for produced video assets. The constraints above override anything any skill suggests.
+Lives in [design-process.md](../../../docs/design-process.md) → Consulting order, and is deliberately **not** copied here — a duplicated list is a list that drifts. The one thing worth repeating: the constraints above override anything any skill suggests.

@@ -285,7 +285,9 @@ Not a hypothetical worth dismissing on a booking site: holding every slot costs 
 - **Availability is one date per request, and that constrains the design.** Showing an availability hint on the date pills — "3 slot tersisa", or greying out fully-booked days — would need 14 requests on page load. Phase 1b must not specify such an indicator without also specifying a bulk endpoint, which does not currently exist. Design against this limit or change the limit deliberately; do not discover it in Phase 2.
 - Neon is reachable only from server-side route handlers via `DATABASE_URL` (never `NEXT_PUBLIC_`-prefixed); there is no browser-facing database client and nothing to lock down with row-level policies — the API surface itself is the only write path. R2 credentials are equally server-only; the browser never touches Neon or R2 directly.
 
-## Design direction (important)
+## Design ambition (important — and not the same thing as the direction)
+
+**This section is the ambition, not the art direction.** Phase 1b task 1 is what converts it into one, and [DESIGN.md](DESIGN.md) records its north star as deliberately unset until that task runs. Read what follows as the bar to clear, never as a decision already taken — an agent that treats it as the direction has skipped the phase whose entire purpose is deciding it.
 
 The design should feel like you are creating a winning Awwwards website. Create a UI/UX like a high-end animated and interactive website. Enhance and surpass the benchmark (bataskotapoint.com) but inverted to a light, clean, blue-and-white identity.
 
