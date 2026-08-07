@@ -1,12 +1,5 @@
 {
   "mcpServers": {
-    "neon": {
-      "command": "npx",
-      "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
-      "env": {
-        "NEON_API_KEY": "${NEON_API_KEY}"
-      }
-    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
