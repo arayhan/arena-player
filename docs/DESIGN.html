@@ -11,88 +11,101 @@
   Two things here deliberately differ from the app and must NOT be copied into it:
 
   1. Fonts load from a CDN <link>. Production uses next/font/google, which
-     self-hosts and eliminates webfont layout shift. That is load-bearing for
-     hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s) — see architecture.md,
-     "Framework decision (FINAL)". A CDN link is used here only because this
-     file has no build step.
+     self-hosts and eliminates webfont layout shift. Load-bearing for hard
+     rule 6 (no CLS) and hard rule 7 (LCP < 2.5s).
 
-  2. Animation is plain CSS transitions. Production routes ALL motion through
-     lib/motion.ts wrapping gsap.matchMedia(), because GSAP has no built-in
-     prefers-reduced-motion handling. Calling gsap.to() directly in a component
-     is banned. The reduced-motion block at the end of this stylesheet is the
-     behaviour that wrapper must produce.
+  2. Animation is plain CSS + one IntersectionObserver. Production routes ALL
+     motion through lib/motion.ts wrapping gsap.matchMedia(). The
+     reduced-motion block at the end of this stylesheet is the behaviour that
+     wrapper must produce.
 
-  Everything else here IS the pattern to copy — including the Layer 3 token
-  indirection, aria-pressed on selection, and aria-disabled (never native
-  `disabled`) on unavailable options.
+  Everything else IS the pattern to copy — the Layer 3 token indirection,
+  aria-pressed on selection, aria-disabled (never native `disabled`) on
+  unavailable options.
 
   Source of truth is docs/DESIGN.md. If the two disagree, the .md wins.
-  Process rules (motion approval, image sourcing, asset locations) are in
-  docs/design-process.md — deliberately not here, because DESIGN.md follows the
-  DESIGN.md format spec, whose eight sections are strictly visual.
+  Process rules live in docs/design-process.md.
 -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 /* ============================================================
    LAYER 1 — PRIMITIVES. Raw values, named for what they ARE.
    ============================================================ */
 :root {
-  --navy-900:#011A43; --navy-700:#0A2E6B;
+  --navy-900:#011A43; --navy-700:#0A2E6B; --navy-400:#4A5A78;
   --blue-600:#2563EB; --blue-700:#1D4ED8; --blue-50:#EFF6FF;
   --white:#FFFFFF;
-  --grey-50:#F9FAFB; --grey-200:#E5E7EB; --grey-500:#6B7280;
+  --grey-50:#F9FAFB; --grey-200:#E5E7EB;
   --amber-100:#FEF3C7; --amber-300:#FCD34D; --amber-800:#92400E;
   --red-100:#FEE2E2;   --red-300:#FCA5A5;   --red-800:#991B1B;
 
 /* ============================================================
    LAYER 2 — SEMANTIC. Named for what they DO. Re-theming edits
    only this layer.
+
+   --color-fg-muted points at navy-400, not a grey. The page ground
+   is blue-50, and grey-500 computes to 4.44:1 there — under AA.
+   A hue-tinted mute clears both grounds (6.38:1 on blue-50,
+   6.94:1 on white) and is what a coloured surface asks for.
    ============================================================ */
-  --color-bg:var(--white);
+  --color-page:var(--blue-50);       /* instruction-page ground */
+  --color-bg:var(--white);           /* the plates content sits on */
   --color-bg-subtle:var(--grey-50);
-  --color-fg:var(--navy-900);
-  --color-fg-muted:var(--grey-500);
+  --color-fg:var(--navy-900);        /* keyline ink */
+  --color-fg-muted:var(--navy-400);
   --color-interactive:var(--blue-600);
   --color-interactive-pressed:var(--blue-700);
   --color-border:var(--grey-200);
+  --color-keyline:var(--navy-900);
   --color-focus:var(--blue-600);
 
-  /* Fluid type — 1.25 ratio at 375px, 1.5 at 1440px */
   --text-display:clamp(2rem, 1.12rem + 3.76vw, 4.5rem);
   --text-h2:clamp(1.625rem, 1.14rem + 2.07vw, 3rem);
   --text-h3:clamp(1.25rem, 0.99rem + 1.13vw, 2rem);
   --text-body:clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
-  --text-sm:0.875rem;   /* fixed — shrinking below 14px is an a11y problem */
+  --text-sm:0.875rem;
   --text-xs:0.75rem;
+  --text-step:clamp(3rem, 2rem + 4.3vw, 6rem);   /* the step numeral */
 
-  --font-display:'Orbitron',system-ui,sans-serif;
-  --font-body:'Inter',system-ui,sans-serif;
+  --font-manual:'Archivo',system-ui,sans-serif;  /* this document's own voice */
+  --font-display:'Orbitron',system-ui,sans-serif;/* the PRODUCT's display face */
+  --font-body:'Inter',system-ui,sans-serif;      /* the PRODUCT's body face */
 
-  /* 4px base; section rhythm uses 48+ only */
+  --stud:8px;                        /* the module every alignment snaps to */
   --space-1:4px;  --space-2:8px;  --space-3:12px; --space-4:16px;
   --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
   --space-24:96px; --space-32:128px;
 
   --radius-sharp:2px; --radius-card:4px; --radius-pill:999px;
+  --keyline:2px;
 
-  /* Navy-tinted, never black — black on blue-white reads as dirt */
   --shadow-sm:0 1px 2px rgb(1 26 67 / .06);
   --shadow-md:0 4px 12px rgb(1 26 67 / .08);
 
   --dur-fast:160ms; --dur-base:280ms; --dur-slow:520ms;
+  --dur-draw:420ms;
   --ease-out:cubic-bezier(.22,1,.36,1);
   --ease-in-out:cubic-bezier(.65,0,.35,1);
 
 /* ============================================================
-   LAYER 3 — COMPONENT. Every component rule below reads from
-   HERE and never from Layer 1. This indirection is the whole
-   point of the system: re-theming edits Layer 2, and Layer 3
-   carries the change without a component file being touched.
+   LAYER 3 — COMPONENT. Every component rule reads from HERE and
+   never from Layer 1. Re-theming edits Layer 2; Layer 3 carries
+   the change without a component rule being touched.
    ============================================================ */
+  --plate-bg:var(--color-bg);
+  --plate-keyline:var(--color-keyline);
+  --callout-bg:var(--color-bg-subtle);
+  --step-numeral:var(--color-keyline);
+  --new-part:var(--color-interactive);   /* "brick red" in the source world.
+                                            Red is `booked` here, so the
+                                            highlight role goes to Signal Blue
+                                            and the state meaning survives. */
+  --inventory-tag:var(--amber-300);
+
   --slot-bg:var(--color-bg);
   --slot-fg:var(--color-fg);
   --slot-border:var(--color-interactive);
@@ -132,80 +145,122 @@
   --input-fg:var(--color-fg);
   --input-border:var(--color-border);
   /* red-800, not red-300. A border that is a state's ONLY visual signal must
-     clear 3:1 (WCAG 1.4.11). red-300 on white is 1.90:1 and fails; red-800 is
-     8.31:1. The fill is the second, non-border signal. See DESIGN.md,
-     "The Visible-Boundary Rule". */
+     clear 3:1 (WCAG 1.4.11). red-300 on white is 1.90:1 and fails; red-800
+     is 8.31:1. The fill is the second, non-border signal. */
   --input-error-border:var(--red-800);
   --input-error-bg:var(--red-100);
   --input-error-fg:var(--red-800);
   --input-disabled-bg:var(--color-bg-subtle);
   --input-disabled-fg:var(--color-fg-muted);
 
+  --swatch-demo-bg:var(--color-page);
   --card-bg:var(--color-bg);
   --card-border:var(--color-border);
-  --callout-bg:var(--color-bg-subtle);
 }
 
 *,*::before,*::after{box-sizing:border-box}
 body{
-  margin:0;background:var(--color-bg);color:var(--color-fg);
+  margin:0;background:var(--color-page);color:var(--color-fg);
   font-family:var(--font-body);font-size:var(--text-body);line-height:1.6;
   -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.25}
-h1{font-size:var(--text-display);line-height:1.1;font-weight:900;letter-spacing:-.02em}
+h1,h2{font-family:var(--font-manual);margin:0;line-height:1.05;letter-spacing:-.03em}
+h1{font-size:var(--text-display);font-weight:800}
 h2{font-size:var(--text-h2);font-weight:700}
-h3{font-size:var(--text-h3);font-weight:500}
+h3{font-family:var(--font-manual);margin:0;font-size:var(--text-h3);font-weight:600;
+  line-height:1.2;letter-spacing:-.01em}
 code{font-family:ui-monospace,'Cascadia Code',Menlo,monospace;font-size:var(--text-xs);
   background:var(--color-bg-subtle);padding:2px 6px;border-radius:var(--radius-sharp)}
 a{color:var(--color-interactive)}
-a:focus-visible,summary:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 
 .wrap{max-width:1100px;margin:0 auto;padding:0 var(--space-4)}
 
-/* Bands, not hairlines. --color-bg-subtle is declared as "alternating section
-   bands" in DESIGN.md; this is where it does that job. Sections are full-bleed
-   so the band reaches the viewport edge; .wrap constrains the content inside. */
-section{padding:var(--space-16) 0;scroll-margin-top:var(--space-4)}
-section:nth-of-type(even){background:var(--color-bg-subtle)}
-section:last-of-type{padding-bottom:var(--space-32)}
+/* --- the step: a numeral, a rule, and a plate ------------------- */
+.step{padding:var(--space-12) 0;scroll-margin-top:var(--space-4)}
+.step__head{display:grid;grid-template-columns:auto 1fr;gap:var(--space-4);
+  align-items:start;margin-bottom:var(--space-6)}
+.step__n{font-family:var(--font-manual);font-size:var(--text-step);font-weight:800;
+  line-height:.8;color:var(--step-numeral);letter-spacing:-.05em;
+  font-variant-numeric:tabular-nums}
+.step__title{padding-top:var(--space-1)}
+.step__lede{color:var(--color-fg-muted);font-size:var(--text-sm);max-width:66ch;
+  margin:var(--space-2) 0 0}
 
-.lead{font-size:var(--text-body);max-width:60ch;margin:var(--space-4) 0 0}
+/* The plate. Every content block is a white panel with a navy keyline,
+   the way a manual boxes what you are meant to look at. */
+.plate{background:var(--plate-bg);border:var(--keyline) solid var(--plate-keyline);
+  border-radius:var(--radius-card);padding:var(--space-3)}
+@media(min-width:420px){.plate{padding:var(--space-4)}}
+@media(min-width:560px){.plate{padding:var(--space-6)}}
+.plate--tight{padding:var(--space-4)}
+
+/* The guide arrow. A dashed manual guide that wipes in left to right.
+   clip-path rather than stroke-dashoffset: the dashes ARE the idiom, and
+   animating dashoffset on a dashed path makes them march instead of draw. */
+.arrow{display:block;width:100%;height:36px;overflow:visible;margin-bottom:calc(var(--stud) * -1)}
+.arrow path{fill:none;stroke:var(--new-part);stroke-width:2;stroke-linecap:round}
+.arrow polygon{fill:var(--new-part)}
+
+/* Motion is opt-in and only ever applied once JS has confirmed it can resolve
+   it. Content is visible by default: an entrance that starts at opacity 0 and
+   depends on an observer firing is content that disappears when it does not. */
+.js-motion .arrow{clip-path:inset(0 100% 0 0)}
+.js-motion .is-drawn .arrow{clip-path:inset(0);
+  transition:clip-path var(--dur-draw) var(--ease-out)}
+/* No opacity here, deliberately. An entrance that fades content in depends on
+   the observer firing for every element; when it misses one, that content is
+   invisible forever. A 6px offset that never resolves is imperceptible, so the
+   worst failure mode is a piece sitting slightly proud of its seat. */
+.js-motion .settle{transform:translateY(6px)}
+.js-motion .is-drawn .settle{transform:none;
+  transition:transform var(--dur-base) var(--ease-out) 80ms}
+
 .note{color:var(--color-fg-muted);font-size:var(--text-sm);max-width:68ch}
+.lead{font-size:var(--text-body);max-width:60ch;margin:var(--space-4) 0 0}
 .grid{display:grid;gap:var(--space-3)}
-.stack-6{margin-top:var(--space-6)}
+.stack-2{margin-top:var(--space-2)}.stack-3{margin-top:var(--space-3)}
+.stack-4{margin-top:var(--space-4)}.stack-6{margin-top:var(--space-6)}
 .stack-8{margin-top:var(--space-8)}
-.stack-12{margin-top:var(--space-12)}
-@media(min-width:720px){.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:560px){.cols-2{grid-template-columns:1fr 1fr}}
+@media(min-width:900px){.cols-3{grid-template-columns:repeat(3,1fr)}}
 
-/* --- table of contents --- */
-.toc{margin:var(--space-8) 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;
-  gap:var(--space-2) var(--space-4);font-size:var(--text-sm)}
-.toc a{text-decoration:none;border-bottom:1px solid transparent}
-.toc a:hover{border-bottom-color:var(--color-interactive)}
+/* --- parts inventory ------------------------------------------- */
+.inv{display:grid;gap:var(--stud);grid-template-columns:repeat(2,1fr)}
+@media(min-width:560px){.inv{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.inv{grid-template-columns:repeat(5,1fr)}}
+.part{border:var(--keyline) solid var(--plate-keyline);border-radius:var(--radius-card);
+  overflow:hidden;background:var(--plate-bg);position:relative}
+.part__no{position:absolute;top:0;left:0;background:var(--inventory-tag);
+  color:var(--navy-900);font-family:var(--font-manual);font-weight:700;
+  font-size:var(--text-xs);padding:2px var(--space-2);
+  border-right:var(--keyline) solid var(--plate-keyline);
+  border-bottom:var(--keyline) solid var(--plate-keyline);
+  border-bottom-right-radius:var(--radius-card);font-variant-numeric:tabular-nums}
+.part__chip{height:56px}
+.part__meta{padding:var(--space-2) var(--space-3);font-size:var(--text-xs);line-height:1.45;
+  border-top:var(--keyline) solid var(--plate-keyline)}
+.part__name{font-family:var(--font-manual);font-weight:600;display:block}
+.part__val{color:var(--color-fg-muted);font-family:ui-monospace,monospace}
 
-/* --- swatches --- */
-.sw{border:1px solid var(--card-border);border-radius:var(--radius-card);
-  overflow:hidden;background:var(--card-bg);box-shadow:var(--shadow-sm)}
-.sw__chip{height:72px}
-.sw__meta{padding:var(--space-3);font-size:var(--text-xs);line-height:1.5}
-.sw__name{font-weight:600;display:block}
-.sw__val{color:var(--color-fg-muted);font-family:ui-monospace,monospace}
+/* --- toc -------------------------------------------------------- */
+.toc{margin:var(--space-6) 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;
+  gap:var(--space-2) var(--space-4);font-size:var(--text-sm);font-family:var(--font-manual)}
+.toc a{text-decoration:none;border-bottom:2px solid transparent}
+.toc a:hover{border-bottom-color:var(--new-part)}
+.toc b{font-variant-numeric:tabular-nums;color:var(--color-fg-muted);font-weight:700}
 
-/* --- slot cell: full-width row, sharp, 56px min --- */
-.slot{
-  display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+/* --- slot cell --------------------------------------------------- */
+.slot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
   width:100%;min-height:var(--slot-min-height);padding:var(--space-4);
   border-radius:var(--radius-sharp);background:var(--slot-bg);
   border:1px solid var(--slot-border);color:var(--slot-fg);
   font-family:var(--font-body);font-size:var(--text-body);text-align:left;
   cursor:pointer;transition:background var(--dur-base) var(--ease-out),
-    border-color var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out);
-}
+    border-color var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out)}
 .slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em}
 .slot__state{font-size:var(--text-sm);white-space:nowrap}
 .slot:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--slot-hover-bg)}
-.slot:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 .slot[aria-pressed=true]{background:var(--slot-selected-bg);
   border-color:var(--slot-selected-bg);color:var(--slot-selected-fg)}
 .slot[data-state=pending]{background:var(--slot-pending-bg);border-color:var(--slot-pending-border);
@@ -213,7 +268,7 @@ section:last-of-type{padding-bottom:var(--space-32)}
 .slot[data-state=booked]{background:var(--slot-booked-bg);border-color:var(--slot-booked-border);
   color:var(--slot-booked-fg);cursor:not-allowed}
 
-/* --- date pill --- */
+/* --- date pill ---------------------------------------------------- */
 .pills{display:flex;gap:var(--space-2);overflow-x:auto;overscroll-behavior-x:contain;
   padding-bottom:var(--space-2);scrollbar-width:thin}
 .pill{flex:0 0 auto;min-width:64px;padding:var(--space-2) var(--space-4);
@@ -224,21 +279,18 @@ section:last-of-type{padding-bottom:var(--space-32)}
 .pill__date{display:block;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm)}
 .pill:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--pill-hover-bg);
   border-color:var(--color-interactive)}
-.pill:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 .pill[aria-pressed=true]{background:var(--pill-selected-bg);border-color:transparent;
   color:var(--pill-selected-fg)}
-.pill[aria-pressed=true] .pill__day{color:rgb(255 255 255 / .8)}
-/* aria-disabled, NEVER native `disabled`. Native disabled removes the control
-   from the tab order, so a keyboard user never learns 13 Agu is unavailable —
-   which contradicts the Visible-Unavailable Rule in DESIGN.md. */
+.pill[aria-pressed=true] .pill__day{color:rgb(255 255 255 / .85)}
+/* aria-disabled, NEVER native `disabled` — native removes it from the tab
+   order, so a keyboard user never learns the date is unavailable. */
 .pill[aria-disabled=true]{background:var(--pill-disabled-bg);color:var(--pill-disabled-fg);
   cursor:not-allowed}
 
-/* --- buttons --- */
+/* --- buttons ------------------------------------------------------ */
 .btn{height:var(--button-height);padding:0 var(--space-6);border-radius:var(--radius-sharp);
   font-family:var(--font-body);font-size:var(--text-body);font-weight:600;cursor:pointer;
   border:1px solid transparent;transition:background var(--dur-fast) var(--ease-out)}
-.btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 .btn--primary{background:var(--button-primary-bg);color:var(--button-primary-fg)}
 .btn--primary:hover:not(:disabled){background:var(--button-primary-hover-bg)}
 .btn--primary:active:not(:disabled){background:var(--button-primary-active-bg)}
@@ -248,7 +300,7 @@ section:last-of-type{padding-bottom:var(--space-32)}
 .btn:disabled{background:var(--button-disabled-bg);color:var(--button-disabled-fg);
   border-color:transparent;cursor:not-allowed}
 
-/* --- inputs --- */
+/* --- inputs -------------------------------------------------------- */
 .field{display:flex;flex-direction:column;gap:var(--space-2)}
 .label{font-size:var(--text-sm);font-weight:500}
 .input{height:var(--input-height);padding:0 var(--space-3);border-radius:var(--radius-sharp);
@@ -259,12 +311,6 @@ section:last-of-type{padding-bottom:var(--space-32)}
 .input:disabled{background:var(--input-disabled-bg);color:var(--input-disabled-fg)}
 .err{font-size:var(--text-sm);color:var(--input-error-fg)}
 
-.card{border:1px solid var(--card-border);border-radius:var(--radius-card);
-  padding:var(--space-4);background:var(--card-bg);box-shadow:var(--shadow-sm)}
-/* Callouts are tonal, not tabbed. A thick coloured left border is a
-   generated-UI tell and contradicts the tonal-layering depth model. */
-.callout{border:1px solid var(--card-border);border-radius:var(--radius-card);
-  padding:var(--space-4);background:var(--callout-bg)}
 .status-card{border:1px solid;border-radius:var(--radius-card);padding:var(--space-4)}
 .status-card--pending{background:var(--slot-pending-bg);border-color:var(--slot-pending-border);
   color:var(--slot-pending-fg)}
@@ -272,44 +318,37 @@ section:last-of-type{padding-bottom:var(--space-32)}
   color:var(--slot-booked-fg)}
 .status-card p{margin:var(--space-2) 0 0}
 
-.specimen{margin-top:var(--space-6)}
-.specimen__display{font-family:var(--font-display);font-size:var(--text-display);
-  line-height:1.1;font-weight:900;letter-spacing:-.02em}
-.specimen__h2{font-family:var(--font-display);font-size:var(--text-h2);font-weight:700}
-.specimen__h3{font-family:var(--font-display);font-size:var(--text-h3);font-weight:500}
-.spec-label{color:var(--color-fg-muted);font-family:ui-monospace,monospace;font-size:var(--text-xs);
-  margin:var(--space-1) 0 0}
-.sub-h{font-size:var(--text-sm);font-family:var(--font-body);font-weight:600}
-
+.spec-label{color:var(--color-fg-muted);font-family:ui-monospace,monospace;
+  font-size:var(--text-xs);margin:var(--space-1) 0 0}
+.sub-h{font-family:var(--font-manual);font-size:var(--text-sm);font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em}
 .ramp{display:flex;align-items:flex-end;gap:var(--space-2);margin-top:var(--space-3)}
-.ramp div{background:var(--color-interactive)}
+.ramp div{background:var(--new-part)}
 .radii{display:flex;gap:var(--space-3);margin-top:var(--space-3);flex-wrap:wrap}
-.radii div{width:72px;height:48px;background:var(--blue-50);
-  border:1px solid var(--color-interactive);display:grid;place-items:center;
-  font-size:var(--text-xs)}
+.radii div{width:72px;height:48px;background:var(--swatch-demo-bg);
+  border:1px solid var(--color-interactive);display:grid;place-items:center;font-size:var(--text-xs)}
 
 table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
 .table-scroll{overflow-x:auto}
 th,td{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--color-border)}
-th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
-  text-transform:uppercase;letter-spacing:.08em}
+th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
+  font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
 
-.decisions{margin:var(--space-6) 0 0;padding-left:var(--space-6)}
-.decisions li{margin-bottom:var(--space-3);max-width:68ch}
+.decisions{margin:var(--space-4) 0 0;padding-left:var(--space-6)}
+.decisions li{margin-bottom:var(--space-3);max-width:66ch}
 
-/* --- Alur: the journey, three screens at the real device width --- */
-.frames{display:grid;gap:var(--space-8);margin-top:var(--space-8)}
+/* --- Alur: the finished model ---------------------------------- */
+.frames{display:grid;gap:var(--space-8);margin-top:var(--space-6)}
 @media(min-width:900px){.frames{grid-template-columns:repeat(3,1fr);align-items:start}}
-.frame__cap{font-size:var(--text-xs);color:var(--color-fg-muted);
-  margin:0 0 var(--space-2);text-transform:uppercase;letter-spacing:.08em}
+.frame__cap{font-family:var(--font-manual);font-size:var(--text-xs);color:var(--color-fg-muted);
+  margin:0 0 var(--space-2);text-transform:uppercase;letter-spacing:.08em;
+  font-variant-numeric:tabular-nums}
 /* 375px is the design target, so the frame is that width and does not stretch.
-   The client sees the real proportions, not a desktop approximation. */
-.frame__screen{width:100%;max-width:375px;border:1px solid var(--color-border);
-  border-radius:var(--radius-card);background:var(--color-bg);
-  padding:var(--space-4);box-shadow:var(--shadow-sm)}
+   The client sees real proportions, not a desktop approximation. */
+.frame__screen{width:100%;max-width:375px;border:var(--keyline) solid var(--plate-keyline);
+  border-radius:var(--radius-card);background:var(--color-bg);padding:var(--space-4)}
 .frame__note{font-size:var(--text-xs);color:var(--color-fg-muted);
   margin:var(--space-3) 0 0;max-width:375px}
-
 .scarcity{font-size:var(--text-sm);font-weight:600;color:var(--color-interactive);
   margin:0 0 var(--space-3)}
 .elapsed{width:100%;display:flex;align-items:center;gap:var(--space-2);
@@ -317,129 +356,169 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
   background:var(--color-bg-subtle);border:1px solid var(--color-border);
   border-radius:var(--radius-sharp);color:var(--color-fg-muted);
   font-family:var(--font-body);font-size:var(--text-sm);cursor:pointer;text-align:left}
-.elapsed:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 .elapsed__caret{transition:transform var(--dur-fast) var(--ease-out)}
 .elapsed[aria-expanded=true] .elapsed__caret{transform:rotate(90deg)}
 .elapsed-list{display:none;margin-bottom:var(--space-2)}
 .elapsed-list.is-open{display:grid;gap:var(--space-2)}
-
-/* Deliberately NOT WhatsApp green. A brand colour that is not Arena Player's has
-   no place in their palette, and this page is the one artifact that must model
-   the system rather than bend it. The frame caption already says WhatsApp. */
+/* Deliberately NOT WhatsApp green. Another brand's colour has no place in this
+   palette, and this page is the artifact that must model the system, not bend it. */
 .wa{background:var(--color-bg-subtle);border:1px solid var(--color-border);
-  border-radius:var(--radius-card);padding:var(--space-3);
-  font-size:var(--text-sm);line-height:1.5}
+  border-radius:var(--radius-card);padding:var(--space-3);font-size:var(--text-sm);line-height:1.5}
 .wa__meta{font-size:var(--text-xs);color:var(--color-fg-muted);margin:var(--space-2) 0 0}
 .summary{border:1px solid var(--color-border);border-radius:var(--radius-sharp);
-  padding:var(--space-3);margin-bottom:var(--space-3);background:var(--color-bg-subtle)}
-.result{text-align:center;padding:var(--space-6) var(--space-3)}
-.result__mark{font-family:var(--font-display);font-size:var(--text-h3);
-  font-weight:700;margin:0 0 var(--space-2)}
+  padding:var(--space-3);margin-bottom:var(--space-3);font-size:var(--text-sm)}
+.result__mark{font-family:var(--font-manual);font-weight:700;margin:0 0 var(--space-1)}
 
 /* Production equivalent lives in lib/motion.ts via gsap.matchMedia().
    This block is the behaviour that wrapper must produce. */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .js-motion .settle{transform:none}
+  .js-motion .arrow{clip-path:none}
 }
 </style>
+<script>document.documentElement.classList.add('js-motion');</script>
 </head>
 <body>
+<!--
+  DIRECTION CONTRACT — /impeccable redesign, seed key 7a4384e8 (mode: read)
 
-<section id="top">
+  THESIS: The three-layer token system is an assembly, so this page is an
+  assembly manual. It refuses the docs-site arrangement — sidebar, swatch
+  grid, prose beside a specimen — because that form documents software for
+  software people. This one shows how the parts click together.
+
+  OWN-WORLD: Instruction-page blue ground, navy keyline ink outlining every
+  piece, Signal Blue for the part each step introduces, amber tags in the
+  parts inventory. Oversized tabular step numerals; an 8px stud module rules
+  every alignment. Archivo is the manual's own voice; Orbitron and Inter
+  appear only inside specimens, because those show the product's real faces.
+
+  STORY: The reader understands that a component never reaches past its own
+  layer, believes the indirection is worth the extra token, and can copy the
+  pattern into Phase 2 without re-reading the prose.
+
+  FIRST VIEWPORT: Not a hero. The parts inventory — every primitive as a
+  numbered piece in a keylined box, the way a manual opens on bag contents
+  before step 1.
+
+  FORM: Brick build-instruction book. User-pinned over roll index 4
+  (Papan Jadwal). Seed key 7a4384e8.
+
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the
+  finish review, the verdict, and DESIGN.md
+-->
+
+<section class="step" id="top">
   <div class="wrap">
-    <h1>Design System</h1>
+    <h1>Arena Player<br>Design System</h1>
     <p class="lead" lang="id">
-      Ini adalah sistem visual Arena Player — warna, huruf, dan komponen yang akan dipakai
-      di seluruh website. Menyetujui halaman ini berarti kami bisa mulai membangun halaman
-      utama tanpa menebak-nebak tampilannya.
+      Ini sistem visual Arena Player — warna, huruf, dan komponen yang dipakai di seluruh
+      website. Menyetujui halaman ini berarti kami bisa mulai membangun halaman utama
+      tanpa menebak tampilannya.
     </p>
-    <p class="note stack-6">
-      Light, clean, blue-and-white — deliberately the inverse of the dark benchmark.
-      Every value below comes from <code>docs/DESIGN.md</code>, which is the source of truth.
-      This page renders the system; it does not define it.
+    <p class="note stack-4">
+      Read it as a build manual. The inventory comes first, then seven steps that assemble
+      the parts, and the finished model at the end. Every value is from
+      <code>docs/DESIGN.md</code>, which is the source of truth; this page renders the
+      system, it does not define it.
     </p>
-
-    <nav aria-label="Sections">
+    <nav aria-label="Steps">
       <ul class="toc">
-        <li><a href="#keputusan" lang="id">Butuh keputusan Anda</a></li>
-        <li><a href="#primitives">Layer 1 — Primitives</a></li>
-        <li><a href="#semantic">Layer 2 — Semantic</a></li>
-        <li><a href="#type">Type scale</a></li>
-        <li><a href="#slot-cell">Slot cell</a></li>
-        <li><a href="#date-pills">Date pills</a></li>
-        <li><a href="#forms">Buttons &amp; inputs</a></li>
-        <li><a href="#foundations">Spacing, radius, motion</a></li>
+        <li><a href="#inventory"><b>00</b> Inventory</a></li>
+        <li><a href="#naming"><b>01</b> Naming</a></li>
+        <li><a href="#assignment"><b>02</b> Assignment</a></li>
+        <li><a href="#lettering"><b>03</b> Lettering</a></li>
+        <li><a href="#slot-cell"><b>04</b> Slot cell</a></li>
+        <li><a href="#date-pills"><b>05</b> Date pills</a></li>
+        <li><a href="#forms"><b>06</b> Buttons &amp; inputs</a></li>
+        <li><a href="#foundations"><b>07</b> Spacing &amp; motion</a></li>
+        <li><a href="#alur"><b>—</b> Finished model</a></li>
       </ul>
     </nav>
   </div>
 </section>
 
-<section id="keputusan">
+<section class="step" id="missing">
   <div class="wrap">
-    <h2 lang="id">Butuh keputusan Anda</h2>
-    <p class="note stack-6">
-      Four things are still open. Each one blocks work that cannot start until it is answered,
-      so they sit at the top rather than at the end.
-    </p>
-    <ol class="decisions">
-      <li><strong>Art direction</strong> — section-transition language, and what “surpass the benchmark”
-        means concretely. This page is tokens and components; the direction sits on top of them.
-        <em>Phase 1b task 1.</em></li>
-      <li><strong>Hero copy</strong> — the Indonesian headline, subheadline, and meta description.
-        Decided together with the type scale, because a three-word headline and a twelve-word one
-        need different sizes. <em>Phase 1b task 2.</em></li>
-      <li><strong>Icon library and date handling</strong> — both are dependencies, and both must fit
-        inside the performance budget before anything imports them. <em>Phase 1a task 1.</em></li>
-      <li><strong>Pricing on <code>/booking</code></strong> — needs your rate card: flat rate, or
-        peak and off-peak, or weekend. Until it is answered no number renders on either page.</li>
-    </ol>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">!</div>
+      <div class="step__title">
+        <h2 lang="id">Butuh keputusan Anda</h2>
+        <p class="step__lede">
+          Four pieces are not in the box yet. Each blocks work that cannot start until it is
+          answered, so they sit before step 1 rather than at the end.
+        </p>
+      </div>
+    </div>
+    <div class="plate">
+      <ol class="decisions">
+        <li><strong>Art direction</strong> — section-transition language, and what “surpass the
+          benchmark” means concretely. <em>Phase 1b task 1.</em></li>
+        <li><strong>Hero copy</strong> — the Indonesian headline, subheadline, and meta
+          description. Decided with the type scale, because a three-word headline and a
+          twelve-word one need different sizes. <em>Phase 1b task 2.</em></li>
+        <li><strong>Icon library and date handling</strong> — dependencies, and both must fit
+          the performance budget before anything imports them. <em>Phase 1a task 1.</em></li>
+        <li><strong>Pricing on <code>/booking</code></strong> — needs your rate card: flat, or
+          peak and off-peak, or weekend. Until answered no number renders on either page.</li>
+      </ol>
+    </div>
   </div>
 </section>
 
-<section id="primitives">
+<section class="step" id="inventory">
   <div class="wrap">
-    <h2>Layer 1 — Primitives</h2>
-    <p class="note">Raw values, named for what they are. Never referenced directly by a component.</p>
-    <div class="grid cols-3 stack-6">
-      <div class="sw"><div class="sw__chip" style="background:var(--navy-900)"></div>
-        <div class="sw__meta"><span class="sw__name">--navy-900</span><span class="sw__val">#011A43 · from the logo</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--navy-700)"></div>
-        <div class="sw__meta"><span class="sw__name">--navy-700</span><span class="sw__val">#0A2E6B · hover depth</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--blue-600)"></div>
-        <div class="sw__meta"><span class="sw__name">--blue-600</span><span class="sw__val">#2563EB · 5.17:1 on white</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--blue-700)"></div>
-        <div class="sw__meta"><span class="sw__name">--blue-700</span><span class="sw__val">#1D4ED8 · pressed</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--blue-50)"></div>
-        <div class="sw__meta"><span class="sw__name">--blue-50</span><span class="sw__val">#EFF6FF · hover wash</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--grey-500)"></div>
-        <div class="sw__meta"><span class="sw__name">--grey-500</span><span class="sw__val">#6B7280 · 4.83:1, passes AA</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--grey-200)"></div>
-        <div class="sw__meta"><span class="sw__name">--grey-200</span><span class="sw__val">#E5E7EB · hairlines</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--grey-50)"></div>
-        <div class="sw__meta"><span class="sw__name">--grey-50</span><span class="sw__val">#F9FAFB · section bands</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--white);border-bottom:1px solid var(--color-border)"></div>
-        <div class="sw__meta"><span class="sw__name">--white</span><span class="sw__val">#FFFFFF · page surface</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--amber-100)"></div>
-        <div class="sw__meta"><span class="sw__name">--amber-100</span><span class="sw__val">#FEF3C7 · pending surface</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--amber-300)"></div>
-        <div class="sw__meta"><span class="sw__name">--amber-300</span><span class="sw__val">#FCD34D · pending border</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--amber-800)"></div>
-        <div class="sw__meta"><span class="sw__name">--amber-800</span><span class="sw__val">#92400E · pending ink</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--red-100)"></div>
-        <div class="sw__meta"><span class="sw__name">--red-100</span><span class="sw__val">#FEE2E2 · booked surface</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--red-300)"></div>
-        <div class="sw__meta"><span class="sw__name">--red-300</span><span class="sw__val">#FCA5A5 · booked border</span></div></div>
-      <div class="sw"><div class="sw__chip" style="background:var(--red-800)"></div>
-        <div class="sw__meta"><span class="sw__name">--red-800</span><span class="sw__val">#991B1B · booked ink, error border</span></div></div>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">00</div>
+      <div class="step__title">
+        <h2>Parts inventory</h2>
+        <p class="step__lede">
+          Fifteen primitives. Raw values, named for what they <em>are</em>. No component ever
+          reaches for one of these directly — that is what steps 01 and 02 are for.
+        </p>
+      </div>
+    </div>
+    <div class="inv settle">
+      <div class="part"><span class="part__no">01</span><div class="part__chip" style="background:var(--navy-900)"></div>
+        <div class="part__meta"><span class="part__name">navy-900</span><span class="part__val">#011A43 · from the logo</span></div></div>
+      <div class="part"><span class="part__no">02</span><div class="part__chip" style="background:var(--navy-700)"></div>
+        <div class="part__meta"><span class="part__name">navy-700</span><span class="part__val">#0A2E6B · hover depth</span></div></div>
+      <div class="part"><span class="part__no">03</span><div class="part__chip" style="background:var(--navy-400)"></div>
+        <div class="part__meta"><span class="part__name">navy-400</span><span class="part__val">#4A5A78 · muted, 6.38:1</span></div></div>
+      <div class="part"><span class="part__no">04</span><div class="part__chip" style="background:var(--blue-600)"></div>
+        <div class="part__meta"><span class="part__name">blue-600</span><span class="part__val">#2563EB · 5.17:1 on white</span></div></div>
+      <div class="part"><span class="part__no">05</span><div class="part__chip" style="background:var(--blue-700)"></div>
+        <div class="part__meta"><span class="part__name">blue-700</span><span class="part__val">#1D4ED8 · pressed</span></div></div>
+      <div class="part"><span class="part__no">06</span><div class="part__chip" style="background:var(--blue-50)"></div>
+        <div class="part__meta"><span class="part__name">blue-50</span><span class="part__val">#EFF6FF · page ground</span></div></div>
+      <div class="part"><span class="part__no">07</span><div class="part__chip" style="background:var(--white);border-bottom:1px solid var(--color-border)"></div>
+        <div class="part__meta"><span class="part__name">white</span><span class="part__val">#FFFFFF · plates</span></div></div>
+      <div class="part"><span class="part__no">08</span><div class="part__chip" style="background:var(--grey-50)"></div>
+        <div class="part__meta"><span class="part__name">grey-50</span><span class="part__val">#F9FAFB · subtle fill</span></div></div>
+      <div class="part"><span class="part__no">09</span><div class="part__chip" style="background:var(--grey-200)"></div>
+        <div class="part__meta"><span class="part__name">grey-200</span><span class="part__val">#E5E7EB · hairlines</span></div></div>
+      <div class="part"><span class="part__no">10</span><div class="part__chip" style="background:var(--amber-100)"></div>
+        <div class="part__meta"><span class="part__name">amber-100</span><span class="part__val">#FEF3C7 · pending surface</span></div></div>
+      <div class="part"><span class="part__no">11</span><div class="part__chip" style="background:var(--amber-300)"></div>
+        <div class="part__meta"><span class="part__name">amber-300</span><span class="part__val">#FCD34D · pending border</span></div></div>
+      <div class="part"><span class="part__no">12</span><div class="part__chip" style="background:var(--amber-800)"></div>
+        <div class="part__meta"><span class="part__name">amber-800</span><span class="part__val">#92400E · pending ink</span></div></div>
+      <div class="part"><span class="part__no">13</span><div class="part__chip" style="background:var(--red-100)"></div>
+        <div class="part__meta"><span class="part__name">red-100</span><span class="part__val">#FEE2E2 · booked surface</span></div></div>
+      <div class="part"><span class="part__no">14</span><div class="part__chip" style="background:var(--red-300)"></div>
+        <div class="part__meta"><span class="part__name">red-300</span><span class="part__val">#FCA5A5 · booked border</span></div></div>
+      <div class="part"><span class="part__no">15</span><div class="part__chip" style="background:var(--red-800)"></div>
+        <div class="part__meta"><span class="part__name">red-800</span><span class="part__val">#991B1B · booked ink, error</span></div></div>
     </div>
 
-    <h3 class="stack-12">Status colours are triples, not hues</h3>
-    <p class="note">
-      The earlier spec said “Pending: yellow”. Yellow text on white is about 1.4:1 and unreadable.
-      “Menunggu Konfirmasi” is information the user needs, so each status is a surface + border + text
-      set chosen to pass AA. Ratios below are computed, not estimated.
+    <h3 class="stack-8">Three pieces make one state, never one</h3>
+    <p class="note stack-2">
+      The earlier spec said “Pending: yellow”. Yellow text on white is about 1.4:1 and
+      unreadable. “Menunggu Konfirmasi” is information the user needs, so each state is a
+      surface, a border, and an ink chosen together. Ratios are computed, not estimated.
     </p>
-    <div class="grid cols-2 stack-6">
+    <div class="grid cols-2 stack-4">
       <div class="status-card status-card--pending">
         <strong>Pending — 6.37:1</strong>
         <p lang="id">Menunggu Konfirmasi</p>
@@ -452,258 +531,335 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
   </div>
 </section>
 
-<section id="semantic">
+<section class="step" id="naming">
   <div class="wrap">
-    <h2>Layer 2 — Semantic</h2>
-    <p class="note">
-      Named for what they do. Re-theming edits this layer only — Layer 3 carries the change
-      into every component without a component rule being touched.
-    </p>
-    <div class="table-scroll stack-6">
-      <table>
-        <thead><tr><th>Token</th><th>Maps to</th><th>Purpose</th></tr></thead>
-        <tbody>
-          <tr><td><code>--color-bg</code></td><td><code>--white</code></td><td>Page background</td></tr>
-          <tr><td><code>--color-bg-subtle</code></td><td><code>--grey-50</code></td><td>Alternating section bands</td></tr>
-          <tr><td><code>--color-fg</code></td><td><code>--navy-900</code></td><td>Body and heading text</td></tr>
-          <tr><td><code>--color-fg-muted</code></td><td><code>--grey-500</code></td><td>Secondary text</td></tr>
-          <tr><td><code>--color-interactive</code></td><td><code>--blue-600</code></td><td>Links, focus, available slots</td></tr>
-          <tr><td><code>--color-interactive-pressed</code></td><td><code>--blue-700</code></td><td>Active state</td></tr>
-          <tr><td><code>--color-border</code></td><td><code>--grey-200</code></td><td>Hairlines</td></tr>
-          <tr><td><code>--color-focus</code></td><td><code>--blue-600</code></td><td>Focus ring — restyled, never removed</td></tr>
-        </tbody>
-      </table>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">01</div>
+      <div class="step__title">
+        <h2>Name each part for its job</h2>
+        <p class="step__lede">
+          The semantic layer. A part stops being <code>navy-900</code> and becomes
+          “the foreground”. Re-theming edits this layer and nothing else.
+        </p>
+      </div>
     </div>
-    <div class="callout stack-6">
-      <p class="note" style="margin:0">
-        <strong>Layer 3 is the half that usually gets skipped.</strong> Every component rule in this
-        file reads from a <code>--slot-*</code>, <code>--pill-*</code>, <code>--button-*</code>,
-        <code>--input-*</code> or <code>--card-*</code> token, never from a primitive. Copy that
-        indirection into Phase 2 — a component that reaches straight to <code>var(--white)</code>
-        looks identical today and breaks the moment the theme moves.
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
+    <div class="plate settle">
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Semantic token</th><th>Part</th><th>Job</th></tr></thead>
+          <tbody>
+            <tr><td><code>--color-page</code></td><td><code>blue-50</code></td><td>Instruction-page ground</td></tr>
+            <tr><td><code>--color-bg</code></td><td><code>white</code></td><td>The plates content sits on</td></tr>
+            <tr><td><code>--color-fg</code></td><td><code>navy-900</code></td><td>Body, headings, keylines</td></tr>
+            <tr><td><code>--color-fg-muted</code></td><td><code>navy-400</code></td><td>Secondary text</td></tr>
+            <tr><td><code>--color-interactive</code></td><td><code>blue-600</code></td><td>Links, focus, available slots</td></tr>
+            <tr><td><code>--color-border</code></td><td><code>grey-200</code></td><td>Hairlines</td></tr>
+            <tr><td><code>--color-focus</code></td><td><code>blue-600</code></td><td>Focus ring — restyled, never removed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note stack-4">
+        <strong>Why <code>--color-fg-muted</code> is not a grey.</strong> This page's ground is
+        <code>blue-50</code>, and <code>grey-500</code> computes to 4.44:1 there — under AA. A
+        hue-tinted mute clears both grounds: 6.38:1 on blue, 6.94:1 on white. On a coloured
+        surface, tint the secondary text from that hue rather than reaching for grey.
       </p>
     </div>
   </div>
 </section>
 
-<section id="type">
+<section class="step" id="assignment">
   <div class="wrap">
-    <h2>Type scale</h2>
-    <p class="note">
-      Ratio 1.25 at 375px growing to 1.5 at 1440px via <code>clamp()</code> — restrained where space is
-      scarce, oversized where there is room. <strong>Resize this window to watch it move.</strong>
-      <code>--text-sm</code> and <code>--text-xs</code> deliberately do not scale.
-    </p>
-    <div class="specimen stack-8">
-      <div class="specimen__display" lang="id">Pesan Lapangan</div>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">02</div>
+      <div class="step__title">
+        <h2>Assign the named parts to components</h2>
+        <p class="step__lede">
+          The step that usually gets skipped. Every component rule on this page reads from a
+          <code>--slot-*</code>, <code>--pill-*</code>, <code>--button-*</code> or
+          <code>--input-*</code> token — never from a raw part.
+        </p>
+      </div>
+    </div>
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
+    <div class="plate settle">
+      <p style="margin:0"><code>--navy-900</code> → <code>--color-fg</code> → <code>--button-primary-bg</code></p>
+      <p class="note stack-4">
+        Three hops, one direction. A component that reaches straight to
+        <code>var(--navy-900)</code> looks identical today and breaks the moment the theme
+        moves — and it breaks silently, which is why the indirection is worth its extra token.
+        Developers copy code, not prose, so this page is the reference Phase 2 inherits.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="lettering">
+  <div class="wrap">
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">03</div>
+      <div class="step__title">
+        <h2>Lettering</h2>
+        <p class="step__lede">
+          Ratio 1.25 at 375px growing to 1.5 at 1440px via <code>clamp()</code>. No breakpoint
+          jumps. <strong>Resize the window to watch it move.</strong>
+          <code>--text-sm</code> and <code>--text-xs</code> deliberately do not scale.
+        </p>
+      </div>
+    </div>
+    <div class="plate settle">
+      <div style="font-family:var(--font-display);font-size:var(--text-display);line-height:1.1;font-weight:900;letter-spacing:-.02em" lang="id">Pesan Lapangan</div>
       <p class="spec-label">--text-display · Orbitron 900 · 32→72px</p>
-      <div class="specimen__h2 stack-6" lang="id">Ketentuan</div>
+      <div class="stack-6" style="font-family:var(--font-display);font-size:var(--text-h2);font-weight:700" lang="id">Ketentuan</div>
       <p class="spec-label">--text-h2 · Orbitron 700 · 26→48px</p>
-      <div class="specimen__h3 stack-6" lang="id">Lokasi &amp; Kontak</div>
+      <div class="stack-6" style="font-family:var(--font-display);font-size:var(--text-h3);font-weight:500" lang="id">Lokasi &amp; Kontak</div>
       <p class="spec-label">--text-h3 · Orbitron 500 · 20→32px</p>
       <p class="stack-6" style="max-width:60ch">Body copy in Inter. Orbitron is wide and geometric, so it takes tighter leading than Inter or it reads as loose — 1.1 for display, 1.6 for body.</p>
       <p class="spec-label">--text-body · Inter 400 · 16→18px</p>
-    </div>
-  </div>
-</section>
-
-<section id="slot-cell">
-  <div class="wrap">
-    <h2>Slot cell</h2>
-    <p class="note">
-      One column, full-width rows. Chosen for one concrete reason: <strong>“Menunggu Konfirmasi” is 20
-      characters.</strong> A 3-column grid at 375px gives ~110px per cell and the label cannot fit at all;
-      2-column forces truncation. Full-width fits it at full size and yields a tap target well above 44px.
-      <strong>Click an available slot</strong> to see the selected state, and click it again to deselect.
-    </p>
-    <div class="grid stack-6" role="group" aria-label="Slot waktu" style="max-width:520px">
-      <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span></button>
-      <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Tersedia</span></button>
-      <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
-      <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state" lang="id">Terisi</span></button>
-      <button class="slot" type="button" data-state="available" aria-pressed="true"><span class="slot__time">14.00 - 16.00</span><span class="slot__state" lang="id">Dipilih</span></button>
-    </div>
-    <div class="callout stack-6">
-      <p class="note" style="margin:0">
-        <strong>Selection is exposed to assistive tech, not just to CSS.</strong> The state lives in
-        <code>aria-pressed</code> and the class hangs off it, so a screen reader announces the change.
-        A class-only selection looks correct and is silent — and this is the pattern Phase 2 copies
-        into the product's core interaction.
-      </p>
-      <p class="note stack-4" style="margin-top:var(--space-4)">
-        <strong>Unavailable cells stay visible and focusable</strong> via <code>aria-disabled</code>,
-        never native <code>disabled</code>. A user needs to see that 18.00 is taken, not wonder why the
-        list skips it.
-      </p>
-      <p class="note" style="margin-top:var(--space-4)">
-        <strong>Elapsed hours are not booked hours.</strong> <code>GET /api/availability</code> returns
-        <code>booked</code> for today's past slots, but the client already knows the current time and the
-        canonical slot starts, so it derives “elapsed” itself — no API change, and the contract stays
-        firm. The order section collapses them into one
-        <span lang="id">“Sudah lewat (N)”</span> row rather than rendering nine
-        <span lang="id">“Terisi”</span> labels that make the day read as sold out. See the order-section
-        brief in <code>.impeccable/surfaces/</code>.
+      <p class="note stack-6">
+        <strong>These are the product's faces, not this document's.</strong> The manual you are
+        reading is set in Archivo; the specimens above show Orbitron and Inter because that is
+        what the product uses. Whether the product keeps them is Phase 1b task 1, still open.
       </p>
     </div>
   </div>
 </section>
 
-<section id="date-pills">
+<section class="step" id="slot-cell">
   <div class="wrap">
-    <h2>Date pills</h2>
-    <p class="note">
-      Fully rounded so the row reads as horizontally scrollable without a hint — the one place the pill
-      radius is used. <code>overscroll-behavior-x: contain</code> stops a swipe bouncing the page.
-      <strong>Click to select; scroll the row sideways; tab through to reach the unavailable one.</strong>
-    </p>
-    <div class="pills stack-6" role="group" aria-label="Tanggal">
-      <button class="pill" type="button" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">7 Agu</span></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">8 Agu</span></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sab</span><span class="pill__date" lang="id">9 Agu</span></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Min</span><span class="pill__date" lang="id">10 Agu</span></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sen</span><span class="pill__date" lang="id">11 Agu</span></button>
-      <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sel</span><span class="pill__date" lang="id">12 Agu</span></button>
-      <button class="pill" type="button" aria-disabled="true"><span class="pill__day" lang="id">Rab</span><span class="pill__date" lang="id">13 Agu</span></button>
-    </div>
-  </div>
-</section>
-
-<section id="forms">
-  <div class="wrap">
-    <h2>Buttons &amp; inputs</h2>
-    <div class="grid cols-2 stack-6">
-      <div>
-        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
-          <button class="btn btn--primary" type="button" lang="id">Pesan Lapangan</button>
-          <button class="btn btn--secondary" type="button" lang="id">Tanya Admin</button>
-          <button class="btn btn--primary" type="button" lang="id" disabled>Kirim</button>
-        </div>
-        <p class="note stack-6">48px height — comfortably above the 44px tap minimum.</p>
-      </div>
-      <div class="grid">
-        <div class="field">
-          <label class="label" for="t" lang="id">Nama Tim</label>
-          <input class="input" id="t" placeholder="Garuda FC">
-        </div>
-        <div class="field">
-          <label class="label" for="p" lang="id">Nomor WhatsApp</label>
-          <input class="input input--error" id="p" type="tel" inputmode="tel" value="12345" aria-describedby="pe" aria-invalid="true">
-          <span class="err" id="pe" lang="id">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span>
-        </div>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">04</div>
+      <div class="step__title">
+        <h2>The slot cell</h2>
+        <p class="step__lede">
+          One column, full-width rows, for one measurable reason: <strong>“Menunggu Konfirmasi”
+          is 20 characters.</strong> A 3-column grid at 375px gives ~110px per cell and the
+          label cannot fit; 2-column truncates it. Full-width fits it at 146px inside a 343px
+          row. <strong>Click an available slot, then click it again to deselect.</strong>
+        </p>
       </div>
     </div>
-    <div class="callout stack-6">
-      <p class="note" style="margin:0">
-        <strong>The error state does not depend on its border alone.</strong> A border that carries a
-        state by itself must clear 3:1 (WCAG 1.4.11). <code>--red-300</code> on a white field computes
-        to 1.90:1 and fails, so the boundary is <code>--red-800</code> at 8.31:1 and the field fills
-        <code>--red-100</code> — two signals, neither of them hue-only. Errors tie to their field via
-        <code>aria-describedby</code>, and focus rings are never removed.
-        <strong>Tab through this page</strong> to check every focus state.
+    <svg class="arrow" viewBox="0 0 240 36" aria-hidden="true">
+      <path d="M12 4 L12 22 Q12 30 20 30 L214 30" stroke-dasharray="6 5"/>
+      <polygon points="214,24 228,30 214,36"/>
+    </svg>
+    <div class="plate settle">
+      <div class="grid" role="group" aria-label="Slot waktu" style="max-width:520px">
+        <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+        <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+        <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
+        <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state" lang="id">Terisi</span></button>
+        <button class="slot" type="button" data-state="available" aria-pressed="true"><span class="slot__time">14.00 - 16.00</span><span class="slot__state" lang="id">Dipilih</span></button>
+      </div>
+      <p class="note stack-6">
+        <strong>Selection lives in <code>aria-pressed</code>, not in a class.</strong> A
+        class-only selection looks correct and is silent to a screen reader, and this is the
+        pattern Phase 2 copies into the product's core interaction. Unavailable cells stay
+        visible and focusable via <code>aria-disabled</code>, never native
+        <code>disabled</code> — a user needs to see that 18.00 is taken.
+      </p>
+      <p class="note stack-4">
+        <strong>Elapsed hours are not booked hours.</strong>
+        <code>GET /api/availability</code> returns <code>booked</code> for today's past slots,
+        but the client already knows the time and the canonical starts, so it derives “elapsed”
+        itself — no API change, contract stays firm. Step “Finished model” shows the treatment:
+        one collapsed <span lang="id">“Sudah lewat (N)”</span> row instead of nine
+        <span lang="id">“Terisi”</span> labels that make the day read as sold out.
       </p>
     </div>
   </div>
 </section>
 
-<section id="foundations">
+<section class="step" id="date-pills">
   <div class="wrap">
-    <h2>Spacing, radius, motion</h2>
-    <div class="grid cols-2 stack-6">
-      <div>
-        <h3 class="sub-h">Spacing — 4px base</h3>
-        <p class="note">Components use 4/8/12/16. Section rhythm only ever uses 48/64/96/128.</p>
-        <div class="ramp">
-          <div style="width:var(--space-1);height:var(--space-1)"></div>
-          <div style="width:var(--space-2);height:var(--space-2)"></div>
-          <div style="width:var(--space-4);height:var(--space-4)"></div>
-          <div style="width:var(--space-8);height:var(--space-8)"></div>
-          <div style="width:var(--space-12);height:var(--space-12)"></div>
-          <div style="width:var(--space-16);height:var(--space-16)"></div>
-        </div>
-      </div>
-      <div>
-        <h3 class="sub-h">Radius — mixed on purpose</h3>
-        <p class="note">Near-sharp geometry carries the Orbitron feel; only date pills go fully round.</p>
-        <div class="radii">
-          <div style="border-radius:var(--radius-sharp)">2px</div>
-          <div style="border-radius:var(--radius-card)">4px</div>
-          <div style="width:88px;border-radius:var(--radius-pill)">pill</div>
-        </div>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">05</div>
+      <div class="step__title">
+        <h2>Date pills</h2>
+        <p class="step__lede">
+          The only fully round shape in the system, and its roundness is functional: the row
+          reads as horizontally scrollable without an arrow or a fade.
+          <code>overscroll-behavior-x: contain</code> stops a swipe bouncing the page.
+          <strong>Tab through to reach the unavailable one.</strong>
+        </p>
       </div>
     </div>
-
-    <h3 class="sub-h stack-8">Elevation — two shadows, both navy-tinted</h3>
-    <p class="note">Depth comes from tonal bands and hairlines. Black shadows on a blue-white page read as dirt.</p>
-    <div class="grid cols-2 stack-6">
-      <div class="card"><strong>--shadow-sm</strong>
-        <p class="note" style="margin:var(--space-2) 0 0">0 1px 2px · resting cards, and every swatch above</p></div>
-      <div class="card" style="box-shadow:var(--shadow-md)"><strong>--shadow-md</strong>
-        <p class="note" style="margin:var(--space-2) 0 0">0 4px 12px · raised surfaces</p></div>
+    <div class="plate plate--tight settle">
+      <div class="pills" role="group" aria-label="Tanggal">
+        <button class="pill" type="button" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">7 Agu</span></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">8 Agu</span></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sab</span><span class="pill__date" lang="id">9 Agu</span></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Min</span><span class="pill__date" lang="id">10 Agu</span></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sen</span><span class="pill__date" lang="id">11 Agu</span></button>
+        <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Sel</span><span class="pill__date" lang="id">12 Agu</span></button>
+        <button class="pill" type="button" aria-disabled="true"><span class="pill__day" lang="id">Rab</span><span class="pill__date" lang="id">13 Agu</span></button>
+      </div>
     </div>
-
-    <div class="table-scroll stack-8">
-      <table>
-        <thead><tr><th>Motion token</th><th>Value</th><th>Use</th></tr></thead>
-        <tbody>
-          <tr><td><code>--dur-fast</code></td><td>160ms</td><td>Hover, focus, colour change</td></tr>
-          <tr><td><code>--dur-base</code></td><td>280ms</td><td>Slot state change, pill selection</td></tr>
-          <tr><td><code>--dur-slow</code></td><td>520ms</td><td>Section reveal — production only, this page has no scroll reveal</td></tr>
-          <tr><td><code>--ease-out</code></td><td>cubic-bezier(.22,1,.36,1)</td><td>Entrances — GSAP <code>power3.out</code></td></tr>
-          <tr><td><code>--ease-in-out</code></td><td>cubic-bezier(.65,0,.35,1)</td><td>Movement between two states — production only</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note stack-6">
-      In production every one of these routes through <code>lib/motion.ts</code>. GSAP has no built-in
-      reduced-motion handling, so a direct <code>gsap.to()</code> in a component is banned — that is exactly
-      how one component ships without the check. Which effects the page actually uses is the user's
-      choice, asked before the code is written; see <code>docs/design-process.md</code>.
-    </p>
   </div>
 </section>
 
-<section id="alur">
+<section class="step" id="forms">
   <div class="wrap">
-    <p class="eyebrow">The journey</p>
-    <h2>Alur — what a customer actually goes through</h2>
-    <p class="lead">
-      Everything above is parts. This is the product: three screens at the real device width,
-      in the real order. Tap a slot in the first frame — it behaves as it will on the phone.
-    </p>
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">06</div>
+      <div class="step__title">
+        <h2>Buttons &amp; inputs</h2>
+        <p class="step__lede">
+          48px tall throughout, comfortably above the 44px tap minimum.
+          <strong>Tab through this plate</strong> to check every focus state.
+        </p>
+      </div>
+    </div>
+    <div class="plate settle">
+      <div class="grid cols-2">
+        <div>
+          <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
+            <button class="btn btn--primary" type="button" lang="id">Pesan Lapangan</button>
+            <button class="btn btn--secondary" type="button" lang="id">Tanya Admin</button>
+            <button class="btn btn--primary" type="button" lang="id" disabled>Kirim</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label class="label" for="t" lang="id">Nama Tim</label>
+            <input class="input" id="t" placeholder="Garuda FC">
+          </div>
+          <div class="field">
+            <label class="label" for="p" lang="id">Nomor WhatsApp</label>
+            <input class="input input--error" id="p" type="tel" inputmode="tel" value="12345" aria-describedby="pe" aria-invalid="true">
+            <span class="err" id="pe" lang="id">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span>
+          </div>
+        </div>
+      </div>
+      <p class="note stack-6">
+        <strong>The error state does not depend on its border alone.</strong> A border carrying
+        a state by itself must clear 3:1 (WCAG 1.4.11). <code>red-300</code> on a white field is
+        1.90:1 and fails, so the boundary is <code>red-800</code> at 8.31:1 and the field fills
+        <code>red-100</code> — two signals, neither hue-only. Errors tie to their field via
+        <code>aria-describedby</code>; focus rings are never removed.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="foundations">
+  <div class="wrap">
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">07</div>
+      <div class="step__title">
+        <h2>Spacing, radius, motion</h2>
+        <p class="step__lede">
+          Components use 4/8/12/16. Section rhythm only ever uses 48/64/96/128 — fine control
+          where it matters, strict rhythm where it shows.
+        </p>
+      </div>
+    </div>
+    <div class="plate settle">
+      <div class="grid cols-2">
+        <div>
+          <h3 class="sub-h">Spacing — 4px base</h3>
+          <div class="ramp">
+            <div style="width:var(--space-1);height:var(--space-1)"></div>
+            <div style="width:var(--space-2);height:var(--space-2)"></div>
+            <div style="width:var(--space-4);height:var(--space-4)"></div>
+            <div style="width:var(--space-8);height:var(--space-8)"></div>
+            <div style="width:var(--space-12);height:var(--space-12)"></div>
+            <div style="width:var(--space-16);height:var(--space-16)"></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="sub-h">Radius — mixed on purpose</h3>
+          <p class="note">Near-sharp geometry carries the Orbitron feel; only date pills go fully round.</p>
+          <div class="radii">
+            <div style="border-radius:var(--radius-sharp)">2px</div>
+            <div style="border-radius:var(--radius-card)">4px</div>
+            <div style="width:88px;border-radius:var(--radius-pill)">pill</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-h stack-8">Elevation — two shadows, both navy-tinted</h3>
+      <p class="note">Depth comes from keylines and tonal plates. Black shadows on a blue-white page read as dirt.</p>
+      <div class="grid cols-2 stack-4">
+        <div style="border:1px solid var(--card-border);border-radius:var(--radius-card);padding:var(--space-4);box-shadow:var(--shadow-sm)">
+          <strong>--shadow-sm</strong><p class="note" style="margin:var(--space-2) 0 0">0 1px 2px · resting</p></div>
+        <div style="border:1px solid var(--card-border);border-radius:var(--radius-card);padding:var(--space-4);box-shadow:var(--shadow-md)">
+          <strong>--shadow-md</strong><p class="note" style="margin:var(--space-2) 0 0">0 4px 12px · raised</p></div>
+      </div>
+
+      <div class="table-scroll stack-8">
+        <table>
+          <thead><tr><th>Motion token</th><th>Value</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td><code>--dur-fast</code></td><td>160ms</td><td>Hover, focus, colour change</td></tr>
+            <tr><td><code>--dur-base</code></td><td>280ms</td><td>Slot state change, the piece settling onto its seat</td></tr>
+            <tr><td><code>--dur-draw</code></td><td>420ms</td><td>A guide arrow drawing itself</td></tr>
+            <tr><td><code>--dur-slow</code></td><td>520ms</td><td>Section reveal — production only</td></tr>
+            <tr><td><code>--ease-out</code></td><td>cubic-bezier(.22,1,.36,1)</td><td>Entrances — GSAP <code>power3.out</code></td></tr>
+            <tr><td><code>--ease-in-out</code></td><td>cubic-bezier(.65,0,.35,1)</td><td>Movement between two states — production only</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note stack-6">
+        The arrows and settles on this page are the manual's own motion, authored once and
+        orchestrated by one observer. In production every equivalent routes through
+        <code>lib/motion.ts</code>: GSAP has no built-in reduced-motion handling, so a direct
+        <code>gsap.to()</code> in a component is banned. Which effects the product uses is the
+        user's choice, asked before code is written — see <code>docs/design-process.md</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="alur">
+  <div class="wrap">
+    <div class="step__head">
+      <div class="step__n" aria-hidden="true">✓</div>
+      <div class="step__title">
+        <h2>Finished model — <span lang="id">Alur</span></h2>
+        <p class="step__lede">
+          Everything above is parts. This is the assembled product: three screens at the real
+          device width, in the real order. Tap a slot in the first frame — it behaves as it
+          will on the phone.
+        </p>
+      </div>
+    </div>
 
     <div class="frames">
-
       <!-- Frame 1 — the order section, per .impeccable/surfaces/app-page-tsx.md -->
-      <div>
+      <div class="settle">
         <p class="frame__cap">1 · Memilih jam</p>
         <div class="frame__screen">
           <p class="scarcity" lang="id">Hari ini · sisa 2 slot</p>
-
           <div class="pills stack-3">
-            <button class="pill" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">Hari ini</span></button>
-            <button class="pill" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">Besok</span></button>
-            <button class="pill" aria-pressed="false"><span class="pill__day" lang="id">Pilih</span><span class="pill__date" lang="id">Tanggal</span></button>
+            <button class="pill" type="button" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">Hari ini</span></button>
+            <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">Besok</span></button>
+            <button class="pill" type="button" aria-pressed="false"><span class="pill__day" lang="id">Pilih</span><span class="pill__date" lang="id">Tanggal</span></button>
           </div>
-
-          <!-- Elapsed hours collapse instead of showing nine "Terisi" rows. At 19.00
-               the old design made the day read as sold out — the worst possible
-               outcome for a product measured on filling empty slots. -->
-          <button class="elapsed" aria-expanded="false" aria-controls="elapsed-list">
+          <!-- Elapsed hours collapse instead of showing nine "Terisi" rows. At 19.00 the
+               old design made the day read as sold out — the worst outcome for a product
+               measured on filling empty slots. -->
+          <button class="elapsed" type="button" aria-expanded="false" aria-controls="elapsed-list">
             <span class="elapsed__caret" aria-hidden="true">›</span>
             <span lang="id">Sudah lewat (6)</span>
           </button>
           <div class="elapsed-list" id="elapsed-list">
-            <button class="slot" data-state="booked" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
-            <button class="slot" data-state="booked" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
           </div>
-
           <div class="grid">
-            <button class="slot" data-state="pending" aria-disabled="true"><span class="slot__time">18.00 - 20.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
-            <button class="slot" aria-pressed="false"><span class="slot__time">20.00 - 22.00</span><span class="slot__state" lang="id">Tersedia</span></button>
-            <button class="slot" aria-pressed="false"><span class="slot__time">22.00 - 24.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+            <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">18.00 - 20.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
+            <button class="slot" type="button" aria-pressed="false"><span class="slot__time">20.00 - 22.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+            <button class="slot" type="button" aria-pressed="false"><span class="slot__time">22.00 - 24.00</span><span class="slot__state" lang="id">Tersedia</span></button>
           </div>
-
-          <button class="btn btn--primary stack-4" style="width:100%" lang="id">Pesan lewat WhatsApp</button>
+          <button class="btn btn--primary stack-4" type="button" style="width:100%" lang="id">Pesan lewat WhatsApp</button>
         </div>
         <p class="frame__note">
           Today is preselected because bookings are same-day. The CTA names WhatsApp, so nobody
@@ -712,14 +868,14 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
       </div>
 
       <!-- Frame 2 — the handoff. WhatsApp only; the site does not also navigate. -->
-      <div>
+      <div class="settle">
         <p class="frame__cap">2 · WhatsApp terbuka</p>
         <div class="frame__screen">
           <p class="frame__cap" style="margin-bottom:var(--space-3)">Arena Player</p>
           <div class="wa" lang="id">
             Halo, saya mau booking lapangan Arena Player tanggal 7 Agu 2026 jam 20.00 - 22.00
           </div>
-          <p class="wa__meta">
+          <p class="wa__meta" lang="id">
             Pesan sudah terisi otomatis. Admin membalas dengan link formulir.
           </p>
         </div>
@@ -729,85 +885,93 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
         </p>
       </div>
 
-      <!-- Frame 3 — the form outcome, including the 409 that is the whole reason
-           the anti-double-booking index exists. -->
-      <div>
+      <!-- Frame 3 — the form outcome, including the 409 that is the whole reason the
+           anti-double-booking index exists. -->
+      <div class="settle">
         <p class="frame__cap">3 · Formulir &amp; hasil</p>
         <div class="frame__screen">
-          <div class="summary" lang="id">
-            <strong>7 Agu 2026 · 20.00 - 22.00</strong>
-          </div>
-          <div class="result">
+          <div class="summary" lang="id"><strong>7 Agu 2026 · 20.00 - 22.00</strong></div>
+          <div>
             <p class="result__mark" style="color:var(--color-interactive)" lang="id">Berhasil</p>
             <p class="note" style="margin:0" lang="id">Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp.</p>
           </div>
         </div>
-
-        <div class="frame__screen stack-6" style="border-color:var(--red-300);background:var(--red-100)">
-          <div class="result">
-            <p class="result__mark" style="color:var(--red-800)" lang="id">Slot sudah diambil</p>
-            <p class="note" style="margin:0;color:var(--red-800)" lang="id">
-              Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain.
-            </p>
-            <button class="btn btn--secondary stack-4" lang="id">Pilih jam lain</button>
-          </div>
+        <div class="frame__screen stack-6" style="border-color:var(--red-800);background:var(--red-100)">
+          <p class="result__mark" style="color:var(--red-800)" lang="id">Slot sudah diambil</p>
+          <p class="note" style="margin:0;color:var(--red-800)" lang="id">
+            Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain.
+          </p>
+          <button class="btn btn--secondary stack-4" type="button" lang="id">Pilih jam lain</button>
         </div>
         <p class="frame__note">
-          <strong>The second screen is the important one.</strong> Two people submit the same slot;
-          exactly one wins, and the other is told honestly rather than double-booked. It is why the
-          database, not the page, decides who gets the slot.
+          <strong>The second screen is the important one.</strong> Two people submit the same
+          slot; exactly one wins, and the other is told honestly rather than double-booked. It
+          is why the database, not the page, decides who gets the slot.
         </p>
       </div>
-
     </div>
   </div>
 </section>
 
 <script>
   // Demo interactivity only. Production state lives in zustand / TanStack Query.
-  // Note the pattern: aria-pressed is the state, CSS reads it. Never class-only.
+  // The pattern to copy: aria-pressed is the state, CSS reads it. Never class-only.
   function toggleGroup(selector, opts) {
     document.querySelectorAll(selector).forEach(function (el) {
       el.addEventListener('click', function () {
         if (el.getAttribute('aria-disabled') === 'true') return;
+        var scope = el.closest('[role=group]') || document;
         var wasPressed = el.getAttribute('aria-pressed') === 'true';
-        document.querySelectorAll(selector).forEach(function (sibling) {
+        scope.querySelectorAll(selector).forEach(function (sibling) {
           if (sibling.getAttribute('aria-disabled') === 'true') return;
           sibling.setAttribute('aria-pressed', 'false');
-          if (opts.resetLabel) {
-            sibling.querySelector(opts.labelSelector).textContent = opts.resetLabel;
-          }
+          if (opts.resetLabel) sibling.querySelector(opts.labelSelector).textContent = opts.resetLabel;
         });
-        // Reversible: clicking the selected item deselects it rather than
-        // forcing the user to pick a different one to escape.
+        // Reversible: clicking the selected item deselects it rather than forcing
+        // the user to pick a different one to escape.
         if (!wasPressed) {
           el.setAttribute('aria-pressed', 'true');
-          if (opts.activeLabel) {
-            el.querySelector(opts.labelSelector).textContent = opts.activeLabel;
-          }
+          if (opts.activeLabel) el.querySelector(opts.labelSelector).textContent = opts.activeLabel;
         }
       });
     });
   }
-
-  toggleGroup('.slot', {
-    labelSelector: '.slot__state',
-    resetLabel: 'Tersedia',
-    activeLabel: 'Dipilih'
-  });
+  toggleGroup('.slot', { labelSelector: '.slot__state', resetLabel: 'Tersedia', activeLabel: 'Dipilih' });
   toggleGroup('.pill', {});
 
-  // Elapsed group. aria-expanded is the state; CSS reads it, same pattern as
-  // aria-pressed above. The caret rotation is a demo affordance only —
-  // production motion goes through lib/motion.ts.
   document.querySelectorAll('.elapsed').forEach(function (el) {
     el.addEventListener('click', function () {
       var open = el.getAttribute('aria-expanded') === 'true';
       el.setAttribute('aria-expanded', String(!open));
-      var list = document.getElementById(el.getAttribute('aria-controls'));
-      if (list) list.classList.toggle('is-open', !open);
+      document.getElementById(el.getAttribute('aria-controls')).classList.toggle('is-open', !open);
     });
   });
+
+  // The manual's one authored motion: each step's guide arrow draws itself, then the
+  // piece settles onto its seat. One observer for the whole page; transform and opacity
+  // only, so nothing reflows. Reduced motion is handled in CSS, not here.
+  (function () {
+    var steps = document.querySelectorAll('.step');
+    if (!('IntersectionObserver' in window)) {
+      steps.forEach(function (s) { s.classList.add('is-drawn'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-drawn');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
+    steps.forEach(function (s) { io.observe(s); });
+    // Backstop. The arrows are the world's signature device, and an observer
+    // that misses a step leaves one clipped to nothing. Anything unresolved
+    // after 1.2s is drawn outright, so the page can never settle into a state
+    // where the motion silently ate the artwork.
+    setTimeout(function () {
+      steps.forEach(function (s) { s.classList.add('is-drawn'); });
+    }, 1200);
+  })();
 </script>
 
 </body>
