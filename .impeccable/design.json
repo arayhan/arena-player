@@ -100,11 +100,11 @@
         "displayName": "Hairline",
         "canonical": "#E5E7EB"
       },
-      "grey-500": {
+      "navy-400": {
         "role": "neutral",
         "displayName": "Muted Ink",
-        "canonical": "#6B7280",
-        "note": "4.83:1 on white, passes AA."
+        "canonical": "#4A5A78",
+        "note": "6.94:1 on white, 6.38:1 on blue-50. Replaced grey-500, which failed AA (4.44:1) once secondary text sat on a coloured ground."
       }
     },
     "semanticLayer": {
@@ -113,11 +113,23 @@
         "--color-bg": "white",
         "--color-bg-subtle": "grey-50",
         "--color-fg": "navy-900",
-        "--color-fg-muted": "grey-500",
+        "--color-fg-muted": "navy-400",
         "--color-interactive": "blue-600",
         "--color-interactive-pressed": "blue-700",
         "--color-border": "grey-200",
-        "--color-focus": "blue-600"
+        "--color-focus": "blue-600",
+        "--color-fg-inverse": "white",
+        "--color-wash": "blue-50",
+        "--color-accent-strong": "navy-900",
+        "--color-accent-strong-hover": "navy-700",
+        "--color-disabled-bg": "grey-200",
+        "--color-warning-surface": "amber-100",
+        "--color-warning-line": "amber-300",
+        "--color-warning-strong": "amber-800",
+        "--color-danger-surface": "red-100",
+        "--color-danger-line": "red-300",
+        "--color-danger-strong": "red-800",
+        "--color-success-fg": "navy-900"
       }
     },
     "typographyMeta": {
@@ -351,6 +363,11 @@
         "name": "The Visible-Boundary Rule",
         "body": "When a border is a state's only visual signal it must clear 3:1 (WCAG 1.4.11). red-300 on a white field computes to 1.90:1 and fails; the error state pairs a red-800 border at 8.31:1 with a red-100 fill so the signal survives both the contrast floor and colour-blindness.",
         "section": "components"
+      },
+      {
+        "name": "The Full-Chain Rule",
+        "body": "A component token routes through the semantic tier or it is not in the system. State colour needs its own semantic entries; without them every component showing a state reaches for a raw hue and a re-theme misses all of it.",
+        "section": "colors"
       }
     ],
     "dos": [
@@ -374,7 +391,8 @@
       "Don't animate layout properties (width, height, top, left).",
       "Don't invent art direction here. It is Phase 1b task 1 and belongs to that task.",
       "Don't let a border be a state's only visual signal unless it clears 3:1. Pair it with a fill.",
-      "Don't put a kicker or eyebrow above a heading. Where the small label holds real information (Layer 1, Layer 2), fold it into the heading instead of setting it as a separate uppercase line."
+      "Don't put a kicker or eyebrow above a heading. Where the small label holds real information (Layer 1, Layer 2), fold it into the heading instead of setting it as a separate uppercase line.",
+      "Don't use a neutral grey for secondary text on a coloured surface. Tint the mute from that surface's hue."
     ]
   }
 }

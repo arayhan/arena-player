@@ -17,17 +17,28 @@ to proceed without them.
 
 ## What to show, in this order
 
-Open `docs/DESIGN.html` and walk down it. Skip the token tables — those are for developers and
-will lose them.
+Open `docs/DESIGN.html` and walk down it. **Skip steps 01, 02 and 08** — token tables and
+failure states, written for developers, and they will lose the client.
 
-1. **The direction.** Light, blue-and-white, built from the navy in their own logo. Say plainly
+The page is laid out as a build manual: a parts inventory, then numbered assembly steps, then
+the finished model. Say that once at the start and the rest explains itself.
+
+1. **The decisions block, before step 00.** Start here, not at the end. Four things are open and
+   two of them block work. Walking in with the questions already on screen is what makes this a
+   decision meeting rather than a demo.
+2. **The direction.** Light, blue-and-white, built from the navy in their own logo. Say plainly
    that it is the deliberate opposite of the dark neon site they referenced.
-2. **The slot list.** Tap an available slot; show pending and booked. This is the product.
-3. **The `Alur` section.** The whole journey end to end — pick a slot → the WhatsApp message
-   they receive → the booking form → success. Then the **409 screen**.
-4. **Stop on the 409 screen and explain it.** Two people picked the same slot; one gets told it
+3. **Step 04, the slot list.** Tap an available slot; show pending and booked. This is the product.
+4. **The finished model — `Alur`.** The whole journey end to end at real phone width — pick a
+   slot → the WhatsApp message they receive → the booking form → success. Then the **409 screen**.
+5. **Stop on the 409 screen and explain it.** Two people picked the same slot; one gets told it
    is gone. This is the single most important thing on the page and the reason the system is
    built the way it is. If they react to one thing, this should be it.
+
+If they ask why the documentation looks like an instruction manual: because the system genuinely
+is an assembly, and the manual form makes the parts and their order visible. It is the
+documentation's own look — **the booking site is the three phone frames in the finished model**,
+and that is what their customers will see.
 
 ---
 

@@ -11,7 +11,7 @@ colors:
   white: "#FFFFFF"
   grey-50: "#F9FAFB"
   grey-200: "#E5E7EB"
-  grey-500: "#6B7280"
+  navy-400: "#4A5A78"
   amber-100: "#FEF3C7"
   amber-300: "#FCD34D"
   amber-800: "#92400E"
@@ -96,7 +96,7 @@ components:
     textColor: "{colors.white}"
   pill-disabled:
     backgroundColor: "{colors.grey-50}"
-    textColor: "{colors.grey-500}"
+    textColor: "{colors.navy-400}"
   button-primary:
     backgroundColor: "{colors.navy-900}"
     textColor: "{colors.white}"
@@ -115,7 +115,7 @@ components:
     height: 48px
   button-disabled:
     backgroundColor: "{colors.grey-200}"
-    textColor: "{colors.grey-500}"
+    textColor: "{colors.navy-400}"
   input:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
@@ -127,7 +127,7 @@ components:
     textColor: "{colors.red-800}"
   input-disabled:
     backgroundColor: "{colors.grey-50}"
-    textColor: "{colors.grey-500}"
+    textColor: "{colors.navy-400}"
 ---
 
 # Design System: Arena Player
@@ -180,7 +180,7 @@ Status colours are **triples**, never single hues. Each is a surface, a border, 
 - **Page White** (`white`): the default page surface.
 - **Band Grey** (`grey-50`): alternating section bands and disabled fills.
 - **Hairline** (`grey-200`): dividers and resting borders.
-- **Muted Ink** (`grey-500`): captions and secondary text. 4.83:1 on white, passes AA.
+- **Muted Ink** (`navy-400`): captions and secondary text. 6.94:1 on white and 6.38:1 on the blue wash. It replaced a neutral grey, which computed 4.44:1 against `blue-50` and failed AA the moment secondary text sat on a coloured surface.
 
 ### The Semantic Layer
 
@@ -191,11 +191,24 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 | `--color-bg` | `white` | Page background |
 | `--color-bg-subtle` | `grey-50` | Alternating section bands |
 | `--color-fg` | `navy-900` | Body and heading text |
-| `--color-fg-muted` | `grey-500` | Secondary text, captions |
+| `--color-fg-muted` | `navy-400` | Secondary text, captions |
 | `--color-interactive` | `blue-600` | Links, focus, available slots |
 | `--color-interactive-pressed` | `blue-700` | Active state |
 | `--color-border` | `grey-200` | Hairlines |
 | `--color-focus` | `blue-600` | Focus ring |
+| `--color-fg-inverse` | `white` | Text on a filled dark surface |
+| `--color-wash` | `blue-50` | The hover tint |
+| `--color-accent-strong` | `navy-900` | Heaviest actionable surface — primary button, secondary border |
+| `--color-accent-strong-hover` | `navy-700` | Its hover |
+| `--color-disabled-bg` | `grey-200` | Disabled fill |
+| `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple |
+| `--color-danger-surface` / `-line` / `-strong` | `red-100` / `-300` / `-800` | The booked triple, and the error boundary |
+| `--color-success-fg` | `navy-900` | Success carries on weight and copy, never on the interactive blue |
+
+**State colour needs its own semantic tier.** Without one, every component showing a state
+reaches for a raw hue, and a re-theme silently misses all of them. That is not hypothetical: it
+is exactly what a finish review found in the first build of `DESIGN.html`, where seventeen
+component tokens skipped this layer while the page argued they did not.
 
 **The Three-Layer Rule.** Reference flows one direction only: primitive → semantic → component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else.
 
@@ -338,5 +351,7 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 - **Don't** use black shadows, or add a shadow where a hairline and a tonal band already separate two surfaces.
 - **Don't** add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.
 - **Don't** animate layout properties (`width`, `height`, `top`, `left`).
+- **Don't** let a component token point at a primitive. It must route through the semantic tier, including for state colour — that is the half that gets skipped.
+- **Don't** use a neutral grey for secondary text on a coloured surface. Tint the mute from the surface's own hue.
 - **Don't** put a kicker or eyebrow above a heading. The heading carries its own weight. Where the small label holds real information — `Layer 1`, `Layer 2` — fold it into the heading instead of setting it as a separate uppercase line above.
 - **Don't** invent art direction here. It is Phase 1b task 1 and belongs to that task.
