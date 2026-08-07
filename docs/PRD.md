@@ -412,6 +412,7 @@ Agenda for the discussion:
 | **File upload** | **Presigned URL** — browser PUTs straight to R2, then POSTs the object key. This supersedes the multipart flow currently drawn in [architecture.md](architecture.md) and is why `POST /api/bookings` is marked provisional |
 | **Where expiry runs** | Lazy-on-read, scheduled job, or on-POST. Lazy-on-read is starved by the 30s shared cache — a cache hit never reaches the origin, so nothing frees an abandoned slot on a quiet night. Full statement of the problem and the three candidate fixes: [architecture.md](architecture.md) |
 | **Orphaned R2 objects** | Upload succeeds before the insert, so a crash in between leaves a file no row points at and nothing ever notices. Likely an R2 lifecycle rule on the `proofs/` prefix — confirm it is configured at handover, since it lives in the R2 dashboard and not in this repo |
+| **Security review** | `/security-review` over the route handlers before launch, and it belongs on this agenda rather than at the end. Phase 4 is the only phase that ships something publicly reachable: an unauthenticated `POST` accepting a 2MB file upload into private storage, guarded by a honeypot and a per-IP rate limit, sitting in front of a race the whole system is built around. Phases 1a–3 have no attack surface at all — a mistake there is wrong, a mistake here is exploitable. Decide **when** it runs: before the presigned-URL work or after, since that decision moves the upload path from the server to the browser |
 | **Re-adding the Neon MCP** | It was removed from `.mcp.json` during Phase 1a, deliberately. It gives an agent SQL execution and migration application, which is exactly what [database.md](database.md) forbids — migrations are run by hand in the Neon SQL editor. The failure it enables is silent: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that index is the only race guard there is. If it comes back, it comes back **with a written rule limiting agents to reads**, and `NEON_API_KEY` gets documented in `.env.local.example` at the same time |
 
 Already locked, carried in unchanged — anti-double-booking via the `uniq_active_slot` partial index with its 409 contract, and the 24h expiry *rule itself*. Non-negotiable; see [database.md](database.md). Only the **mechanism** that runs the expiry is open, per the agenda row above.
@@ -426,6 +427,18 @@ Required in this phase:
 - Confirm `mockServiceWorker.js` is **absent from the production build output** — check the built artifact, not the source
 - Handle the unregister path. Any browser that previously loaded the dev site still has the worker registered; it does not disappear because the file stopped shipping
 - **Acceptance:** a production build issues real requests to `/api/availability` and `/api/bookings`, verified in the browser network panel. Verified, not inferred
+
+### Definition of Done — Phase 4
+
+The only phase whose Definition of Done includes a security gate, because it is the only phase that ships a publicly reachable endpoint.
+
+- [ ] Migration applied by hand in the Neon SQL editor, `uniq_active_slot` confirmed present — the index is the only race guard, and a table created without it fails silently
+- [ ] `pnpm check:setup` passes against live Neon and R2
+- [ ] Double-submit race tested: two concurrent POSTs for the same slot produce exactly one booking and one 409
+- [ ] Rate limit returns 429 with its own Indonesian copy, distinct from the 409 taken-slot message
+- [ ] MSW retirement checklist above complete, verified in the network panel
+- [ ] **`/security-review` passed** over the route handlers — unauthenticated POST, file upload, honeypot, rate limit, and the R2 write path
+- [ ] Orphaned-proof lifecycle rule configured in the R2 dashboard, and noted for handover since it lives outside this repo
 
 ## Real content + WhatsApp bot
 
