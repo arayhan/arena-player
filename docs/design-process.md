@@ -93,3 +93,15 @@ Rendered top to bottom:
 5. CTA Footer + Footer — closing CTA back to `#order`, logo, copyright, minimal links.
 
 **Built** in a different order — layout → order → hero → content → footer. The order section carries all the state and data-fetching risk, so it gets built first and iterated most. Rendered position is unaffected.
+
+## The design detector hook
+
+`/impeccable hooks on` is enabled for this project. It runs the impeccable detector after every edit to a design file (`.tsx`, `.html`, `.css`, and friends) and surfaces the immediate tier only — broken images, clipped content, **contrast failures**, design-system drift. A deeper pass over everything touched runs once at the end of a session.
+
+It earns its place on evidence rather than principle. Two defects reached commits during Phase 1b — overstated contrast ratios and a WCAG 1.4.11 failure — and the review that caught the first recorded that *"the detector's real contribution was independent contrast verification, which caught an error the LLM review missed entirely."* This turns that from a once-per-review check into a per-edit one.
+
+**It is machine-local and optional.** `.impeccable/config.json` is tracked and carries `hook.enabled`, but the hook manifest lives in `.claude/settings.local.json`, which is gitignored. A developer without impeccable installed loses the check and nothing else — no build breaks, no command fails.
+
+**Installing it needs a manual step here.** `hook-admin.mjs on` writes the config but reports *"no installed provider skill folders found to repair"*, because impeccable is installed globally rather than vendored into this repo, so it cannot find a manifest to write. The `PostToolUse` and `Stop` entries in `.claude/settings.local.json` were added by hand, pointing at `hook.mjs` in the global install. If you clone this repo fresh, that step will not have happened — `hook-admin.mjs status` reporting `enabled` is **not** proof the hook runs. Check that `.claude/settings.local.json` has a `hooks` key.
+
+Detector findings are not automatically defects. Three on `docs/DESIGN.html` — Inter as an overused font, Cascadia Code as a display face, em-dash density — were each assessed and accepted: Inter is a locked brand commitment, Cascadia Code is a monospace *fallback* behind `ui-monospace`, and the em-dash count is a writing-voice observation on a spec document. None are suppressed in config, because none of them surface through the hook; they only appear on a manual `detect.mjs` run.
