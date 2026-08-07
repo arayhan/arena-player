@@ -129,6 +129,7 @@ components:
     padding: 0 12px
     height: 48px
   input-error:
+    backgroundColor: "{colors.red-100}"
     textColor: "{colors.red-800}"
   input-disabled:
     backgroundColor: "{colors.grey-50}"
@@ -289,7 +290,11 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 **The Visible-Unavailable Rule.** Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Hiding an unavailable slot is never the answer.
 
-Past slots currently render identically to booked, because `GET /api/availability` returns `booked` for today's elapsed slots and the client genuinely cannot tell them apart. [PRODUCT.md](PRODUCT.md) records this as a conflict to resolve — with same-day booking confirmed as the primary journey, a page opened at 19.00 shows the whole day as "Terisi" and looks sold out. Distinguishing them requires a `past` status in the API contract, which is a Phase 4 decision. **Do not design around it before the contract changes.**
+**Elapsed slots are not booked slots, and the distinction is now the client's to make.** `GET /api/availability` returns `booked` for today's elapsed slots, so an earlier draft of this section concluded the client could not tell them apart and that separating them needed a `past` status in the API contract — a Phase 4 change.
+
+That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `lib/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
+
+Why it mattered enough to reopen: with same-day booking confirmed as the primary journey, a page opened at 19.00 rendered the whole day as "Terisi" and read as sold out. For a product measured on filling empty hours, that is the worst outcome the design can produce, and it was one derivation away from being avoidable.
 
 ### Date Pill
 
@@ -303,10 +308,12 @@ Past slots currently render identically to booked, because `GET /api/availabilit
 
 - **Style:** 48px tall, 2px radius, 1px `grey-200` border, 12px padding, white fill.
 - **Focus:** 2px `blue-600` outline at 2px offset. Never `outline: none` without a replacement.
-- **Error:** 2px `red-300` border, `red-800` message text, tied to the field via `aria-describedby`.
+- **Error:** 2px `red-800` border **and** `red-100` field fill, with `red-800` message text tied to the field via `aria-describedby`.
 - **Disabled:** `grey-50` fill, muted text.
 
 **The Focus-Is-Required Rule.** Focus rings are restyled, never removed. Keyboard operability is a Phase 3 Definition-of-Done item, not a styling preference.
+
+**The Visible-Boundary Rule.** When a border is a state's only visual signal, it must clear **3:1** — WCAG 1.4.11 for non-text UI boundaries. An earlier draft used `red-300` on a white field, which computes to **1.90:1** and fails: the field stayed white, so the border carried the whole signal and did so invisibly. `red-800` computes to **8.31:1** on white, and the `red-100` fill adds a second, non-border signal so the state does not depend on one property or on hue alone. This token ships into the `/booking` form, which is the conversion point.
 
 ### Cards / Containers
 

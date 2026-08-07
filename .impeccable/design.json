@@ -9,7 +9,16 @@
         "displayName": "Arena Navy",
         "canonical": "#011A43",
         "note": "Sampled from the client's logo. Inherited, not chosen.",
-        "tonalRamp": ["#000B1D", "#011232", "#011A43", "#0A2E6B", "#1B4894", "#3A6CBD", "#7699DB", "#C3D5F2"]
+        "tonalRamp": [
+          "#000B1D",
+          "#011232",
+          "#011A43",
+          "#0A2E6B",
+          "#1B4894",
+          "#3A6CBD",
+          "#7699DB",
+          "#C3D5F2"
+        ]
       },
       "navy-700": {
         "role": "primary",
@@ -22,34 +31,75 @@
         "displayName": "Signal Blue",
         "canonical": "#2563EB",
         "note": "Every interactive affordance. 5.17:1 on white.",
-        "tonalRamp": ["#0A1F52", "#12307D", "#1D4ED8", "#2563EB", "#5B8BF2", "#93B4F8", "#C7DAFC", "#EFF6FF"]
+        "tonalRamp": [
+          "#0A1F52",
+          "#12307D",
+          "#1D4ED8",
+          "#2563EB",
+          "#5B8BF2",
+          "#93B4F8",
+          "#C7DAFC",
+          "#EFF6FF"
+        ]
       },
-      "blue-700": { "role": "secondary", "displayName": "Signal Blue Pressed", "canonical": "#1D4ED8" },
+      "blue-700": {
+        "role": "secondary",
+        "displayName": "Signal Blue Pressed",
+        "canonical": "#1D4ED8"
+      },
       "blue-50": {
         "role": "secondary",
         "displayName": "Signal Wash",
         "canonical": "#EFF6FF",
         "note": "Hover fill. Light enough that navy text on it still passes AA, so hover never needs a text-colour change."
       },
-      "amber-100": { "role": "tertiary", "displayName": "Pending Surface", "canonical": "#FEF3C7" },
-      "amber-300": { "role": "tertiary", "displayName": "Pending Border", "canonical": "#FCD34D" },
+      "amber-100": {
+        "role": "tertiary",
+        "displayName": "Pending Surface",
+        "canonical": "#FEF3C7"
+      },
+      "amber-300": {
+        "role": "tertiary",
+        "displayName": "Pending Border",
+        "canonical": "#FCD34D"
+      },
       "amber-800": {
         "role": "tertiary",
         "displayName": "Pending Ink",
         "canonical": "#92400E",
         "note": "6.37:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
       },
-      "red-100": { "role": "tertiary", "displayName": "Booked Surface", "canonical": "#FEE2E2" },
-      "red-300": { "role": "tertiary", "displayName": "Booked Border", "canonical": "#FCA5A5" },
+      "red-100": {
+        "role": "tertiary",
+        "displayName": "Booked Surface",
+        "canonical": "#FEE2E2"
+      },
+      "red-300": {
+        "role": "tertiary",
+        "displayName": "Booked Border",
+        "canonical": "#FCA5A5"
+      },
       "red-800": {
         "role": "tertiary",
         "displayName": "Booked Ink",
         "canonical": "#991B1B",
         "note": "6.80:1 on red-100."
       },
-      "white": { "role": "neutral", "displayName": "Page White", "canonical": "#FFFFFF" },
-      "grey-50": { "role": "neutral", "displayName": "Band Grey", "canonical": "#F9FAFB" },
-      "grey-200": { "role": "neutral", "displayName": "Hairline", "canonical": "#E5E7EB" },
+      "white": {
+        "role": "neutral",
+        "displayName": "Page White",
+        "canonical": "#FFFFFF"
+      },
+      "grey-50": {
+        "role": "neutral",
+        "displayName": "Band Grey",
+        "canonical": "#F9FAFB"
+      },
+      "grey-200": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#E5E7EB"
+      },
       "grey-500": {
         "role": "neutral",
         "displayName": "Muted Ink",
@@ -71,34 +121,109 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero headline only. The single largest gesture on the page." },
-      "h2": { "displayName": "Section Heading", "purpose": "Section titles." },
-      "h3": { "displayName": "Sub-heading", "purpose": "Sub-headings and slot times." },
-      "body": { "displayName": "Body", "purpose": "All prose. Cap measure at 60-68ch." },
-      "sm": { "displayName": "Small", "purpose": "State labels, helper text, field labels. Fixed at 14px on purpose." },
-      "xs": { "displayName": "Caption", "purpose": "Captions and metadata. Fixed at 12px on purpose." },
-      "eyebrow": { "displayName": "Eyebrow", "purpose": "Uppercase section eyebrows in Signal Blue." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headline only. The single largest gesture on the page."
+      },
+      "h2": {
+        "displayName": "Section Heading",
+        "purpose": "Section titles."
+      },
+      "h3": {
+        "displayName": "Sub-heading",
+        "purpose": "Sub-headings and slot times."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All prose. Cap measure at 60-68ch."
+      },
+      "sm": {
+        "displayName": "Small",
+        "purpose": "State labels, helper text, field labels. Fixed at 14px on purpose."
+      },
+      "xs": {
+        "displayName": "Caption",
+        "purpose": "Captions and metadata. Fixed at 12px on purpose."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Uppercase section eyebrows in Signal Blue."
+      }
     },
     "shadows": [
-      { "name": "shadow-sm", "value": "0 1px 2px rgb(1 26 67 / 0.06)", "purpose": "Resting cards. Reads as edge definition, not lift." },
-      { "name": "shadow-md", "value": "0 4px 12px rgb(1 26 67 / 0.08)", "purpose": "Raised or hovered surfaces." }
+      {
+        "name": "shadow-sm",
+        "value": "0 1px 2px rgb(1 26 67 / 0.06)",
+        "purpose": "Resting cards. Reads as edge definition, not lift."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 4px 12px rgb(1 26 67 / 0.08)",
+        "purpose": "Raised or hovered surfaces."
+      }
     ],
     "motion": [
-      { "name": "dur-fast", "value": "160ms", "purpose": "Hover, focus, colour change." },
-      { "name": "dur-base", "value": "280ms", "purpose": "Slot state change, pill selection." },
-      { "name": "dur-slow", "value": "520ms", "purpose": "Section reveal." },
-      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Entrances. GSAP power3.out." },
-      { "name": "ease-in-out", "value": "cubic-bezier(0.65, 0, 0.35, 1)", "purpose": "Movement between two states." }
+      {
+        "name": "dur-fast",
+        "value": "160ms",
+        "purpose": "Hover, focus, colour change."
+      },
+      {
+        "name": "dur-base",
+        "value": "280ms",
+        "purpose": "Slot state change, pill selection."
+      },
+      {
+        "name": "dur-slow",
+        "value": "520ms",
+        "purpose": "Section reveal."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Entrances. GSAP power3.out."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.65, 0, 0.35, 1)",
+        "purpose": "Movement between two states."
+      }
     ],
     "breakpoints": [
-      { "name": "mobile", "value": "375px", "note": "The design target, not a fallback. Instagram in-app browser on mid-range Android." },
-      { "name": "tablet", "value": "720px" },
-      { "name": "desktop", "value": "1440px" },
-      { "name": "container-max", "value": "1100px" }
+      {
+        "name": "mobile",
+        "value": "375px",
+        "note": "The design target, not a fallback. Instagram in-app browser on mid-range Android."
+      },
+      {
+        "name": "tablet",
+        "value": "720px"
+      },
+      {
+        "name": "desktop",
+        "value": "1440px"
+      },
+      {
+        "name": "container-max",
+        "value": "1100px"
+      }
     ],
     "borders": [
-      { "name": "hairline", "value": "1px solid #E5E7EB", "purpose": "Resting borders and dividers." },
-      { "name": "state", "value": "2px", "purpose": "Focus and error only. Weight change carries the state, so no state depends on colour alone." }
+      {
+        "name": "hairline",
+        "value": "1px solid #E5E7EB",
+        "purpose": "Resting borders and dividers."
+      },
+      {
+        "name": "state",
+        "value": "2px",
+        "purpose": "Focus and error only. Weight change carries the state, so no state depends on colour alone."
+      },
+      {
+        "name": "state-boundary-floor",
+        "value": "3:1 contrast minimum",
+        "purpose": "WCAG 1.4.11. When a border is a state's only visual signal it must clear 3:1 against its surroundings. red-300 on white is 1.90:1 and fails; red-800 is 8.31:1 and passes."
+      }
     ]
   },
   "components": [
@@ -154,9 +279,9 @@
       "name": "Input - Error",
       "kind": "input",
       "refersTo": "input-error",
-      "description": "Error state uses a 2px border weight plus a message, so the state never depends on colour alone. Message ties to the field via aria-describedby.",
+      "description": "Error state pairs an 8.31:1 red-800 border with a red-100 fill, so the signal never depends on one property or on hue alone. An earlier draft used a red-300 border on a white field: 1.90:1, below the 3:1 WCAG 1.4.11 floor for non-text UI boundaries. Message ties to the field via aria-describedby.",
       "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-p\">Nomor WhatsApp</label><input class=\"ds-input ds-input--error\" id=\"ds-p\" value=\"12345\" aria-describedby=\"ds-pe\" aria-invalid=\"true\"><span class=\"ds-err\" id=\"ds-pe\">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span></div>",
-      "css": ".ds-field { display:flex; flex-direction:column; gap:8px; font-family:Inter,system-ui,sans-serif; } .ds-label { font-size:.875rem; font-weight:500; color:#011A43; } .ds-input { height:48px; padding:0 12px; border-radius:2px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:inherit; font-size:1rem; } .ds-input--error { border:2px solid #FCA5A5; } .ds-input:focus { outline:2px solid #2563EB; outline-offset:2px; border-color:#2563EB; } .ds-err { font-size:.875rem; color:#991B1B; }"
+      "css": ".ds-field { display:flex; flex-direction:column; gap:8px; font-family:Inter,system-ui,sans-serif; } .ds-label { font-size:.875rem; font-weight:500; color:#011A43; } .ds-input { height:48px; padding:0 12px; border-radius:2px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:inherit; font-size:1rem; } .ds-input--error { border:2px solid #991B1B; background:#FEE2E2; } .ds-input:focus { outline:2px solid #2563EB; outline-offset:2px; border-color:#2563EB; } .ds-err { font-size:.875rem; color:#991B1B; }"
     }
   ],
   "narrative": {
@@ -171,17 +296,66 @@
       "Whitespace is the layout device, not a shortage of content"
     ],
     "rules": [
-      { "name": "The Three-Layer Rule", "body": "Reference flows one direction only: primitive to semantic to component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else.", "section": "colors" },
-      { "name": "The Status-Is-Information Rule", "body": "A booking state the user cannot read is a booking state they will get wrong. No status may be expressed as a single hue, and no status label may fall below AA.", "section": "colors" },
-      { "name": "The Fluid-Not-Stepped Rule", "body": "The scale runs a 1.25 ratio at 375px growing to 1.5 at 1440px via clamp(). There are no breakpoint jumps anywhere in the type system.", "section": "typography" },
-      { "name": "The Fixed-Small Rule", "body": "sm and xs deliberately do not scale. Shrinking a caption below 14px on mobile is an accessibility failure, and growing it on desktop makes it stop reading as secondary.", "section": "typography" },
-      { "name": "The Tight-Display Rule", "body": "Orbitron takes tighter leading than Inter or it reads as loose: 1.1 display, 1.25 headings, 1.6 body. Never apply body leading to Orbitron.", "section": "typography" },
-      { "name": "The Two-Scroll Rule", "body": "The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh, not vh, because in-app browsers report vh incorrectly.", "section": "layout" },
-      { "name": "The Horizontal-Containment Rule", "body": "The date row scrolls with overscroll-behavior-x: contain, so a sideways swipe never bounces the page underneath it.", "section": "layout" },
-      { "name": "The Tinted-Shadow Rule", "body": "Shadows are navy-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth.", "section": "elevation" },
-      { "name": "The One-Round-Shape Rule", "body": "Nothing but the date pill is fully round. The moment a second element takes the pill radius, the date row stops meaning 'this scrolls' and becomes just another style.", "section": "shapes" },
-      { "name": "The Visible-Unavailable Rule", "body": "Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it.", "section": "components" },
-      { "name": "The Focus-Is-Required Rule", "body": "Focus rings are restyled, never removed. Keyboard operability is a Phase 3 Definition-of-Done item, not a styling preference.", "section": "components" }
+      {
+        "name": "The Three-Layer Rule",
+        "body": "Reference flows one direction only: primitive to semantic to component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status-Is-Information Rule",
+        "body": "A booking state the user cannot read is a booking state they will get wrong. No status may be expressed as a single hue, and no status label may fall below AA.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fluid-Not-Stepped Rule",
+        "body": "The scale runs a 1.25 ratio at 375px growing to 1.5 at 1440px via clamp(). There are no breakpoint jumps anywhere in the type system.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed-Small Rule",
+        "body": "sm and xs deliberately do not scale. Shrinking a caption below 14px on mobile is an accessibility failure, and growing it on desktop makes it stop reading as secondary.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tight-Display Rule",
+        "body": "Orbitron takes tighter leading than Inter or it reads as loose: 1.1 display, 1.25 headings, 1.6 body. Never apply body leading to Orbitron.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two-Scroll Rule",
+        "body": "The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh, not vh, because in-app browsers report vh incorrectly.",
+        "section": "layout"
+      },
+      {
+        "name": "The Horizontal-Containment Rule",
+        "body": "The date row scrolls with overscroll-behavior-x: contain, so a sideways swipe never bounces the page underneath it.",
+        "section": "layout"
+      },
+      {
+        "name": "The Tinted-Shadow Rule",
+        "body": "Shadows are navy-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One-Round-Shape Rule",
+        "body": "Nothing but the date pill is fully round. The moment a second element takes the pill radius, the date row stops meaning 'this scrolls' and becomes just another style.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Visible-Unavailable Rule",
+        "body": "Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it.",
+        "section": "components"
+      },
+      {
+        "name": "The Focus-Is-Required Rule",
+        "body": "Focus rings are restyled, never removed. Keyboard operability is a Phase 3 Definition-of-Done item, not a styling preference.",
+        "section": "components"
+      },
+      {
+        "name": "The Visible-Boundary Rule",
+        "body": "When a border is a state's only visual signal it must clear 3:1 (WCAG 1.4.11). red-300 on a white field computes to 1.90:1 and fails; the error state pairs a red-800 border at 8.31:1 with a red-100 fill so the signal survives both the contrast floor and colour-blindness.",
+        "section": "components"
+      }
     ],
     "dos": [
       "Do keep every reference flowing primitive to semantic to component. A hex code in a component file is a defect.",
@@ -202,7 +376,8 @@
       "Don't use black shadows, or add a shadow where a hairline and a tonal band already separate two surfaces.",
       "Don't add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.",
       "Don't animate layout properties (width, height, top, left).",
-      "Don't invent art direction here. It is Phase 1b task 1 and belongs to that task."
+      "Don't invent art direction here. It is Phase 1b task 1 and belongs to that task.",
+      "Don't let a border be a state's only visual signal unless it clears 3:1. Pair it with a fill."
     ]
   }
 }
