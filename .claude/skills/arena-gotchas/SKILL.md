@@ -50,6 +50,6 @@ The likeliest way this project ships a broken deploy. MSW registers a **service 
 ## Workflow
 
 - Commit after each work-plan step passes, conventional-commit style (`feat:`/`fix:`/`chore:`/`docs:`). No attribution trailers.
-- Append to `docs/PROGRESS.md` after every completed task (caveman format: `[date] [agent] [what] [reason]`).
+- Append to `docs/PROGRESS.md` after every completed task (caveman format: `[date] [agent] [what] [reason]`). It holds the **current phase only** — closed phases live in `docs/progress-archive/`, which you read only when tracing why an old decision was made, never as routine context.
 - Verification before completion: run the command, quote the decisive output line, then claim done. Never assert something works without evidence.
 - Start Claude sessions inside `arena-player-web/` — hooks load from session root.

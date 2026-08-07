@@ -72,7 +72,7 @@ Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL 
 ```
 arena-player-web/
 ├── CLAUDE.md
-├── docs/            # PRODUCT, PRD, architecture, database, design-system, PROGRESS.md, tasks/
+├── docs/            # PRODUCT, PRD, architecture, database, DESIGN, PROGRESS.md (current phase), progress-archive/, tasks/
 ├── .claude/         # agents, skills, hooks, settings
 ├── db/migrations/   # SQL, run manually
 ├── app/             # Next.js App Router — page.tsx, booking/page.tsx, api/

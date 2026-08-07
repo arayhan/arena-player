@@ -297,6 +297,45 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
 .decisions{margin:var(--space-6) 0 0;padding-left:var(--space-6)}
 .decisions li{margin-bottom:var(--space-3);max-width:68ch}
 
+/* --- Alur: the journey, three screens at the real device width --- */
+.frames{display:grid;gap:var(--space-8);margin-top:var(--space-8)}
+@media(min-width:900px){.frames{grid-template-columns:repeat(3,1fr);align-items:start}}
+.frame__cap{font-size:var(--text-xs);color:var(--color-fg-muted);
+  margin:0 0 var(--space-2);text-transform:uppercase;letter-spacing:.08em}
+/* 375px is the design target, so the frame is that width and does not stretch.
+   The client sees the real proportions, not a desktop approximation. */
+.frame__screen{width:100%;max-width:375px;border:1px solid var(--color-border);
+  border-radius:var(--radius-card);background:var(--color-bg);
+  padding:var(--space-4);box-shadow:var(--shadow-sm)}
+.frame__note{font-size:var(--text-xs);color:var(--color-fg-muted);
+  margin:var(--space-3) 0 0;max-width:375px}
+
+.scarcity{font-size:var(--text-sm);font-weight:600;color:var(--color-interactive);
+  margin:0 0 var(--space-3)}
+.elapsed{width:100%;display:flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);
+  background:var(--color-bg-subtle);border:1px solid var(--color-border);
+  border-radius:var(--radius-sharp);color:var(--color-fg-muted);
+  font-family:var(--font-body);font-size:var(--text-sm);cursor:pointer;text-align:left}
+.elapsed:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+.elapsed__caret{transition:transform var(--dur-fast) var(--ease-out)}
+.elapsed[aria-expanded=true] .elapsed__caret{transform:rotate(90deg)}
+.elapsed-list{display:none;margin-bottom:var(--space-2)}
+.elapsed-list.is-open{display:grid;gap:var(--space-2)}
+
+/* Deliberately NOT WhatsApp green. A brand colour that is not Arena Player's has
+   no place in their palette, and this page is the one artifact that must model
+   the system rather than bend it. The frame caption already says WhatsApp. */
+.wa{background:var(--color-bg-subtle);border:1px solid var(--color-border);
+  border-radius:var(--radius-card);padding:var(--space-3);
+  font-size:var(--text-sm);line-height:1.5}
+.wa__meta{font-size:var(--text-xs);color:var(--color-fg-muted);margin:var(--space-2) 0 0}
+.summary{border:1px solid var(--color-border);border-radius:var(--radius-sharp);
+  padding:var(--space-3);margin-bottom:var(--space-3);background:var(--color-bg-subtle)}
+.result{text-align:center;padding:var(--space-6) var(--space-3)}
+.result__mark{font-family:var(--font-display);font-size:var(--text-h3);
+  font-weight:700;margin:0 0 var(--space-2)}
+
 /* Production equivalent lives in lib/motion.ts via gsap.matchMedia().
    This block is the behaviour that wrapper must produce. */
 @media (prefers-reduced-motion:reduce){
@@ -623,6 +662,107 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
   </div>
 </section>
 
+<section id="alur">
+  <div class="wrap">
+    <p class="eyebrow">The journey</p>
+    <h2>Alur — what a customer actually goes through</h2>
+    <p class="lead">
+      Everything above is parts. This is the product: three screens at the real device width,
+      in the real order. Tap a slot in the first frame — it behaves as it will on the phone.
+    </p>
+
+    <div class="frames">
+
+      <!-- Frame 1 — the order section, per .impeccable/surfaces/app-page-tsx.md -->
+      <div>
+        <p class="frame__cap">1 · Memilih jam</p>
+        <div class="frame__screen">
+          <p class="scarcity" lang="id">Hari ini · sisa 2 slot</p>
+
+          <div class="pills stack-3">
+            <button class="pill" aria-pressed="true"><span class="pill__day" lang="id">Kam</span><span class="pill__date" lang="id">Hari ini</span></button>
+            <button class="pill" aria-pressed="false"><span class="pill__day" lang="id">Jum</span><span class="pill__date" lang="id">Besok</span></button>
+            <button class="pill" aria-pressed="false"><span class="pill__day" lang="id">Pilih</span><span class="pill__date" lang="id">Tanggal</span></button>
+          </div>
+
+          <!-- Elapsed hours collapse instead of showing nine "Terisi" rows. At 19.00
+               the old design made the day read as sold out — the worst possible
+               outcome for a product measured on filling empty slots. -->
+          <button class="elapsed" aria-expanded="false" aria-controls="elapsed-list">
+            <span class="elapsed__caret" aria-hidden="true">›</span>
+            <span lang="id">Sudah lewat (6)</span>
+          </button>
+          <div class="elapsed-list" id="elapsed-list">
+            <button class="slot" data-state="booked" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" data-state="booked" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+          </div>
+
+          <div class="grid">
+            <button class="slot" data-state="pending" aria-disabled="true"><span class="slot__time">18.00 - 20.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
+            <button class="slot" aria-pressed="false"><span class="slot__time">20.00 - 22.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+            <button class="slot" aria-pressed="false"><span class="slot__time">22.00 - 24.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+          </div>
+
+          <button class="btn btn--primary stack-4" style="width:100%" lang="id">Pesan lewat WhatsApp</button>
+        </div>
+        <p class="frame__note">
+          Today is preselected because bookings are same-day. The CTA names WhatsApp, so nobody
+          is surprised by leaving the site.
+        </p>
+      </div>
+
+      <!-- Frame 2 — the handoff. WhatsApp only; the site does not also navigate. -->
+      <div>
+        <p class="frame__cap">2 · WhatsApp terbuka</p>
+        <div class="frame__screen">
+          <p class="frame__cap" style="margin-bottom:var(--space-3)">Arena Player</p>
+          <div class="wa" lang="id">
+            Halo, saya mau booking lapangan Arena Player tanggal 7 Agu 2026 jam 20.00 - 22.00
+          </div>
+          <p class="wa__meta">
+            Pesan sudah terisi otomatis. Admin membalas dengan link formulir.
+          </p>
+        </div>
+        <p class="frame__note">
+          The site stops here — one destination, not two. The form link comes back through
+          WhatsApp: typed by the admin now, sent by a bot later.
+        </p>
+      </div>
+
+      <!-- Frame 3 — the form outcome, including the 409 that is the whole reason
+           the anti-double-booking index exists. -->
+      <div>
+        <p class="frame__cap">3 · Formulir &amp; hasil</p>
+        <div class="frame__screen">
+          <div class="summary" lang="id">
+            <strong>7 Agu 2026 · 20.00 - 22.00</strong>
+          </div>
+          <div class="result">
+            <p class="result__mark" style="color:var(--color-interactive)" lang="id">Berhasil</p>
+            <p class="note" style="margin:0" lang="id">Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp.</p>
+          </div>
+        </div>
+
+        <div class="frame__screen stack-6" style="border-color:var(--red-300);background:var(--red-100)">
+          <div class="result">
+            <p class="result__mark" style="color:var(--red-800)" lang="id">Slot sudah diambil</p>
+            <p class="note" style="margin:0;color:var(--red-800)" lang="id">
+              Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain.
+            </p>
+            <button class="btn btn--secondary stack-4" lang="id">Pilih jam lain</button>
+          </div>
+        </div>
+        <p class="frame__note">
+          <strong>The second screen is the important one.</strong> Two people submit the same slot;
+          exactly one wins, and the other is told honestly rather than double-booked. It is why the
+          database, not the page, decides who gets the slot.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <script>
   // Demo interactivity only. Production state lives in zustand / TanStack Query.
   // Note the pattern: aria-pressed is the state, CSS reads it. Never class-only.
@@ -656,6 +796,18 @@ th{font-weight:600;color:var(--color-fg-muted);font-size:var(--text-xs);
     activeLabel: 'Dipilih'
   });
   toggleGroup('.pill', {});
+
+  // Elapsed group. aria-expanded is the state; CSS reads it, same pattern as
+  // aria-pressed above. The caret rotation is a demo affordance only —
+  // production motion goes through lib/motion.ts.
+  document.querySelectorAll('.elapsed').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var open = el.getAttribute('aria-expanded') === 'true';
+      el.setAttribute('aria-expanded', String(!open));
+      var list = document.getElementById(el.getAttribute('aria-controls'));
+      if (list) list.classList.toggle('is-open', !open);
+    });
+  });
 </script>
 
 </body>

@@ -249,7 +249,9 @@ arena-player-web/
 │   ├── DESIGN.html            # live render of DESIGN.md; reference artifact, NOT production
 │   ├── design-process.md      # how design work runs — motion approval, images, asset locations
 │   ├── database.md
-│   ├── PROGRESS.md            # shared agent log, append-only
+│   ├── PROGRESS.md            # shared agent log — CURRENT PHASE ONLY, append-only
+│   ├── progress-archive/      # closed phases; read only when tracing an old decision
+│   ├── checkpoint-1b.md       # client sign-off record for the 1b checkpoint
 │   ├── references/            # gitignored scratch — deleted after use, README only
 │   └── tasks/                 # empty until the Phase 1a build starts
 ├── .claude/
