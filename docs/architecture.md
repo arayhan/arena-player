@@ -56,7 +56,9 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 
 `rejected` and `expired` mapping to `available` is the half that gets guessed wrong. Guessing `booked` there blocks slots that are genuinely open, and nothing errors — the client just renders a full day that is actually empty. This matches `uniq_active_slot`, whose `WHERE status IN ('pending', 'confirmed')` clause defines the same two active states and nothing else.
 
-**One override sits on top of the table:** for today's date, any slot whose start hour has passed returns `booked` regardless of row state. The client renders those disabled, never hidden.
+**One override sits on top of the table:** for today's date, any slot whose start hour has passed returns `booked` regardless of row state.
+
+That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `lib/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
 
 **`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
 

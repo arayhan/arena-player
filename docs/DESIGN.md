@@ -50,12 +50,6 @@ typography:
     fontSize: 12px
     fontWeight: 400
     lineHeight: 1.5
-  eyebrow:
-    fontFamily: Orbitron
-    fontSize: 12px
-    fontWeight: 500
-    lineHeight: 1
-    letterSpacing: "0.18em"
 rounded:
   sharp: 2px
   card: 4px
@@ -222,7 +216,7 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 - **Body** (Inter 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
 - **Sm** (Inter 400, 14px fixed, 1.5): state labels, helper text, field labels.
 - **Xs** (Inter 400, 12px fixed, 1.5): captions and metadata.
-- **Eyebrow** (Orbitron 500, 12px, 0.18em, uppercase): section eyebrows in Signal Blue.
+There is no eyebrow or kicker role, deliberately. See the Don'ts.
 
 **The Fluid-Not-Stepped Rule.** The scale runs a 1.25 ratio at 375px growing to 1.5 at 1440px via `clamp()`. There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it.
 
@@ -344,4 +338,5 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 - **Don't** use black shadows, or add a shadow where a hairline and a tonal band already separate two surfaces.
 - **Don't** add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.
 - **Don't** animate layout properties (`width`, `height`, `top`, `left`).
+- **Don't** put a kicker or eyebrow above a heading. The heading carries its own weight. Where the small label holds real information — `Layer 1`, `Layer 2` — fold it into the heading instead of setting it as a separate uppercase line above.
 - **Don't** invent art direction here. It is Phase 1b task 1 and belongs to that task.

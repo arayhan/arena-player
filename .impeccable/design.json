@@ -144,10 +144,6 @@
       "xs": {
         "displayName": "Caption",
         "purpose": "Captions and metadata. Fixed at 12px on purpose."
-      },
-      "eyebrow": {
-        "displayName": "Eyebrow",
-        "purpose": "Uppercase section eyebrows in Signal Blue."
       }
     },
     "shadows": [
@@ -377,7 +373,8 @@
       "Don't add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.",
       "Don't animate layout properties (width, height, top, left).",
       "Don't invent art direction here. It is Phase 1b task 1 and belongs to that task.",
-      "Don't let a border be a state's only visual signal unless it clears 3:1. Pair it with a fill."
+      "Don't let a border be a state's only visual signal unless it clears 3:1. Pair it with a fill.",
+      "Don't put a kicker or eyebrow above a heading. Where the small label holds real information (Layer 1, Layer 2), fold it into the heading instead of setting it as a separate uppercase line."
     ]
   }
 }
