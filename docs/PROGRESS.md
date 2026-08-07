@@ -3,7 +3,8 @@
 Cross-agent communication file. Every agent reads this before working, appends after.
 Format (caveman-compact): `[YYYY-MM-DD] [agent] [what] [reason]`
 
-Agents: instructor | pm | eng-lead | senior | fe | be
+Agents: pm | lead | engineer | reviewer
+Older entries use the retired six-agent tags (instructor, eng-lead, senior, fe, be) — left as written.
 
 **This file holds the current phase only.** Earlier entries live in
 [progress-archive/](progress-archive/) — read those only when tracing *why* an older
