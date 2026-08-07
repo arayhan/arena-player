@@ -59,11 +59,19 @@ This file lives at `db/migrations/<timestamp>_create_bookings.sql` once the Phas
 2. Run the migration above in the Neon SQL editor.
 3. Copy the **pooled** connection string (contains `-pooler` in the host) into `DATABASE_URL`. The direct string exhausts connections fast under concurrent serverless route invocations — this is not optional.
 
-## Neon MCP (optional, for Claude Code tooling — not part of the app)
+## Neon MCP — removed until Phase 4, deliberately
 
-`.mcp.json` at the repo root wires up Neon's MCP server so Claude Code can inspect/manage the Neon project directly. This needs a Neon **platform API key** — generated in the Neon console under API Keys — which is a *different* credential from `DATABASE_URL` (that one is for the Postgres connection itself; this one is for project/branch management). The key is never committed: `.mcp.json` references `${NEON_API_KEY}`, and you set the actual value in your own shell environment before starting Claude Code.
+`.mcp.json` no longer wires up Neon's MCP server. It was there, it was never approved, and it was taken out during Phase 1a rather than left to be switched on by whoever reaches the backend first.
 
-The exact package/command in `.mcp.json` (`@neondatabase/mcp-server-neon`) is written from training knowledge, not freshly verified against Neon's current docs — if it fails to connect, check `https://neon.tech/docs` for the current setup command before assuming something else is broken.
+**The reason is the rule directly above.** Migrations here are run by hand in the Neon SQL editor. The MCP exists to give an agent SQL execution and migration application — the exact capability that rule forbids — and the failure it enables is the silent one this file already warns about: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that partial index is the only race guard in the system. One helpful tool call, no exception thrown, double bookings in production.
+
+Nothing was touched by it, because it never connected. But it was dormant by accident rather than by decision, and Phases 1a–3 run entirely against the MSW mock, so nothing needs it before Phase 4.
+
+**Conditions for bringing it back** — on the Phase 4 agenda in [PRD.md](PRD.md):
+
+- A written rule limiting agents to **reads**: inspect schema and connection state, never run DDL, never apply a migration.
+- `NEON_API_KEY` documented in `.env.local.example`, which it never was. It is a Neon **platform API key** from the console's API Keys page — a *different* credential from `DATABASE_URL`, which is the Postgres connection itself. It is never committed; `.mcp.json` references `${NEON_API_KEY}` and the value lives in your own shell environment.
+- The package name verified against current docs. The previous entry (`@neondatabase/mcp-server-neon`) was written from training knowledge and never confirmed against `https://neon.tech/docs`.
 
 ## Error-code contract
 
