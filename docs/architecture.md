@@ -336,10 +336,10 @@ arena-player-web/
 ├── components/
 ├── mocks/                      # MSW handlers — dev only, retired in Phase 4
 ├── lib/                        # *.test.ts colocated beside the module each one covers
-│   ├── api/                    # axios instance + TanStack Query hooks
+│   ├── api/                    # TanStack Query hooks. fetch on /, axios on /booking only
 │   ├── db/client.ts            # Neon client, OID parser override
 │   ├── storage/r2.ts           # R2 client, checksum config
-│   ├── motion.ts               # gsap.matchMedia() wrapper — ALL animation goes through it
+│   ├── motion.ts               # gsap.matchMedia() wrapper, LAZY-imports GSAP — all animation goes through it
 │   ├── shared/                 # BYTE-IDENTICAL with arena-player-admin — see the shared-code contract
 │   │   ├── slots.ts            # canonical TIME_SLOTS, canonicalisation, slotStartHour()
 │   │   ├── slots.test.ts
