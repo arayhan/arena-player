@@ -77,7 +77,9 @@ arena-player-web/
 ├── db/migrations/   # SQL, run manually
 ├── app/             # Next.js App Router — page.tsx, booking/page.tsx, api/
 ├── components/
-├── lib/             # db/storage clients, dates, slots, validation (zod), motion, api/ (axios + query hooks), store/ (zustand) + colocated *.test.ts
+├── lib/             # shared/ (slots, dates, validation — BYTE-IDENTICAL with the admin repo), db/storage clients,
+│                    # proof.ts (web-only upload limits), motion.ts (lazy GSAP), api/ (fetch on /, axios on /booking),
+│                    # store/ (zustand) + colocated *.test.ts
 ├── mocks/           # MSW handlers implementing the API contract
 └── scripts/         # check-setup.test.ts — live Neon + R2 preflight, Phase 4
 ```
@@ -91,7 +93,7 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - Never commit `.env.local`.
 - **Start Claude sessions inside `arena-player-web/`** — hooks and settings load from session root; starting one level up leaves `Stop`/`Notification`/`SubagentStop` hooks silently inactive.
 - Parallel sessions: `claude --worktree <branch-name>`.
-- `lib/` never imports from `app/` (extraction boundary — lets slot/date/validation code be shared with the separate admin repo later).
+- `lib/` never imports from `app/` (extraction boundary). **`lib/shared/` is byte-identical with `arena-player-admin`** and guarded by `pnpm check:shared` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too.
 - No attribution trailers on commits.
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
 
