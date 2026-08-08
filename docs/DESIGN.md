@@ -144,6 +144,14 @@ The system's personality comes from a deliberate tension: Orbitron is a wide, ge
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
+### Open input — the body face is Inter, and Inter is everywhere
+
+Flagged by the design detector, recorded here rather than acted on. **Inter is one of a handful of faces that every AI-generated interface converges on**, so it contributes nothing to the personality the paragraph above credits to Orbitron. The display face is carrying the whole identity alone.
+
+Not changed in Phase 1a for two reasons. It is a **stated brand commitment** — [PRODUCT.md](PRODUCT.md) records "Orbitron for display type, Inter for body" as given, not chosen — and body type is **Phase 1b task 1's decision**, which has not run. Overriding it here would pre-empt the task, and suppressing the finding would hide a real one.
+
+So it is task 1's to settle, with three honest outcomes: keep Inter deliberately (it is genuinely excellent at 375px, and "invisible" is a defensible brief for a booking utility), replace it with a body face that shares Orbitron's athletic geometry, or confirm with the client that the commitment was a default rather than a preference. **What is not acceptable is inheriting it without noticing** — which is what would have happened had the detector not flagged it.
+
 ### Client directive — minimal form, rich behaviour
 
 The client asked for a **minimalist UI, but modern — with many animations, transitions, and micro-interactions.**
