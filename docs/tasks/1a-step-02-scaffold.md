@@ -52,4 +52,25 @@ Once a production build runs, record the actual First Load JS against the ≤200
 pnpm build   # note the per-route First Load JS it prints
 ```
 
+### Settle the react-icons gamble here, with a number
+
+`react-icons` was chosen in step 01 because it is the only set carrying all six icons including a WhatsApp mark. It is a re-export barrel, so tree-shaking is a real risk against ~18–21KB of headroom — and if it fails, six icons cost far more than six icons.
+
+Measure it rather than assume it. Build once without the probe for a baseline, then:
+
+```tsx
+// app/_probe/page.tsx — DELETE before this step ends
+import { FaWhatsapp } from 'react-icons/fa'
+import { FiCalendar, FiClock, FiUpload, FiCheck, FiMapPin } from 'react-icons/fi'
+export default function P() {
+  return <><FaWhatsapp/><FiCalendar/><FiClock/><FiUpload/><FiCheck/><FiMapPin/></>
+}
+```
+
+`pnpm build`, diff the probe route's First Load JS against the baseline, delete the probe. If the delta is bad, set `experimental.optimizePackageImports: ['react-icons']` in `next.config` and measure again.
+
+**Agreed fallback if it still breaches** — decided in advance so it is not argued later: extract the six used glyphs into `components/icons/*.tsx` and drop the dependency. Same rendering, ~1KB, and the paths come from the installed package rather than being drawn by hand.
+
+Do the same for `date-fns` v4 + `@date-fns/tz`, and **verify its API against Context7** — the v4 `{ in: tz('Asia/Jakarta') }` form is newer than reliable recall.
+
 handoff: `software-engineer` for step 03

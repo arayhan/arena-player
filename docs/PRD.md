@@ -253,7 +253,7 @@ create unique index uniq_active_slot
 
 Three deliberate choices in that schema:
 
-- **`time_slot_canonical`** — the race guard is a unique index on a text column, so it only protects when the string is byte-identical. This constraint is what makes the most expensive bug in the project impossible to reintroduce by formatting drift. The list must stay in lockstep with `lib/slots.ts`.
+- **`time_slot_canonical`** — the race guard is a unique index on a text column, so it only protects when the string is byte-identical. This constraint is what makes the most expensive bug in the project impossible to reintroduce by formatting drift. The list must stay in lockstep with `lib/shared/slots.ts`.
 - **`proof_key`, not `proof_url`** — it stores an R2 object key. Naming it `_url` invites someone to write `<img src={proof_key}>` and get a broken image with no obvious cause.
 - **`phone` normalised to `628xxxxxxxxx`** — accept `08xx`, `62xx`, or `+62xx` at the boundary, store one form. This is the format `wa.me` and the WhatsApp API both use, so the later bot can match an inbound number to a booking with a direct lookup instead of fuzzy matching.
 
@@ -343,7 +343,7 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 - Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). The admin app renders each proof through a short-lived **presigned GET** it generates itself; the bucket stays private and no public URL is ever created. That work belongs to `arena-player-admin` — this repo only ever writes to R2 and must never mint a read URL.
 - Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
 - Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`lib/shared/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
-- HTTP client on the frontend: axios wrapped by TanStack Query. The shared instance and `QueryClientProvider` are **built in Phase 1a task 6**; Phase 2's slot grid and Phase 3's form both consume them. No bare `fetch` in a component.
+- HTTP client on the frontend: axios wrapped by TanStack Query. The shared instance and `QueryClientProvider` are **built in Phase 1a task 7**; Phase 2's slot grid and Phase 3's form both consume them. No bare `fetch` in a component.
 
 ## Definition of Done — Phases 1a–3
 
@@ -356,6 +356,7 @@ Phase 1a:
 - [ ] `lib/shared/slots.ts` + `lib/shared/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [ ] `pnpm check:shared` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [ ] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
+- [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
 Phase 1b:

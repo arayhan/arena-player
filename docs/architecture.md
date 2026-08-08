@@ -70,7 +70,7 @@ Request — `multipart/form-data`. Field names are the contract: the form, the M
 | `slot` | string | yes | Exact member of `TIME_SLOTS` — `"18.00 - 20.00"`, not `"18.00-20.00"` |
 | `teamName` | string | yes | 2–60 chars after trim |
 | `phone` | string | yes | Indonesian mobile, `08xx` or `62xx` as typed. **Server normalises to `628xxxxxxxxx` before insert** — the client sends what the user typed |
-| `notes` | string | no | ≤ 280 chars |
+| `notes` | string | no | ≤ 500 chars — same number as the `notes_length` constraint in [database.md](database.md), not a second opinion |
 | `proof` | File | yes | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `lib/proof.ts` — never retyped here or in the form |
 | `website` | string | yes (empty) | Honeypot. Must be present and empty. Non-empty → respond **201 with a fabricated id** and write nothing. A 400 tells the bot what tripped it |
 
@@ -189,7 +189,7 @@ Exactly one WebGL effect is allowed, in the hero only. It is permitted because i
 
 ## Performance budget (the single source — reference it, never copy the numbers)
 
-Written during Phase 1a task 7. Its purpose is to make every future "can we add library X?" a question of arithmetic rather than taste.
+Written during Phase 1a task 8. Its purpose is to make every future "can we add library X?" a question of arithmetic rather than taste.
 
 | Budget line | Limit |
 |---|---|
@@ -284,15 +284,16 @@ arena-player-web/
 │   ├── db/client.ts            # Neon client, OID parser override
 │   ├── storage/r2.ts           # R2 client, checksum config
 │   ├── motion.ts               # gsap.matchMedia() wrapper — ALL animation goes through it
-│   ├── dates.ts                # Asia/Jakarta date helpers
-│   ├── dates.test.ts
-│   ├── slots.ts                # canonical TIME_SLOTS
-│   ├── slots.test.ts
+│   ├── shared/                 # BYTE-IDENTICAL with arena-player-admin — see the shared-code contract
+│   │   ├── slots.ts            # canonical TIME_SLOTS, canonicalisation, slotStartHour()
+│   │   ├── slots.test.ts
+│   │   ├── dates.ts            # Asia/Jakarta helpers, booking window, isPastSlot
+│   │   ├── dates.test.ts
+│   │   ├── validation.ts       # phone normalisation, status values
+│   │   └── validation.test.ts
 │   ├── store/                  # zustand — client state only, see the scope rule in CLAUDE.md
-│   ├── proof.ts                # shared upload constraints (MIME + size)
+│   ├── proof.ts                # upload constraints (MIME + size) — web only, admin never uploads
 │   ├── proof.test.ts
-│   ├── validation.ts           # zod schemas, shared client/server
-│   ├── validation.test.ts
 │   └── env.ts
 ├── scripts/
 │   └── check-setup.test.ts     # live Neon + R2 preflight — Phase 4, needs .env.local
@@ -343,7 +344,9 @@ Everything both repos must agree on lives in **`lib/shared/`** and is **byte-ide
 |---|---|
 | `slots.ts` | `TIME_SLOTS` and slot canonicalisation |
 | `dates.ts` | Asia/Jakarta helpers, the booking window, `isPastSlot` |
-| `validation.ts` | Phone normalisation, proof constraints, status values |
+| `validation.ts` | Phone normalisation (the admin displays phone numbers) and the status values (the admin mutates them) |
+
+**`lib/proof.ts` is deliberately *not* here.** The 2MB limit and the MIME allowlist govern uploading, and the admin only ever reads proofs. Putting upload-only constants under a byte-identical drift check buys the admin repo nothing and gives the check a file it has no reason to care about.
 
 **Why byte-identical and not merely equivalent.** `uniq_active_slot` compares `time_slot` as **text**. `'06.00 - 08.00'` and `'06.00-08.00'` are two different slots to Postgres, so a one-character drift between the repos means the admin writes rows the site cannot match — and **anti-double-booking silently stops working for both**. Nothing throws. The index is the only race guard there is, and a drifted string disables it without a symptom.
 
