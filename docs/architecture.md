@@ -209,15 +209,40 @@ Where the initial-load number comes from — all figures approximate, **replace 
 | zod | ~13 |
 | react-hook-form | ~9 |
 | zustand | ~1 |
-| Dates + icons — libraries unchosen, decided in 1a task 1 | ~5–8 |
-| **Subtotal before any app code** | **~179–182** |
-| **Headroom left for every component on both pages** | **~18–21** |
+| `date-fns` v4 + `@date-fns/tz` — tree-shaken, ~5 functions used | ~4–6 |
+| `react-icons` — six icons, **if the barrel tree-shakes** | ~1–2 |
+| **Subtotal before any app code** | **~179–183** |
+| **Headroom left for every component on both pages** | **~17–21** |
 
 **This is tight and must be re-measured before it is trusted.** ~18–21KB for all component code across a 5-section landing page plus a form is not obviously enough. Every figure above is an estimate; the first real `pnpm build` in Phase 1a is what settles it.
 
 **A budget nothing measures is a wish.** Phase 1a task 8 must land the enforcement alongside the numbers: a `pnpm check:budget` that fails on breach, so a dependency added in Phase 2 is rejected by a command rather than by whoever happens to remember this table. Next.js already prints per-route First Load JS on every build; the check is reading that output and comparing it, not new tooling. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 200KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
 
 The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) — by arithmetic, not by naming them. It still permits the effect: a hand-written GLSL fragment shader on a fullscreen quad costs ~3–5KB with no library at all, and OGL is ~10KB. A gradient-mesh or noise-field hero — which is what most light-theme Awwwards heroes actually are — fits comfortably. Reach for the shader, not the engine.
+
+### The two library choices, settled — dates and icons
+
+**Dates: `date-fns` v4 + `@date-fns/tz`.** Tree-shaken per function, so only the handful this project uses is paid for. v4's timezone support is the `{ in: tz('Asia/Jakarta') }` option — **newer than reliable recall, so verify it against Context7 at install rather than writing it from memory.** The rules in [database.md](database.md) still bind whatever library is used: `toISOString()` never appears in a date path, and `isPastSlot` treats any date strictly before today as past.
+
+**Icons: `react-icons`.** Six are needed — calendar, clock, upload, check, map pin, and WhatsApp. The last one decided it: no mainstream icon set still ships a WhatsApp brand mark, and `react-icons` carries all six.
+
+It is a re-export barrel, so tree-shaking is the risk, and against ~17–21KB of headroom a barrel that does not shake is not a rounding error. **The `~1–2` figure in the table above is a hope until step 02 measures it**, with a throwaway probe page importing all six against a baseline build. `experimental.optimizePackageImports: ['react-icons']` is the first mitigation.
+
+**Agreed fallback, decided now so it is not argued under deadline:** if the measured cost breaches even with `optimizePackageImports`, extract the six used glyphs into `components/icons/*.tsx` and drop the dependency. Identical rendering, ~1KB, and the paths come from the installed package rather than being drawn by hand.
+
+## The route split — how `/` is kept from paying for the form
+
+`react-hook-form` and `zod` total ~22KB gzip, which is **more than the entire component headroom**. `/` must never load either. The budget table charges them against the single subtotal, so keeping them off the landing route is what buys the headroom back.
+
+Intent is not a mechanism. Three layers, in the order they catch a mistake:
+
+**1. Structure.** The App Router already splits per route. `react-hook-form` is imported only under `app/booking/**`, and `zod` only under `app/booking/**`, `app/api/**`, and `lib/validation.ts`. Route handlers run server-side, so `zod` in `app/api/**` costs the client bundle nothing — the rule is about client code, not about the package.
+
+**2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule rejects `zod` and `react-hook-form` from `app/page.tsx`, `components/` outside a booking scope, `lib/shared/**`, `lib/api/**`, and `lib/motion.ts`. This is the layer that gives a useful error message, naming the rule instead of a byte count.
+
+**3. `pnpm check:budget`, at build time.** Reads Next's **per-route** First Load JS and fails on breach. Per-route matters: a single global total hides exactly the case this section exists to prevent. This is the backstop for the path lint cannot see — a transitive import through a shared module.
+
+The failure this prevents is quiet. Nothing errors when `/` grows 22KB; the page just gets slower on the mid-range Android the whole budget was written for.
 
 ## Verification practice (required, not incidental)
 
@@ -319,6 +344,9 @@ Resolve each at install, then **record the actual resolved versions back into th
 | `react-hook-form` | latest — resolve at install |
 | `zustand` | latest — resolve at install |
 | `@tanstack/react-query` | latest v5 — resolve at install |
+| `date-fns` | latest v4 — resolve at install. **Also a peer requirement of the admin repo**, see the shared-code contract |
+| `@date-fns/tz` | latest — resolve at install. Same peer requirement |
+| `react-icons` | latest — resolve at install. Barrel package; see the tree-shaking condition below |
 | `msw` (dev) | latest v2 — resolve at install |
 | `vitest` (dev) | latest v3 — resolve at install |
 | `@neondatabase/serverless` | latest v1 — resolve at install |
@@ -361,5 +389,18 @@ pnpm check:shared     # diffs lib/shared/ against the other repo's copy, exits n
 `scripts/check-shared.mjs` fetches the sibling repo and diffs each file. It runs inside `check:lib`, so it cannot be forgotten.
 
 **The check must be proven to fail before it is trusted.** Change one character in a `lib/shared/` file, watch it exit non-zero, revert. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
+
+### A byte-identical copy carries its dependencies with it
+
+`lib/shared/dates.ts` imports `date-fns` and `@date-fns/tz`, so **the admin repo must install both at the same major version** or the copy passes `check:shared` and then fails to build. This is a real cost of choosing a date library over native `Intl`, which would have left `lib/shared/` dependency-free — worth naming rather than discovering in the admin repo's first install.
+
+`check-shared.mjs` therefore diffs two things, not one:
+
+1. Every file under `lib/shared/`, byte for byte
+2. The version range of each shared peer dependency in both `package.json` files
+
+The second check is not decoration. `date-fns` v3 and v4 differ in exactly the timezone API this project relies on, so two repos on different majors produce a byte-identical `dates.ts` that computes different dates — the same silent-wrong-answer failure the first check exists to prevent, arriving through the lockfile instead of the source.
+
+**Keep the shared surface's dependency list as short as it is.** Every package added to `lib/shared/` is a package the admin repo is now obliged to carry.
 
 **Web owns `db/migrations/`.** The admin repo reads the schema and never alters it. Two repos migrating one database is a conflict with no owner to resolve it.

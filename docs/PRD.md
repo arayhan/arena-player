@@ -166,7 +166,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 - **zod** for validation — one schema serving client and, later, server. Bought deliberately ahead of Phase 4 so the "which rules are shared" question on its agenda is already answered
 - **react-hook-form** for `/booking` — the form has a file upload, per-field errors, `aria-describedby` wiring, and focus-on-submit, all of which are fiddly to hand-roll correctly
 - **zustand** for client state. Note the scope: server state is TanStack Query's, the two selections could be `useState`, and cross-page state travels via `/booking?date=…&time=…` query params. Keep the store small — if it starts duplicating server data or URL state, that is the signal it has outgrown its purpose
-- **Undecided, and settled in Phase 1a task 1**: date handling (native `Intl` in a tested `lib/shared/dates.ts` vs a library) and the icon library. Both must clear the performance budget in [architecture.md](architecture.md)
+- **Settled in Phase 1a task 1**: date handling is `date-fns` v4 + `@date-fns/tz`, icons are `react-icons`. Both are costed in the budget table in [architecture.md](architecture.md), and `react-icons` is provisional on step 02 measuring that its barrel actually tree-shakes — the fallback is written down there
 - Fonts: Orbitron (next/font/google) for display/headings, a clean sans (e.g. Inter) for body
 - No auth at all in this repo (the admin app, which is where auth belongs, lives in a separate repo)
 

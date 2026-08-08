@@ -12,7 +12,7 @@ Decided and locked before this record existed — see [docs/architecture.md](doc
 
 Next.js 15 (App Router) + TypeScript + Tailwind. GSAP + ScrollTrigger for motion, TanStack Query over axios for server state, zustand for client state, zod for validation, react-hook-form on the booking form, MSW as the mock API layer, Vitest for verification. Neon Postgres + Cloudflare R2, both reachable only from route handlers. Deploys to the client's Sumopod account, confirmed Node-capable.
 
-Two choices remain open and are Phase 1a task 1 decisions: date handling and the icon library.
+Both former open choices are now closed: dates use `date-fns` v4 + `@date-fns/tz`, icons use `react-icons`.
 
 ## Users
 
