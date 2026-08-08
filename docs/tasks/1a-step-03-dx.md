@@ -15,8 +15,27 @@ The commands that let anyone — human or agent — prove a claim instead of ass
 - Lint, format, typecheck scripts, all running clean on the scaffold
 - **Vitest** wired as `pnpm check:lib` → `vitest run lib`. Tests are colocated `*.test.ts` beside the module they cover. It must never need credentials — that is why the Phase 4 preflight lives under a separate glob
 - **`pnpm check:docs`** — the mechanical half of doc review, spec'd in [PRD.md](../PRD.md) Phase 1a. It asserts: no `TODO(phase2)` survives anywhere; `TODO(content)` finds exactly the six declared categories; no bare "Phase 1" references, only 1a/1b/4; and the phase overview table names the same phases as the detail sections
+- **ESLint `no-restricted-syntax` rules that reject known-superseded library APIs.** Decided in step 02's discussion; see below
 - Editor config
 - Optionally commit hooks, if they earn their keep
+
+## Catching the wrong API, rather than remembering to check
+
+`CLAUDE.md` names five libraries whose current syntax training data gets wrong — MSW v2, TanStack Query v5, zod, `@gsap/react`'s `useGSAP`, the Neon driver — and tells the agent to verify against Context7 instead of recalling. That instruction has no mechanism behind it. **A hook cannot force an MCP call**; hooks run shell commands, block tools, and inject text, and none of that makes Context7 get queried.
+
+So catch the damage instead of the intent. The superseded APIs are visible in the source:
+
+| Reject | Because |
+|---|---|
+| `rest.get(`, `rest.post(` | MSW v1. v2 is `http.get` / `http.post` |
+| `res(ctx.…)` | MSW v1. v2 is `HttpResponse.json` |
+| `isLoading` on a `useQuery` result | TanStack Query v4. v5 renamed it `isPending` |
+
+Each rule carries a message naming the replacement, not just "banned".
+
+**State the limit honestly in a comment beside them:** this catches *known* mistakes only. An API invented wholesale still passes lint. It is a floor, not a guarantee — and it was chosen over a reminder hook because this repo already proved that a nudge nobody is forced to act on gets ignored. The `Stop` hook ran a full session without firing and nobody noticed.
+
+These rules are also the reason the route-split zone rule from step 01 lands here: same file, same mechanism, one pass.
 
 ## Why check:docs exists
 
