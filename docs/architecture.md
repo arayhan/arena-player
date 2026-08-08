@@ -58,7 +58,7 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 
 **One override sits on top of the table:** for today's date, any slot whose start hour has passed returns `booked` regardless of row state.
 
-That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `lib/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
+That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `lib/shared/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
 
 **`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
 
@@ -327,10 +327,36 @@ Resolve each at install, then **record the actual resolved versions back into th
 
 ## `lib/` import convention
 
-`lib/` modules use the `@/` alias like everything else (`from "@/lib/dates"`). Vitest resolves it through `tsconfig` paths, so there is no separate resolution mode to satisfy and no `allowImportingTsExtensions` anywhere.
+`lib/` modules use the `@/` alias like everything else (`from "@/lib/shared/dates"`). Vitest resolves it through `tsconfig` paths, so there is no separate resolution mode to satisfy and no `allowImportingTsExtensions` anywhere.
 
 The one rule that still binds is the [extraction boundary](#extraction-boundary) below: `lib/` never imports from `app/`.
 
-## Extraction boundary
+## Extraction boundary, and the shared-code contract
 
-`lib/` never imports from `app/`. The admin app lives in its own repo (`arena-player-admin`), so this boundary is what makes slot math, date helpers, and validation extractable into a shared package later instead of being reimplemented there.
+`lib/` never imports from `app/`. The admin app lives in its own repo (`arena-player-admin`) and talks to the same database, so this boundary is what keeps slot math, date helpers, and validation shareable rather than reimplemented.
+
+### `lib/shared/` is a contract, not a convenience
+
+Everything both repos must agree on lives in **`lib/shared/`** and is **byte-identical in both**:
+
+| Module | Why both repos need it |
+|---|---|
+| `slots.ts` | `TIME_SLOTS` and slot canonicalisation |
+| `dates.ts` | Asia/Jakarta helpers, the booking window, `isPastSlot` |
+| `validation.ts` | Phone normalisation, proof constraints, status values |
+
+**Why byte-identical and not merely equivalent.** `uniq_active_slot` compares `time_slot` as **text**. `'06.00 - 08.00'` and `'06.00-08.00'` are two different slots to Postgres, so a one-character drift between the repos means the admin writes rows the site cannot match — and **anti-double-booking silently stops working for both**. Nothing throws. The index is the only race guard there is, and a drifted string disables it without a symptom.
+
+**Mechanism: a plain copy in both repos, guarded by `pnpm check:shared`.** No workspace, no published package, no submodule — the shared surface is ~150 lines and this project is handed to a client at the end. A workspace reverses the separate-repo decision; a package makes the client inherit registry credentials; a submodule turns a plain `git clone` into an empty directory that fails confusingly.
+
+The copy is only defensible because the check exists:
+
+```bash
+pnpm check:shared     # diffs lib/shared/ against the other repo's copy, exits non-zero on any difference
+```
+
+`scripts/check-shared.mjs` fetches the sibling repo and diffs each file. It runs inside `check:lib`, so it cannot be forgotten.
+
+**The check must be proven to fail before it is trusted.** Change one character in a `lib/shared/` file, watch it exit non-zero, revert. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
+
+**Web owns `db/migrations/`.** The admin repo reads the schema and never alters it. Two repos migrating one database is a conflict with no owner to resolve it.

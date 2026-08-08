@@ -323,7 +323,7 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 **Elapsed slots are not booked slots, and the distinction is now the client's to make.** `GET /api/availability` returns `booked` for today's elapsed slots, so an earlier draft of this section concluded the client could not tell them apart and that separating them needed a `past` status in the API contract — a Phase 4 change.
 
-That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `lib/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
+That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `lib/shared/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
 
 Why it mattered enough to reopen: with same-day booking confirmed as the primary journey, a page opened at 19.00 rendered the whole day as "Terisi" and read as sold out. For a product measured on filling empty hours, that is the worst outcome the design can produce, and it was one derivation away from being avoidable.
 

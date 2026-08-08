@@ -34,7 +34,7 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 | 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
 | 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `app/` |
 | 5 | Lock the API contract | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md) |
-| 6 | Slot + date primitives | `lib/slots.ts` (canonical `TIME_SLOTS`) and `lib/dates.ts` (Asia/Jakarta helpers, today + 13 days), each with its colocated `*.test.ts` |
+| 6 | Shared primitives | **`lib/shared/slots.ts`** (canonical `TIME_SLOTS`) and **`lib/shared/dates.ts`** (Asia/Jakarta helpers, today + 13 days), each with a colocated `*.test.ts`. They live under `shared/` because the admin repo keeps a byte-identical copy — see the shared-code contract in [architecture.md](architecture.md) |
 | 7 | Mock layer + data plumbing | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance |
 | 8 | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `lib/motion.ts` wrapping `gsap.matchMedia()` |
 
@@ -53,7 +53,7 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 
 **Skills:** `/plan-eng-review` and `/plan-devex-review` on the plan before building; `/devex-review` on the scaffolded repo after.
 
-**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:lib` passes with real assertions on `lib/slots.ts` and `lib/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `lib/motion.ts` exists so no component can animate without a reduced-motion check.
+**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:lib` passes with real assertions on `lib/shared/slots.ts` and `lib/shared/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `lib/motion.ts` exists so no component can animate without a reduced-motion check.
 
 ## Phase 1b — Design foundation
 
@@ -166,7 +166,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 - **zod** for validation — one schema serving client and, later, server. Bought deliberately ahead of Phase 4 so the "which rules are shared" question on its agenda is already answered
 - **react-hook-form** for `/booking` — the form has a file upload, per-field errors, `aria-describedby` wiring, and focus-on-submit, all of which are fiddly to hand-roll correctly
 - **zustand** for client state. Note the scope: server state is TanStack Query's, the two selections could be `useState`, and cross-page state travels via `/booking?date=…&time=…` query params. Keep the store small — if it starts duplicating server data or URL state, that is the signal it has outgrown its purpose
-- **Undecided, and settled in Phase 1a task 1**: date handling (native `Intl` in a tested `lib/dates.ts` vs a library) and the icon library. Both must clear the performance budget in [architecture.md](architecture.md)
+- **Undecided, and settled in Phase 1a task 1**: date handling (native `Intl` in a tested `lib/shared/dates.ts` vs a library) and the icon library. Both must clear the performance budget in [architecture.md](architecture.md)
 - Fonts: Orbitron (next/font/google) for display/headings, a clean sans (e.g. Inter) for body
 - No auth at all in this repo (the admin app, which is where auth belongs, lives in a separate repo)
 
@@ -235,7 +235,7 @@ create table bookings (
 
   -- The unique index below compares time_slot as TEXT. Without this constraint
   -- '06.00 - 08.00' and '06.00-08.00' are different rows that book the same slot,
-  -- and the race guard silently does nothing. lib/slots.ts canonicalises in app
+  -- and the race guard silently does nothing. lib/shared/slots.ts canonicalises in app
   -- code; this is what enforces it in the database.
   constraint time_slot_canonical check (time_slot in (
     '06.00 - 08.00','08.00 - 10.00','10.00 - 12.00','12.00 - 14.00','14.00 - 16.00',
@@ -340,9 +340,9 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 
 - Package manager: pnpm. Lockfile `pnpm-lock.yaml`; never commit `package-lock.json`.
 - Date window: today + 13 days, timezone Asia/Jakarta. Today's slots whose start time has passed render disabled (visible, not hidden).
-- Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). Admin views proofs via the Cloudflare dashboard; signed URLs are the admin repo's problem, not this one's.
+- Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). The admin app renders each proof through a short-lived **presigned GET** it generates itself; the bucket stays private and no public URL is ever created. That work belongs to `arena-player-admin` — this repo only ever writes to R2 and must never mint a read URL.
 - Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
-- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Prep rule still stands: shareable code (slot math, date helpers, validation) lives in `lib/` and never imports from `app/`, so it can be extracted and shared with the admin repo later without a rewrite.
+- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`lib/shared/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
 - HTTP client on the frontend: axios wrapped by TanStack Query. The shared instance and `QueryClientProvider` are **built in Phase 1a task 6**; Phase 2's slot grid and Phase 3's form both consume them. No bare `fetch` in a component.
 
 ## Definition of Done — Phases 1a–3
@@ -353,7 +353,8 @@ Phase 1a:
 - [ ] Lint / format / typecheck scripts run clean; Vitest wired and `pnpm check:lib` passes (`check:setup` belongs to Phase 4)
 - [ ] Development rules written down, including the accessibility baseline
 - [ ] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
-- [ ] `lib/slots.ts` + `lib/dates.ts` exist with colocated tests that actually assert — not an empty harness
+- [ ] `lib/shared/slots.ts` + `lib/shared/dates.ts` exist with colocated tests that actually assert — not an empty harness
+- [ ] `pnpm check:shared` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [ ] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
@@ -467,7 +468,7 @@ Tracked here for context only. Build it in a separate repo (`arena-player-admin`
 
 - Login: single admin account (own auth, not tied to a specific vendor)
 - Bookings list with filters: pending / confirmed / rejected / expired
-- View payment proof image via signed R2 URL; Confirm / Reject actions (status change reflects on this site's order section, since both read the same `bookings` table)
+- View payment proof image via a short-lived presigned GET the admin generates (bucket stays private, no public URL is ever created); Confirm / Reject actions (status change reflects on this site's order section, since both read the same `bookings` table)
 - Nice to have: manual slot blocking, operating-hours config
 - Its own handover items: admin user guide, admin credential handover
 

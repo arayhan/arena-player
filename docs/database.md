@@ -26,7 +26,7 @@ create table bookings (
 
   -- uniq_active_slot below compares time_slot as TEXT. Without this constraint
   -- '06.00 - 08.00' and '06.00-08.00' are different rows booking the same slot,
-  -- and the race guard silently does nothing. lib/slots.ts canonicalises in app
+  -- and the race guard silently does nothing. lib/shared/slots.ts canonicalises in app
   -- code; this enforces it in the database. Keep the two in lockstep.
   constraint time_slot_canonical check (time_slot in (
     '06.00 - 08.00','08.00 - 10.00','10.00 - 12.00','12.00 - 14.00','14.00 - 16.00',
@@ -90,7 +90,7 @@ SLOT_CONSTRAINT  = "uniq_active_slot"
 '2026-08-01'  →  Date object  →  JSON.stringify  →  '2026-07-31T17:00:00.000Z'
 ```
 
-That's the exact -1-day corruption the date helpers in `lib/dates.ts` exist to prevent — except this one arrives through the driver, invisibly, where TypeScript can't catch it because driver rows are cast, not validated.
+That's the exact -1-day corruption the date helpers in `lib/shared/dates.ts` exist to prevent — except this one arrives through the driver, invisibly, where TypeScript can't catch it because driver rows are cast, not validated.
 
 **Fix**: override both OID parsers via `CustomTypesConfig` when constructing the Neon client, so they pass the raw string through unmodified instead of parsing to a `Date`:
 
@@ -126,7 +126,7 @@ Without this, uploads can fail in ways that look like a credentials or network p
 
 Upload the proof to R2 **before** the database insert. If the insert then returns a 409 (lost the slot race), call `deleteProof()` to best-effort clean up the orphaned object. `deleteProof()` must swallow its own errors — a failed cleanup must never turn a clean 409 response into a 500.
 
-## `lib/dates.ts` contract
+## `lib/shared/dates.ts` contract
 
 - Asia/Jakarta only. `toISOString()` is banned anywhere touching `booking_date` — it shifts to UTC and can move the date across midnight, which is the same class of bug as the Neon parser issue above, just in application code instead of the driver.
 - `isPastSlot()` must treat any date **strictly before today** as past, not just check whether today's slot start hour has already passed. This was a real bug, already found and fixed once: without the date check, yesterday's slots were incorrectly bookable. Don't let it regress.

@@ -1,7 +1,7 @@
 # 1a · step 01 — Architecture plan and the two open library choices
 
 **Depends**: nothing. This is the first step of the build.
-**Blocks**: 02 (scaffold installs what this decides), 06 (`lib/dates.ts` shape depends on the date choice), 08 (both choices spend budget)
+**Blocks**: 02 (scaffold installs what this decides), 06 (`lib/shared/dates.ts` shape depends on the date choice), 08 (both choices spend budget)
 **Agent**: `engineering-lead`
 
 ## Goal
@@ -14,7 +14,7 @@ The budget in `architecture.md` has roughly 18–21KB of headroom for all compon
 
 ## Deliverables
 
-1. **Date handling** — native `Intl` inside a tested `lib/dates.ts`, or a library. All date logic is Asia/Jakarta, window is today + 13 days, and `toISOString()` is never used for dates. Whatever wins must make `isPastSlot` cover dates *before* today, not just today's elapsed hours — that was a real bug once.
+1. **Date handling** — native `Intl` inside a tested `lib/shared/dates.ts`, or a library. All date logic is Asia/Jakarta, window is today + 13 days, and `toISOString()` is never used for dates. Whatever wins must make `isPastSlot` cover dates *before* today, not just today's elapsed hours — that was a real bug once.
 2. **Icon library** — needs per-icon tree-shaking so unused icons cost nothing. Six icons are needed: calendar, clock, upload, check, WhatsApp, map pin. AI-generated icons are banned; see `arena-player-design`.
 3. **Route split confirmed** — `/` must never load `react-hook-form` or `zod`. Those are `/booking` dependencies and together they are ~22KB gzip, which is more than the entire component headroom. Write down *how* the split is enforced, not just that it is intended.
 4. **Both decisions written into `architecture.md`** — the versions table and the budget table, with the measured or published gzip cost of each choice added to the budget breakdown.
