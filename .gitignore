@@ -2,8 +2,12 @@
 node_modules/
 .next/
 out/
+build/
+coverage/
 next-env.d.ts
 *.tsbuildinfo
+.vercel
+*.pem
 
 # env — never commit real keys
 .env

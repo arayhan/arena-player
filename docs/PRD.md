@@ -29,8 +29,8 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 
 | # | Task | Output |
 |---|------|--------|
-| 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form` or `zod` |
-| 2 | Scaffolding | Next.js 15 + TypeScript + Tailwind installed via pnpm, runs at `localhost:3000` |
+| 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form`, `zod`, or `axios` |
+| 2 | Scaffolding | Next.js 16 + TypeScript + Tailwind v4 installed via pnpm, runs at `localhost:3000` |
 | 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
 | 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `app/` |
 | 5 | Lock the API contract | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md) |
@@ -158,7 +158,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 
 ## Tech stack
 
-- Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS v4
 - Neon Postgres (serverless) + Cloudflare R2 (payment proofs). Both accessed only from route handlers via env vars, zero hardcoded keys. Developer's own accounts until the handover discussion; ownership transferred to the client then.
 - GSAP + ScrollTrigger (with `@gsap/react`) for animation — chosen over Framer Motion for pinned and scrubbed scroll timelines, which is what the heavy scroll-driven direction below actually needs. Not both: two animation runtimes for one job is ~35KB of redundancy
 - axios for frontend HTTP calls, wrapped by TanStack Query — the query layer supplies caching, request dedup, retry, and loading/error state that raw axios would otherwise be hand-rolled per component
@@ -343,7 +343,7 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 - Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). The admin app renders each proof through a short-lived **presigned GET** it generates itself; the bucket stays private and no public URL is ever created. That work belongs to `arena-player-admin` — this repo only ever writes to R2 and must never mint a read URL.
 - Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
 - Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`lib/shared/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
-- HTTP client on the frontend: axios wrapped by TanStack Query. The shared instance and `QueryClientProvider` are **built in Phase 1a task 7**; Phase 2's slot grid and Phase 3's form both consume them. No bare `fetch` in a component.
+- HTTP client on the frontend: TanStack Query over two transports, split by route. `/` uses native `fetch`; `/booking` uses axios, which is kept off the landing bundle — it costs 17.5KB measured, and `/` makes one GET. `/booking` earns it back with `onUploadProgress` on the 2MB proof upload, which `fetch` cannot report. Both instances and `QueryClientProvider` are **built in Phase 1a task 7**. **No bare `fetch` in a component** — that rule is about the component, not the transport; calls go through `lib/api/`.
 
 ## Definition of Done — Phases 1a–3
 

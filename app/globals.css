@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* Phase 1a holds no design tokens on purpose.
+ *
+ * docs/DESIGN.md's frontmatter is the normative token source, and Tailwind v4's
+ * CSS-first @theme takes those custom properties almost directly. Copying them
+ * here now would create a second source before the first one is final — the art
+ * direction is Phase 1b task 1, and this repo's recurring defect is a value
+ * copied with nothing checking the copy.
+ *
+ * Phase 1b writes the @theme block. */
+
+:root {
+  --background: #ffffff;
+  --foreground: #011a43;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* No prefers-color-scheme block. DESIGN.md commits to one world: "Light,
+ * blue-and-white booking interface for a mini soccer field — the deliberate
+ * inverse of the dark-neon local benchmark." A dark mode would undo the
+ * single strongest decision in the design. */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

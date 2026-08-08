@@ -98,7 +98,7 @@ MSW must mock all four codes, or Phase 3 builds UI for states it has never seen.
 
 ## Framework decision (FINAL)
 
-**Next.js 15, App Router.** TanStack Start was evaluated and rejected — locked, do not revisit without a new planning conversation.
+**Next.js 16, App Router.** TanStack Start was evaluated and rejected — locked, do not revisit without a new planning conversation.
 
 TanStack Start is not the weaker framework; it lost on this project's constraints:
 
@@ -198,25 +198,44 @@ Written during Phase 1a task 8. Its purpose is to make every future "can we add 
 | LCP, mid-range mobile | **< 2.5s** |
 | Lighthouse mobile Performance | **≥ 85** |
 
-Where the initial-load number comes from — all figures approximate, **replace with measured values once `pnpm install` and a production build have actually run**:
+### What `/` actually costs — measured, Phase 1a step 02
 
-| Item | ~KB gzip |
+Every figure below came from `node scripts/measure-bundle.mjs` against a real `pnpm build`, one library at a time. **The estimates this table replaced were 30% low**, so nothing here is carried forward from a guess.
+
+Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only legacy browsers fetch it, and the target device does not.
+
+| Item | KB gzip on `/` |
 |---|---|
-| Next.js 15 + React 19 baseline | ~90 |
-| GSAP + ScrollTrigger + `@gsap/react` | ~35 |
-| TanStack Query | ~13 |
-| axios | ~13 |
-| zod | ~13 |
-| react-hook-form | ~9 |
-| zustand | ~1 |
-| `date-fns` v4 + `@date-fns/tz` — tree-shaken, ~5 functions used | ~4–6 |
-| `react-icons` — six icons, **if the barrel tree-shakes** | ~1–2 |
-| **Subtotal before any app code** | **~179–183** |
-| **Headroom left for every component on both pages** | **~17–21** |
+| Next 16 + React 19 framework baseline | **126.5** |
+| TanStack Query | 10.0 |
+| `date-fns` + `@date-fns/tz` | 8.1 |
+| `react-icons`, six icons | 2.2 |
+| zustand | 0.7 |
+| GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6) |
+| axios — **`/booking` only** | (17.5) |
+| zod, react-hook-form — `/booking` only | not yet measured, Phase 3 |
+| **Subtotal on `/` before any component** | **147.5** |
+| **Headroom for every component on the landing page** | **~52** |
 
-**This is tight and must be re-measured before it is trusted.** ~18–21KB for all component code across a 5-section landing page plus a form is not obviously enough. Every figure above is an estimate; the first real `pnpm build` in Phase 1a is what settles it.
+**The framework is the overrun, and it is not negotiable.** 126.5KB against an estimated 90 is Next 16 plus React 19 with nothing imported. React Compiler, which Next 16 enables by default, was measured separately and costs **0KB** — it stays on.
 
-**A budget nothing measures is a wish.** Phase 1a task 8 must land the enforcement alongside the numbers: a `pnpm check:budget` that fails on breach, so a dependency added in Phase 2 is rejected by a command rather than by whoever happens to remember this table. Next.js already prints per-route First Load JS on every build; the check is reading that output and comparing it, not new tooling. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 200KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
+Two things went better than feared. `react-icons` is a re-export barrel and was flagged as a gamble; it tree-shakes correctly at **2.2KB for six icons**, so the fallback in step 02 was never needed. TanStack Query came in *under* estimate.
+
+### Two libraries are kept off `/` to pay for that overrun
+
+Closing the gap needed ~30KB. These two found 61:
+
+**GSAP loads lazily, through `lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero *entrance* must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
+
+**axios is a `/booking` dependency, not a shared one.** `/` makes one GET for availability and native `fetch` does that in 0KB. `/booking` keeps axios because `onUploadProgress` reports progress on the 2MB proof upload and `fetch` cannot — on Indonesian mobile data, an upload with no progress indicator reads as a frozen page.
+
+This is the same rule zod and react-hook-form already live under, now with a third member. "No bare `fetch` in a component" still holds: `/` calls through `lib/api/`, which wraps fetch.
+
+**A budget nothing measures is a wish.** Phase 1a task 8 must land the enforcement alongside the numbers: a `pnpm check:budget` that fails on breach, so a dependency added in Phase 2 is rejected by a command rather than by whoever happens to remember this table.
+
+**Next 16 removed the source that check was going to read.** Next 15 printed a per-route First Load JS table on every build; Next 16 prints route names only, and Turbopack emits no `app-build-manifest.json`. There is no output left to parse — `--experimental-analyze` prints a route count and nothing sized.
+
+So the check measures the emitted bytes instead. `scripts/measure-bundle.mjs` gzips every file under `.next/static`, and splits shared chunks (from `build-manifest.json`'s `polyfillFiles` + `rootMainFiles` + `lowPriorityFiles`) from route chunks. Step 08 adds thresholds on top of it. This is more honest than parsing a printed table anyway: it counts what ships. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 200KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
 
 The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) — by arithmetic, not by naming them. It still permits the effect: a hand-written GLSL fragment shader on a fullscreen quad costs ~3–5KB with no library at all, and OGL is ~10KB. A gradient-mesh or noise-field hero — which is what most light-theme Awwwards heroes actually are — fits comfortably. Reach for the shader, not the engine.
 
@@ -232,13 +251,15 @@ It is a re-export barrel, so tree-shaking is the risk, and against ~17–21KB of
 
 ## The route split — how `/` is kept from paying for the form
 
-`react-hook-form` and `zod` total ~22KB gzip, which is **more than the entire component headroom**. `/` must never load either. The budget table charges them against the single subtotal, so keeping them off the landing route is what buys the headroom back.
+Three packages are `/booking`-only: `react-hook-form`, `zod`, and **axios** (17.5KB measured, added to this list in step 02 to pay for the framework overrun). `/` must never load any of them.
 
 Intent is not a mechanism. Three layers, in the order they catch a mistake:
 
-**1. Structure.** The App Router already splits per route. `react-hook-form` is imported only under `app/booking/**`, and `zod` only under `app/booking/**`, `app/api/**`, and `lib/validation.ts`. Route handlers run server-side, so `zod` in `app/api/**` costs the client bundle nothing — the rule is about client code, not about the package.
+**1. Structure.** The App Router already splits per route. `react-hook-form` and axios are imported only under `app/booking/**`; `zod` only under `app/booking/**`, `app/api/**`, and `lib/validation.ts`. Route handlers run server-side, so `zod` in `app/api/**` costs the client bundle nothing — the rule is about client code, not about the package.
 
-**2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule rejects `zod` and `react-hook-form` from `app/page.tsx`, `components/` outside a booking scope, `lib/shared/**`, `lib/api/**`, and `lib/motion.ts`. This is the layer that gives a useful error message, naming the rule instead of a byte count.
+`/` reaches the availability endpoint through `lib/api/`, which wraps native `fetch`. The PRD's "no bare `fetch` in a component" rule is about the *component*, not the transport, and is unaffected.
+
+**2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule rejects `zod`, `react-hook-form`, and `axios` from `app/page.tsx`, `components/` outside a booking scope, `lib/shared/**`, and `lib/motion.ts`. This is the layer that gives a useful error message, naming the rule instead of a byte count.
 
 **3. `pnpm check:budget`, at build time.** Reads Next's **per-route** First Load JS and fails on breach. Per-route matters: a single global total hides exactly the case this section exists to prevent. This is the backstop for the path lint cannot see — a transitive import through a shared module.
 
@@ -327,32 +348,45 @@ arena-player-web/
 
 All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during **Phase 1a** — not part of this scaffolding pass.
 
-## Package versions — resolve every one at install
+## Package versions — resolved and pinned, Phase 1a step 02
 
-**No pinned versions here, deliberately.** An earlier draft pinned `next`, `react`, `@aws-sdk/client-s3`, and `pnpm` to exact figures that were never verified against the registry. A wrong pin fails `pnpm install` on day one of Phase 1a with a confusing error, and false precision reads as "someone checked this" when nobody did.
-
-Resolve each at install, then **record the actual resolved versions back into this table** — same moment the performance budget above gets replaced with measured figures. Both are estimates waiting on the same first `pnpm install`.
+Every version below was resolved against the registry on 2026-08-08 and is pinned exactly in `package.json`. An earlier draft pinned figures from memory; a wrong pin fails `pnpm install` on day one with a confusing error, and false precision reads as "someone checked this" when nobody did.
 
 | Package | Version |
 |---|---|
-| `next` | latest 15.x — resolve at install |
-| `react` / `react-dom` | latest 19.x — resolve at install |
-| `gsap` | latest — resolve at install, verify license |
-| `@gsap/react` | latest — resolve at install |
-| `axios` | latest — resolve at install |
-| `zod` | latest — resolve at install |
-| `react-hook-form` | latest — resolve at install |
-| `zustand` | latest — resolve at install |
-| `@tanstack/react-query` | latest v5 — resolve at install |
-| `date-fns` | latest v4 — resolve at install. **Also a peer requirement of the admin repo**, see the shared-code contract |
-| `@date-fns/tz` | latest — resolve at install. Same peer requirement |
-| `react-icons` | latest — resolve at install. Barrel package; see the tree-shaking condition below |
-| `msw` (dev) | latest v2 — resolve at install |
-| `vitest` (dev) | latest v3 — resolve at install |
-| `@neondatabase/serverless` | latest v1 — resolve at install |
-| `@aws-sdk/client-s3` | latest v3 — resolve at install |
-| `server-only` | latest — resolve at install |
-| pnpm (`packageManager`) | resolve at install, then pin the exact version |
+| `next` | 16.3.0 |
+| `react` / `react-dom` | 19.2.8 |
+| `gsap` | 3.15.0 — Standard "no charge" licence, verified at install |
+| `@gsap/react` | 2.1.2 |
+| `axios` | 1.19.0 — `/booking` only |
+| `zod` | 4.4.3 — `/booking` and `app/api/` only |
+| `react-hook-form` | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below |
+| `zustand` | 5.0.14 |
+| `@tanstack/react-query` | 5.101.4 |
+| `date-fns` | 4.4.0 — **also a peer requirement of the admin repo**, see the shared-code contract |
+| `@date-fns/tz` | 1.5.0 — same peer requirement |
+| `react-icons` | 5.7.0 — barrel package; measured at 2.2KB for six icons, tree-shaking confirmed |
+| `tailwindcss` / `@tailwindcss/postcss` | 4.3.3 |
+| `typescript` (dev) | 5.9.3 |
+| `eslint` (dev) | 9.39.5 |
+| `msw` (dev) | 2.15.0 |
+| `vitest` (dev) | 4.1.10 |
+| `@neondatabase/serverless` | **not installed** — Phase 4 |
+| `@aws-sdk/client-s3` | **not installed** — Phase 4 |
+| `server-only` | 0.0.1 |
+| pnpm (`packageManager`) | 11.17.0 |
+
+### Three resolution traps this hit, so the next person does not
+
+**`latest` is not the newest version.** `pnpm view <pkg> version` returns the `latest` dist-tag; sorting the versions array by publish order returns whatever shipped most recently, which for `react` is `19.0.8` on the `backport` tag rather than `19.2.8`. **Read `dist-tags`.** That same read is what caught `next@15.5.23` sitting on `backport` — Next 15 is in maintenance — which is why this project is on Next 16.
+
+**`latest` is not always supported.** TypeScript's `latest` is 7.0.2 and ESLint's is 10.8.1, but `create-next-app@16.3.0` pins `^5` and `^9`. The peer ranges are permissive enough to allow the newer majors (`typescript >=3.3.1`), and permissive is not the same as tested. This repo takes the combination Vercel ships.
+
+**A release-age policy will reject a same-day publish.** `react-hook-form@7.85.0` was published hours before install and pnpm's `minimumReleaseAge` check refused the lockfile. The fix is the newest version that clears the cutoff — 7.84.0 — not relaxing the policy. Editing `package.json` alone is not enough; the lockfile keeps the old resolution until `pnpm clean --lockfile`.
+
+### pnpm 11 blocks install scripts
+
+An unapproved dependency build script fails the whole install. Decisions live in `pnpm-workspace.yaml` under `allowBuilds`, each with the reason inline. `msw` is allowed: its postinstall re-copies `mockServiceWorker.js` so the worker cannot drift from the installed library version.
 
 ## `lib/` import convention
 

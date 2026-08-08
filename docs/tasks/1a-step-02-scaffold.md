@@ -6,7 +6,7 @@
 
 ## Goal
 
-Next.js 15 App Router + TypeScript + Tailwind, installed with pnpm, serving at `localhost:3000`. Nothing product-shaped ships here — no page content, no components beyond what the scaffold generates.
+Next.js 16 App Router + TypeScript + Tailwind, installed with pnpm, serving at `localhost:3000`. Nothing product-shaped ships here — no page content, no components beyond what the scaffold generates.
 
 ## Deliverables
 
