@@ -28,7 +28,7 @@ grep -nE "date handling|icon library" docs/architecture.md         # expect: nam
 
 # the budget table accounts for them
 sed -n '/| Item | ~KB gzip |/,/^$/p' docs/architecture.md
-# expect: rows for dates and icons with real numbers, and a subtotal that still respects 200KB
+# expect: rows for dates and icons with real numbers, and a subtotal that still respects 240KB
 
 # the route-split rule is written somewhere enforceable
 grep -rn "react-hook-form" docs/architecture.md   # expect: states how / never loads it

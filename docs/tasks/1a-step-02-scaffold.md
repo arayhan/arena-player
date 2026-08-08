@@ -46,7 +46,7 @@ test -f db/README.md && echo "db/README.md exists" || grep -rn "db/README.md" .e
 
 ## First real budget reading
 
-Once a production build runs, record the actual First Load JS against the ≤200KB gzip line in `architecture.md`. Every figure in that table is currently an estimate marked "replace with measured values". This is the first moment they can be measured — step 08 verifies them, but the number comes from here.
+Once a production build runs, record the actual First Load JS against the ≤240KB gzip line in `architecture.md`. Every figure in that table is currently an estimate marked "replace with measured values". This is the first moment they can be measured — step 08 verifies them, but the number comes from here.
 
 ```bash
 pnpm build   # note the per-route First Load JS it prints

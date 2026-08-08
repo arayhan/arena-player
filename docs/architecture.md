@@ -193,7 +193,7 @@ Written during Phase 1a task 8. Its purpose is to make every future "can we add 
 
 | Budget line | Limit |
 |---|---|
-| Initial JS, first load | **≤ 200KB gzip** |
+| Initial JS, first load | **≤ 240KB gzip** — raised from 200 in step 02, see below |
 | Lazy WebGL chunk (hero only, see below) | **≤ 40KB gzip** |
 | LCP, mid-range mobile | **< 2.5s** |
 | Lighthouse mobile Performance | **≥ 85** |
@@ -215,7 +215,17 @@ Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only le
 | axios — **`/booking` only** | (17.5) |
 | zod, react-hook-form — `/booking` only | not yet measured, Phase 3 |
 | **Subtotal on `/` before any component** | **147.5** |
-| **Headroom for every component on the landing page** | **~52** |
+| **Headroom for every component on the landing page** | **~92** |
+
+#### Why the ceiling is 240 and not 200, and why not 400
+
+Raised deliberately in step 02, with the measured numbers in hand rather than ahead of them.
+
+200 was never breached after the two route-split fixes — `/` sits at 147.5KB, which left ~52KB. The raise buys margin for a 5-section landing page plus the form, not permission to stop caring.
+
+**400 was considered and rejected.** The binding cost on this project's target device is CPU, not download. 400KB gzip is roughly 1.6MB of JavaScript to parse and compile, which is about two seconds on a mid-range Android *before anything renders* — and the visitor is inside the Instagram in-app browser, which is slower than Chrome. That breaks two constraints this document also owns: LCP < 2.5s and Lighthouse mobile ≥ 85, whose TBT metric measures exactly that stall. A budget that contradicts two other rules is not a budget.
+
+For scale: Next 15's build output coloured First Load JS red above **128KB**. 240 is already generous against the framework's own guidance; it is the last raise that does not cost a different guarantee.
 
 **The framework is the overrun, and it is not negotiable.** 126.5KB against an estimated 90 is Next 16 plus React 19 with nothing imported. React Compiler, which Next 16 enables by default, was measured separately and costs **0KB** — it stays on.
 
@@ -235,7 +245,7 @@ This is the same rule zod and react-hook-form already live under, now with a thi
 
 **Next 16 removed the source that check was going to read.** Next 15 printed a per-route First Load JS table on every build; Next 16 prints route names only, and Turbopack emits no `app-build-manifest.json`. There is no output left to parse — `--experimental-analyze` prints a route count and nothing sized.
 
-So the check measures the emitted bytes instead. `scripts/measure-bundle.mjs` gzips every file under `.next/static`, and splits shared chunks (from `build-manifest.json`'s `polyfillFiles` + `rootMainFiles` + `lowPriorityFiles`) from route chunks. Step 08 adds thresholds on top of it. This is more honest than parsing a printed table anyway: it counts what ships. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 200KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
+So the check measures the emitted bytes instead. `scripts/measure-bundle.mjs` gzips every file under `.next/static`, and splits shared chunks (from `build-manifest.json`'s `polyfillFiles` + `rootMainFiles` + `lowPriorityFiles`) from route chunks. Step 08 adds thresholds on top of it. This is more honest than parsing a printed table anyway: it counts what ships. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 240KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
 
 The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) — by arithmetic, not by naming them. It still permits the effect: a hand-written GLSL fragment shader on a fullscreen quad costs ~3–5KB with no library at all, and OGL is ~10KB. A gradient-mesh or noise-field hero — which is what most light-theme Awwwards heroes actually are — fits comfortably. Reach for the shader, not the engine.
 

@@ -8,16 +8,21 @@
 
 Replace every estimated figure in the budget with a measured one, make a command enforce it, and land `lib/motion.ts` so no component can animate without a reduced-motion check.
 
-## The budget table is currently a wish
+## Step 02 already measured. This step enforces.
 
-Every number in [architecture.md](../architecture.md)'s breakdown is an estimate, and the doc says so: *"replace with measured values once `pnpm install` and a production build have actually run."* Step 02 took the first reading. This step makes it authoritative.
+The numbers are settled and written into [architecture.md](../architecture.md). The estimates they replaced were 30% low — the framework alone measured **126.5KB against an estimated 90**, which put `/` at 208.6KB before a single component existed.
 
-The estimated subtotal was ~179–182KB against a 200KB ceiling, leaving **~18–21KB for every component on both pages**. That is tight enough that it may not survive contact with a real build — in which case the resolution is a deliberate decision, not a quiet ceiling raise.
+Two route-split decisions closed the gap: GSAP moved behind a lazy import in `lib/motion.ts` (−43.6KB) and axios became `/booking`-only (−17.5KB). `/` now sits at **147.5KB**, and the ceiling was raised 200 → **240KB** with those measurements in hand rather than ahead of them. Headroom is **~92KB**.
 
-Two decisions already exist for that moment, so it is not debated under pressure:
+**Do not re-measure and re-decide. Enforce what is there.**
 
-- **The route split** — `/` must never load `react-hook-form` or `zod`. Together they are ~22KB, more than the entire headroom. This is named in `architecture.md` as *"the most likely fix"*
-- **`react-icons`** — a re-export barrel chosen because it is the only set carrying a WhatsApp mark. If it fails to tree-shake even with `optimizePackageImports`, the agreed fallback is extracting the six used glyphs into `components/icons/` and dropping the dependency
+Three things step 02 resolved that this step must not reopen:
+
+- **`react-icons` tree-shakes.** 2.2KB for six icons, measured. The extract-the-glyphs fallback is retired — do not implement it.
+- **React Compiler costs 0KB.** Measured with it on and off. It stays enabled.
+- **Three packages are `/booking`-only**: `react-hook-form`, `zod`, and axios. `/` uses native `fetch` through `lib/api/`.
+
+The one thing genuinely still open is enforcement: nothing currently fails when a dependency pushes `/` past 240KB.
 
 ## Deliverables
 

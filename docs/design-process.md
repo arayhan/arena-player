@@ -64,7 +64,7 @@ This is a booking page for a real venue that real customers pay to use.
 
 - The hero LCP element stays **text/logo** — never an image.
 - Every image goes through `next/image` with explicit `width`/`height` so it reserves space and contributes no CLS.
-- Image weight counts against the LCP budget in [architecture.md](architecture.md) even though that table measures JS. A 400KB hero JPEG defeats a 200KB JS budget.
+- Image weight counts against the LCP budget in [architecture.md](architecture.md) even though that table measures JS. A 400KB hero JPEG defeats a 240KB JS budget.
 
 ## Logo and asset placeholders
 
