@@ -26,6 +26,24 @@ Full reasoning, and why a copy beat a workspace, a package, and a submodule: the
 - The booking window: today + 13 days
 - `isPastSlot` — **must cover dates before today**, not only today's elapsed hours. That was a real bug once: yesterday was bookable without it
 
+### Two findings from Context7, verified before this step runs
+
+Queried against `/date-fns/tz` during step 02 rather than written from recall.
+
+**Build the timezone context once, then reuse it.** The `{ in: tz(...) }` option is correct, but the documented form hoists the context instead of re-creating it per call:
+
+```ts
+const jakarta = tz("Asia/Jakarta");
+format(add(date, { days: 13 }, { in: jakarta }), "yyyy-MM-dd", { in: jakarta });
+```
+
+**Prefer `TZDateMini` over `TZDate`, and check what it saves.** The docs describe it as *"recommended for internal use when string formatting is not needed"*, and list what it drops: `toString()`, `toDateString()`, `toTimeString()`, `toISOString()`, and the three `toLocale*` methods. Same constructors, same `withTimeZone()`, same getters and setters.
+
+Two reasons that matters here, in order of importance:
+
+1. **It cannot break the `toISOString()` rule, because the method does not exist.** This project bans `toISOString()` anywhere near `booking_date` — it shifts to UTC and can move the date across midnight. A ban enforced by absence beats a ban enforced by review.
+2. `date-fns` + `@date-fns/tz` measured **8.1KB** on `/`. `TZDateMini` may reduce that. **Measure it with `node scripts/measure-bundle.mjs`, do not assume it** — every estimate in this project so far has been wrong by 30%.
+
 **`scripts/check-shared.mjs`** + a `check:shared` script that runs inside `check:lib`, so it cannot be skipped.
 
 ## Acceptance
