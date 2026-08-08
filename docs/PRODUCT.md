@@ -80,6 +80,7 @@ Recorded as given, not expanded — the visual world is not decided here.
 - Navy `#011A43` sampled from the client's logo; accent blue `#2563EB`.
 - Orbitron for display type, Inter for body.
 - `bataskotapoint.com` is a binding reference **as an anti-reference**: the direction is explicitly its inverse — light, clean, blue-and-white, never dark neon.
+- The client asked for a **minimalist UI, but modern — with many animations, transitions, and micro-interactions.** Recorded here as stated; how the two halves reconcile, and where the motion is deliberately withheld, is resolved in [DESIGN.md](DESIGN.md).
 
 ## Evidence on Hand
 

@@ -93,7 +93,19 @@ it currently does.
 
 - Answer: _____
 
-### 5. Confirm: one field, and these hours?
+### 5. The motion — confirm where it is deliberately absent
+
+They asked for many animations, transitions, and micro-interactions. Show them, then explain
+the one place motion is **withheld on purpose**: the slot-picking section stays fast and calm,
+because that is where someone decides quickly with eight to twelve people waiting on them.
+
+Frame it as care rather than a shortfall — "everything else moves; we kept this part quick on
+purpose" — and check they agree. If they want motion there too, that is their call to make
+knowingly, and it changes what Phase 2 builds.
+
+- Answer: _____
+
+### 6. Confirm: one field, and these hours?
 
 The entire system assumes **one** field and nine 2-hour slots, 06.00–24.00. A second field
 would change the database, the API, and the booking screen. Worth confirming out loud.

@@ -144,6 +144,29 @@ The system's personality comes from a deliberate tension: Orbitron is a wide, ge
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
+### Client directive — minimal form, rich behaviour
+
+The client asked for a **minimalist UI, but modern — with many animations, transitions, and micro-interactions.**
+
+This is an **input to Phase 1b task 1, not a north star.** Task 1 still owns the art direction; this constrains what it may decide.
+
+Read as a whole rather than as two competing requests: **minimal in form, rich in behaviour.** Few elements, each responding precisely. The restraint is not despite the motion — it is what makes dense motion legible. The same effects on a busy layout read as noise. "Minimalist" here is confirmed to mean *few elements and generous whitespace*, which the system already says above, and **not** reduced colour: the status triples are an accessibility requirement, not decoration, and the palette is unchanged by this directive.
+
+**Where the motion lives — this split is a rule, not a preference:**
+
+| Area | Motion |
+|---|---|
+| Hero, content sections, section transitions | Expressive. This is where the directive is spent |
+| **Order section** | **Functional feedback only** — state change, selection, the elapsed collapse |
+
+The order section is exempt for a stated reason, not by oversight. It is where the booking happens, where the per-section Lighthouse gate bites hardest, and where the organiser is deciding fastest with people waiting on them. Motion that delays that decision works against the outcome the client is paying for. Withholding it there is the directive being honoured, not ignored.
+
+**What this does not change:**
+
+- **Every effect is still chosen by the user before code is written**, via `AskUserQuestion`, batched by section — see [design-process.md](design-process.md). This directive raises the ceiling; it pre-approves nothing.
+- **Everything still routes through `lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
+- **No CLS, and the performance budget is untouched.** GSAP is already the largest single item in a tight budget, so added effects reuse the existing instance. On a mid-range Android in an in-app webview the binding cost is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the Lighthouse gate.
+
 **Key Characteristics:**
 
 - Light and blue-white, never dark — the anti-reference is binding
@@ -152,6 +175,7 @@ Density is low by intent. The primary visitor is a team captain on a 375px Andro
 - Status is a colour *triple*, never a single hue
 - Navy-tinted shadows only; black shadows read as dirt on a blue-white page
 - Whitespace is the layout device, not a shortage of content
+- Minimal in form, rich in behaviour — few elements, each responding precisely
 
 ## Colors
 
