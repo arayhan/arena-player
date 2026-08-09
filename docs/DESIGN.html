@@ -15,7 +15,7 @@
      rule 6 (no CLS) and hard rule 7 (LCP < 2.5s).
 
   2. Animation is plain CSS + one IntersectionObserver. Production routes ALL
-     motion through lib/motion.ts wrapping gsap.matchMedia(). The
+     motion through src/lib/motion.ts wrapping gsap.matchMedia(). The
      reduced-motion block at the end of this stylesheet is the behaviour that
      wrapper must produce.
 
@@ -421,7 +421,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 .note--error{color:var(--result-error-fg)}
 .frame__screen--error{border-color:var(--result-error-line);background:var(--result-error-surface)}
 
-/* Production equivalent lives in lib/motion.ts via gsap.matchMedia().
+/* Production equivalent lives in src/lib/motion.ts via gsap.matchMedia().
    This block is the behaviour that wrapper must produce. */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -889,7 +889,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <p class="note stack-6">
         The arrows and settles on this page are the manual's own motion, authored once and
         orchestrated by one observer. In production every equivalent routes through
-        <code>lib/motion.ts</code>: GSAP has no built-in reduced-motion handling, so a direct
+        <code>src/lib/motion.ts</code>: GSAP has no built-in reduced-motion handling, so a direct
         <code>gsap.to()</code> in a component is banned. Which effects the product uses is the
         user's choice, asked before code is written — see <code>docs/design-process.md</code>.
       </p>
