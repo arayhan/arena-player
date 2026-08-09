@@ -167,6 +167,59 @@ for (const f of ALL) {
   }
 }
 
+// --- 4b. TIME_SLOTS matches the migration's time_slot_canonical constraint ---
+//
+// The nine canonical strings now exist in two places, which is the exact shape
+// this repo has lost time to three separate ways: a value copied out of a
+// source with nothing checking the copy. Here it is the worst instance
+// available. uniq_active_slot compares time_slot as TEXT, so a separator drift
+// means either every insert is rejected by the constraint, or — if the app side
+// is the one that drifts — two rows book the same slot and the only race guard
+// in the system quietly does nothing.
+//
+// .sql is deliberately absent from TEXT above: widening that glob would drag
+// SQL through the prose-oriented checks 1-3. This reads the file by path.
+{
+  // BOTH sides are scoped to their declaration. The first version of this
+  // check matched every quoted slot-shaped string in the file and compared
+  // three prose mentions in slots.ts' own doc comments against the nine in the
+  // SQL — a checker that fell for exactly the copied-value confusion it exists
+  // to catch. Scope first, then extract.
+  const SLOT = /["'](\d{2}\.\d{2} - \d{2}\.\d{2})["']/g;
+  const between = (text, start, end) => {
+    const from = text.indexOf(start);
+    if (from === -1) return "";
+    const to = text.indexOf(end, from);
+    return to === -1 ? "" : text.slice(from, to);
+  };
+  const extract = (text) => (text.match(SLOT) ?? []).map((s) => s.slice(1, -1));
+
+  const migrations = ALL.filter((f) => /^db\/migrations\/.*\.sql$/.test(f));
+  const domainSlots = extract(
+    between(linesOf("src/domain/slots.ts").join("\n"), "TIME_SLOTS = [", "]"),
+  );
+
+  // Silence is the failure mode to avoid: before step 06 slots.ts does not
+  // exist, and a check that compares two empty lists reports success having
+  // compared nothing.
+  if (domainSlots.length > 0) {
+    for (const f of migrations) {
+      const sqlSlots = extract(
+        between(linesOf(f).join("\n"), "constraint time_slot_canonical", "))"),
+      );
+      if (sqlSlots.length === 0) continue; // a migration that does not touch time_slot
+      if (JSON.stringify(sqlSlots) !== JSON.stringify(domainSlots)) {
+        fail(
+          "slot-canonical-drift",
+          `${f} — time_slot_canonical does not match TIME_SLOTS in src/domain/slots.ts.\n` +
+            `        sql   : ${JSON.stringify(sqlSlots)}\n` +
+            `        domain: ${JSON.stringify(domainSlots)}`,
+        );
+      }
+    }
+  }
+}
+
 // --- 5. Import boundaries, including the relative form ESLint cannot glob ----
 //
 // The ESLint zones catch the alias form (`@/modules/booking-form/…`). They
@@ -352,6 +405,7 @@ const CHECKS = [
   "todo-content-category",
   "bare-phase-1",
   "module-barrel",
+  "slot-canonical-drift",
   "cross-module-import",
   "app-boundary",
   "domain-escape",

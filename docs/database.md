@@ -51,7 +51,7 @@ create index bookings_pending_expiry_idx
 commit;
 ```
 
-This file lives at `db/migrations/<timestamp>_create_bookings.sql` once the Phase 1a build starts. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
+This block lives at `db/migrations/20260809_create_bookings.sql`, byte-identical, and `pnpm check:docs` asserts the nine canonical slot strings there match `TIME_SLOTS` in `src/domain/slots.ts`. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
 
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 

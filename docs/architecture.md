@@ -490,7 +490,11 @@ The copy is only defensible because the check exists:
 pnpm check:shared     # diffs src/domain/ against the other repo's copy, exits non-zero on any difference
 ```
 
-`scripts/check-shared.mjs` fetches the sibling repo and diffs each file. It runs inside `check:lib`, so it cannot be forgotten.
+`scripts/check-shared.mjs` reads the sibling repo from `../arena-player-admin`, overridable with `ARENA_ADMIN_PATH`, and diffs each file **in both directions** — a one-way walk cannot see a file present on the far side and absent here. It runs inside `check:lib`, so it cannot be forgotten.
+
+**Tests are diffed too, not only the four modules.** The admin repo inherits the proof, not just the code: its copy is verified to _behave_ identically rather than merely to look identical. The price is a third obligation — vitest, alongside `date-fns` and `@date-fns/tz`.
+
+**Until the admin repo has a `src/`, the check skips and says so loudly**, naming how many files are unguarded. A check that reports success when it compared nothing is worse than no check.
 
 **The check must be proven to fail before it is trusted.** Change one character in a `src/domain/` file, watch it exit non-zero, revert. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
 
