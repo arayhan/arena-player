@@ -9,7 +9,7 @@
 // skill still matches the PRD, stays a human ask.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { join, relative, sep, posix } from "node:path";
 
 const ROOT = process.cwd();
 
@@ -62,7 +62,11 @@ const stripCode = (line) => line.replace(/`[^`]*`/g, "").replace(/"[^"]*"/g, "")
 // code comment in shipping source; the same string in a hook's help text or in
 // prose is a description of the rule, and this repo's own gotcha hook exists
 // precisely to state it.
-const SHIPS = (f) => /\.(ts|tsx|css)$/.test(f) && !f.startsWith("scripts/");
+// .html is here for docs/DESIGN.html specifically: it is the 1b design system
+// doubling as the prototype, hero copy is one of the six TODO(content)
+// categories, and it is neither SHIPS nor isProse — so before this it was the
+// one file that could carry a real marker with nothing scanning for it.
+const SHIPS = (f) => /\.(ts|tsx|css|html)$/.test(f) && !f.startsWith("scripts/");
 const markerScannable = sources.filter((f) => SHIPS(f) || isProse(f));
 
 const failures = [];
@@ -77,6 +81,11 @@ function linesOf(file) {
 }
 
 // Yields [lineNumber, testableText] with fenced code blocks dropped in prose.
+//
+// The fence toggle FAILS OPEN: an unbalanced fence leaves it stuck on and
+// silently disables checks 1-3 for the rest of the file. That is the direction
+// that hides violations rather than inventing them, so the imbalance is
+// reported as its own finding rather than left to be discovered.
 function* scannable(file) {
   const prose = isProse(file);
   let fenced = false;
@@ -90,7 +99,14 @@ function* scannable(file) {
     if (prose && fenced) continue;
     yield [i + 1, prose ? stripCode(raw) : raw];
   }
+  // Reported once per file, not once per caller — checks 1, 2 and 3 each walk
+  // the same file and would otherwise triple every finding.
+  if (prose && fenced && !reportedFences.has(file)) {
+    reportedFences.add(file);
+    fail("unbalanced-fence", `${file} — odd number of \`\`\` fences; checks 1-3 stopped part-way`);
+  }
 }
+const reportedFences = new Set();
 
 // --- 1. TODO(phase2) must not survive anywhere ------------------------------
 // Renamed to TODO(content) when the re-cut made "Phase 2" mean the landing page.
@@ -151,7 +167,18 @@ for (const f of ALL) {
   }
 }
 
-// --- 5. Feature modules never import each other -----------------------------
+// --- 5. Import boundaries, including the relative form ESLint cannot glob ----
+//
+// The ESLint zones catch the alias form (`@/modules/booking-form/…`). They
+// cannot catch `../booking-form/…`: a glob would have to ban `../*` outright,
+// which is wrong for every module — `src/modules/home/components/x.tsx`
+// importing `../home.service` is correct and routine. So the relative form is
+// resolved here instead, which is cheap because the path is all that matters.
+//
+// The gap this closes is not theoretical. CROSS_MODULE's own message says "one
+// home -> booking-form import is all it takes for a later `import { z }` there
+// to ship zod to / with nothing failing" — and until now BOTH named guards
+// missed the relative spelling of exactly that import.
 const MODULES = (() => {
   try {
     return readdirSync(join(ROOT, "src/modules")).filter((d) =>
@@ -161,15 +188,62 @@ const MODULES = (() => {
     return [];
   }
 })();
-for (const f of ALL.filter((f) => /^src\/modules\/.+\.(ts|tsx)$/.test(f))) {
-  const owner = f.split("/")[2];
+
+// Import/export specifiers, static and dynamic. Deliberately not a parser:
+// this needs the string, not the AST, and a regex has no install cost.
+const SPECIFIER = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
+
+const moduleOwner = (f) => (f.startsWith("src/modules/") ? f.split("/")[2] : null);
+
+for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
+  const owner = moduleOwner(f);
+  const dir = posix.dirname(f);
+
   for (const [n, line] of scannable(f)) {
-    for (const other of MODULES) {
-      if (other === owner) continue;
-      if (line.includes(`@/modules/${other}`)) {
+    // Alias form — unchanged, and still the common case.
+    if (owner) {
+      for (const other of MODULES) {
+        if (other === owner) continue;
+        if (line.includes(`@/modules/${other}`)) {
+          fail(
+            "cross-module-import",
+            `${f}:${n} — ${owner} imports ${other}. Shared vocabulary goes in src/domain/`,
+          );
+        }
+      }
+    }
+
+    // Relative form — resolve it and check where it lands.
+    SPECIFIER.lastIndex = 0;
+    let m;
+    while ((m = SPECIFIER.exec(line)) !== null) {
+      const spec = m[1];
+      if (!spec.startsWith(".")) continue;
+      const target = posix.normalize(posix.join(dir, spec));
+
+      const targetOwner = moduleOwner(target);
+      if (owner && targetOwner && targetOwner !== owner) {
         fail(
           "cross-module-import",
-          `${f}:${n} — ${owner} imports ${other}. Shared vocabulary goes in src/domain/`,
+          `${f}:${n} — ${owner} imports ${targetOwner} via "${spec}". ` +
+            `The ESLint zone only sees the @/ form; shared vocabulary goes in src/domain/`,
+        );
+      }
+
+      if (target.startsWith("src/app/") && !f.startsWith("src/app/")) {
+        fail(
+          "app-boundary",
+          `${f}:${n} — reaches into src/app/ via "${spec}". ` +
+            `Nothing under src/ imports from src/app/; the @/app ban cannot see a relative path`,
+        );
+      }
+
+      if (f.startsWith("src/domain/") && !target.startsWith("src/domain/")) {
+        fail(
+          "domain-escape",
+          `${f}:${n} — src/domain/ reaches outside itself via "${spec}". ` +
+            `arena-player-admin has no such folder to resolve against, so the copy stays ` +
+            `byte-identical and simply does not build there`,
         );
       }
     }
@@ -231,18 +305,31 @@ for (const f of ALL.filter((f) => /^src\/modules\/.+\.(ts|tsx)$/.test(f))) {
     }
   })();
   if (design) {
-    const skillFiles = ALL.filter((f) => f.startsWith(".claude/skills/") && f.endsWith(".md"));
-    for (const f of skillFiles) {
+    // Skills, agents AND hooks. The comment above has always named all three;
+    // the scan covered only skills, which left the agents — the surface that
+    // produced the overstated-contrast-ratio defect — unwatched.
+    const COPY_SURFACES = [".claude/skills/", ".claude/agents/", ".claude/hooks/"];
+    const copies = ALL.filter(
+      (f) => COPY_SURFACES.some((d) => f.startsWith(d)) && /\.(md|ps1|mjs|js)$/.test(f),
+    );
+    // Ratios are compared as a SET, not as a substring of the flattened doc.
+    // "3:1" is a substring of "14.53:1", so the substring form quietly accepted
+    // every integer ratio the moment a decimal one shared its digits — which is
+    // how the first probe of this check passed against a value DESIGN.md has
+    // never contained.
+    const RATIO = /\b\d{1,2}(?:\.\d{1,2})?\s*:\s*1\b/g;
+    const designRatios = new Set((design.match(RATIO) ?? []).map((r) => r.replace(/\s+/g, "")));
+    for (const f of copies) {
       linesOf(f).forEach((line, i) => {
         for (const hex of line.match(/#[0-9a-fA-F]{6}\b/g) ?? []) {
-          const re = new RegExp(hex.replace("#", "#"), "i");
-          if (!re.test(design)) {
+          if (!new RegExp(hex, "i").test(design)) {
             fail("design-value-drift", `${f}:${i + 1} — ${hex} does not appear in docs/DESIGN.md`);
           }
         }
-        for (const ratio of line.match(/\b\d{1,2}\.\d{1,2}\s*:\s*1\b/g) ?? []) {
-          const normalised = ratio.replace(/\s+/g, "");
-          if (!design.replace(/\s+/g, "").includes(normalised)) {
+        // Integer ratios too: 3:1 is the WCAG 1.4.11 non-text bar and was
+        // invisible to the decimals-only pattern that shipped first.
+        for (const ratio of line.match(RATIO) ?? []) {
+          if (!designRatios.has(ratio.replace(/\s+/g, ""))) {
             fail(
               "design-value-drift",
               `${f}:${i + 1} — contrast ratio ${ratio} does not appear in docs/DESIGN.md`,
@@ -266,8 +353,11 @@ const CHECKS = [
   "bare-phase-1",
   "module-barrel",
   "cross-module-import",
+  "app-boundary",
+  "domain-escape",
   "phase-table-drift",
   "design-value-drift",
+  "unbalanced-fence",
 ];
 
 if (failures.length === 0) {

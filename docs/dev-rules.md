@@ -45,14 +45,20 @@ An `aria-label` is UI copy — it is read aloud to a visitor, so it is Indonesia
 
 ## Where a thing goes
 
-The eight folders under `src/` each have one job. Four pairs are genuinely ambiguous; these are the questions that settle them.
+The nine folders under `src/` each have one job. Several pairs are genuinely ambiguous, and the questions below settle them — **but only if you ask them in this order.** An unordered list gives contradicting answers: `slots.ts` has no package dependency (Q2 says `utils/`) and the admin repo needs it (Q1 says `domain/`), and `dates.ts` is worse — it exists because of `date-fns` _and_ the admin needs it, so Q2 alone sends a frozen file to `src/lib/`.
 
-| Torn between                                      | Ask                                                                                                                                                                 |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/` vs a module's own `components/` | **Does more than one module render it?** One consumer means it belongs to that module. Promote later, when a second consumer actually appears — not in anticipation |
-| `src/lib/` vs `src/utils/`                        | **Does this file exist because of a package in `package.json`?** Yes → `lib/` (it is polish over an installed library). No → `utils/` (it is ours)                  |
-| `src/utils/` vs `src/domain/`                     | **Does `arena-player-admin` need it?** Yes → `domain/`, and it is now byte-identical in both repos with everything that implies. No → `utils/`                      |
-| `src/services/` vs a module's `*.service.ts`      | `services/` holds the configured client (the axios instance). A module's `*.service.ts` holds the calls that use it                                                 |
+The admin question comes first because it is the only one whose wrong answer is expensive. Everything else is a move; that one is a contract in two repos.
+
+| Order | Ask                                                                                                                                                                    | Settles                                           |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **1** | **Does `arena-player-admin` need it?** Yes → `src/domain/`, and stop here — it is now byte-identical in both repos, dependencies and all, with everything that implies | `domain/` vs everything else                      |
+| **2** | **Does this file exist because of a package in `package.json`?** Yes → `lib/` (polish over an installed library). No → `utils/` (ours)                                 | `src/lib/` vs `src/utils/`                        |
+| **3** | **Does more than one module render it?** One consumer means it belongs to that module. Promote later, when a second consumer actually appears — not in anticipation    | `src/components/` vs a module's own `components/` |
+| **4** | `services/` holds the configured client (the axios instance). A module's `*.service.ts` holds the calls that use it                                                    | `src/services/` vs `<module>.service.ts`          |
+
+Worked through for the four frozen files: all four answer **yes** at question 1 and never reach question 2. `dates.ts` importing `date-fns` does not make it `lib/` — it makes it the one file in `domain/` that carries a dependency, and the reason the admin repo is obliged to install one.
+
+`src/app/` and `src/mocks/` are not in the table because nothing is ever torn about them: `app/` is routes and composition, `mocks/` is MSW handlers and is retired in Phase 4.
 
 `src/lib/` stays flat. Nesting it is the first sign it has started collecting features rather than polishing libraries.
 
@@ -64,11 +70,13 @@ The eight folders under `src/` each have one job. Four pairs are genuinely ambig
 
 `src/app/` holds routes, layouts, and composition. It wires modules together and owns nothing else — no business logic, no data shaping, no reusable UI.
 
-Three import rules, all enforced by ESLint zones in `eslint.config.mjs`:
+Three import rules:
 
 1. **Nothing under `src/` imports from `src/app/`.** The extraction boundary. Anything below it can move to another app without dragging routing along, which is what keeps slot and date code shareable with the admin repo.
 2. **Feature modules never import each other.** Shared vocabulary goes in `src/domain/`. One `home` → `booking-form` import is all it takes for a later `import { z }` in that module to ship zod to `/` with nothing failing.
 3. **`src/domain/` imports nothing from the rest of `src/`**, and imports its own siblings **relatively** (`./slots`, never `@/domain/slots`) so the byte-identical copy resolves the same in both repos.
+
+**Each rule is enforced twice, and the second half is not redundant.** The ESLint zones in `eslint.config.mjs` match the `@/` alias form; `pnpm check:docs` resolves the **relative** form, which no glob can express — banning `../*` outright would break `src/modules/home/components/x.tsx` importing `../home.service`, which is correct and routine. Before that second half existed, `import { schema } from "../booking-form/booking-form.schema"` inside `src/modules/home/` passed both `pnpm lint` and `pnpm check:docs`, which is precisely the import rule 2 exists to stop.
 
 **No `index.ts` barrels under `src/modules/`.** A barrel re-exports the whole module, so one import from it drags zod, react-hook-form, and axios onto whatever route did the importing. Nothing errors — the page just gets slower. Import deep paths. `pnpm check:docs` asserts this.
 
@@ -128,12 +136,13 @@ The part of this file most likely to be skipped, because nothing fails when it i
 
 Never claim something works without running the check and quoting the decisive line.
 
-| Command             | Proves                                               |
-| ------------------- | ---------------------------------------------------- |
-| `pnpm lint`         | banned APIs, route-split zones                       |
-| `pnpm typecheck`    | types resolve                                        |
-| `pnpm check:lib`    | logic gives the right answers — no credentials, ever |
-| `pnpm check:docs`   | the docs still describe reality                      |
-| `pnpm format:check` | formatting is settled, not argued                    |
+| Command             | Proves                                                                   |
+| ------------------- | ------------------------------------------------------------------------ |
+| `pnpm lint`         | banned APIs, route-split zones, the `@/` form of all three import rules  |
+| `pnpm typecheck`    | types resolve                                                            |
+| `pnpm check:lib`    | logic gives the right answers — no credentials, ever                     |
+| `pnpm check:shared` | `src/domain/` has not drifted from the admin repo's copy                 |
+| `pnpm check:docs`   | the docs still describe reality, and the relative form of the same rules |
+| `pnpm format:check` | formatting is settled, not argued                                        |
 
 A check that has only ever passed is a check nobody has tested. When you add one, plant a violation, watch it fail, then revert — this repo shipped a `Stop` hook that never fired once, and the `check:docs` hook itself returned success on a real failure the first time it was tested.

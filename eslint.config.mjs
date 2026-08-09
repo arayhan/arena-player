@@ -48,6 +48,19 @@ const SERVER_ONLY = {
     "src/server/ holds DATABASE_URL and the R2 secrets. Only route handlers under src/app/api/** may import it — everything else reaches data through an API route.",
 };
 
+// Import rule 1, the extraction boundary. CLAUDE.md and docs/dev-rules.md both
+// said "three import rules, all lint-enforced" while this one was enforced
+// nowhere — src/domain/ got it incidentally through the @/* ban and no other
+// folder got it at all. A doc that overstates a guard is the failure class this
+// repo has already paid for, so the guard now exists rather than the claim
+// being softened. The relative form (`../../app/page`) is out of reach for a
+// glob and is covered by check:docs instead.
+const APP = {
+  group: ["@/app", "@/app/*"],
+  message:
+    "Nothing under src/ imports from src/app/ — the extraction boundary. src/app/ composes modules; anything below it must stay movable to another app without dragging routing along, which is what keeps src/domain/ shareable with arena-player-admin.",
+};
+
 const AXIOS = {
   group: ["axios"],
   message:
@@ -74,7 +87,7 @@ const CROSS_MODULE = {
 // A later config object REPLACES this rule for matching files rather than
 // merging with it, so every override below must restate the patterns it still
 // wants. Turning the rule off in a zone would silently lift the other bans too.
-const DEFAULT_PATTERNS = [SERVER_ONLY, AXIOS, RHF, ZOD];
+const DEFAULT_PATTERNS = [SERVER_ONLY, APP, AXIOS, RHF, ZOD];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -97,22 +110,14 @@ const eslintConfig = defineConfig([
   },
 
   // The booking form owns the three /booking packages. Still no @/server, and
-  // still no reaching into src/modules/home.
+  // still no reaching sideways. CROSS_MODULE rather than a literal
+  // "@/modules/home": with two modules the two are equivalent, but the literal
+  // form silently exempts a third module the day one is added, and this is the
+  // only block that would have had that hole.
   {
     files: ["src/modules/booking-form/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            SERVER_ONLY,
-            {
-              group: ["@/modules/home", "@/modules/home/*"],
-              message: CROSS_MODULE.message,
-            },
-          ],
-        },
-      ],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, CROSS_MODULE] }],
     },
   },
 
@@ -120,17 +125,37 @@ const eslintConfig = defineConfig([
   {
     files: ["src/services/api-client.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, RHF, ZOD] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, RHF, ZOD] }],
     },
   },
 
-  // Route handlers and the server layer run server-side, so zod there costs the
-  // client bundle nothing. axios and react-hook-form stay banned — both are
-  // client concerns with no business in a request handler.
+  // src/app/ IS the composition layer, so it is the one place the @/app ban
+  // must not apply — a layout importing its own page is the boundary working,
+  // not breaking. Everything else it inherits.
   {
-    files: ["src/app/api/**/*.ts", "src/server/**/*.ts"],
+    files: ["src/app/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, AXIOS, RHF, ZOD] }],
+    },
+  },
+
+  // Route handlers run server-side, so zod there costs the client bundle
+  // nothing and @/server is the whole point of the folder. axios and
+  // react-hook-form stay banned — both are client concerns with no business in
+  // a request handler. Must come after the src/app/** block to win.
+  {
+    files: ["src/app/api/**/*.ts"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [AXIOS, RHF] }],
+    },
+  },
+
+  // src/server/ is below the extraction boundary, so unlike a route handler it
+  // still may not reach into src/app/.
+  {
+    files: ["src/server/**/*.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [APP, AXIOS, RHF] }],
     },
   },
 
@@ -152,6 +177,18 @@ const eslintConfig = defineConfig([
               group: ["@/*"],
               message:
                 "src/domain/ is byte-identical with arena-player-admin. Import siblings relatively (./slots) so the copy resolves the same in both repos regardless of either tsconfig, and never reach upward — domain is the bottom of the import graph.",
+            },
+            // The alias ban above is only half the boundary: `../server/db`
+            // resolves upward without touching @/ at all, and relative imports
+            // are this folder's own house style, so the wrong one is a single
+            // keystroke from the right one. Worse, the failure is invisible —
+            // the admin repo has no src/utils/ or src/server/, so such a file
+            // stays byte-identical (check:shared passes) and simply does not
+            // build over there. `./slots` is unaffected; only `..` matches.
+            {
+              group: ["../*"],
+              message:
+                "src/domain/ is the bottom of the import graph and is copied byte-identical into arena-player-admin, which has no src/utils/ or src/server/ to resolve against. Import siblings with ./ and nothing else.",
             },
           ],
         },

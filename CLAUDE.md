@@ -100,7 +100,7 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - Never commit `.env.local`.
 - **Start Claude sessions inside `arena-player-web/`** — hooks and settings load from session root; starting one level up leaves `Stop`/`Notification`/`SubagentStop` hooks silently inactive.
 - Parallel sessions: `claude --worktree <branch-name>`.
-- **Three import rules, all lint-enforced.** Nothing under `src/` imports from `src/app/` (extraction boundary). Feature modules never import each other — shared vocabulary goes in `src/domain/`. `src/domain/` imports nothing from the rest of `src/` and uses **relative** sibling imports (`./slots`), the one exception to `@/`-everywhere, so the copy resolves identically in both repos.
+- **Three import rules, each enforced twice** — ESLint catches the `@/` form, `check:docs` resolves the relative form no glob can express. Nothing under `src/` imports from `src/app/` (extraction boundary). Feature modules never import each other — shared vocabulary goes in `src/domain/`. `src/domain/` imports nothing from the rest of `src/` and uses **relative** sibling imports (`./slots`), the one exception to `@/`-everywhere, so the copy resolves identically in both repos.
 - **`src/domain/` is byte-identical with `arena-player-admin` at the same path** and guarded by `pnpm check:shared` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too, which is why three of its four files have none.
 - No attribution trailers on commits.
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
