@@ -12,6 +12,7 @@ Booking website for a mini soccer field. Users check slot availability, pick dat
 | [docs/database.md](docs/database.md)             | Neon + R2 schema, error-code contract, every hard-won gotcha                                                                                                                                   |
 | [docs/DESIGN.md](docs/DESIGN.md)                 | Visual system — tokens, typography, components, do's and don'ts. Follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/); frontmatter tokens are normative |
 | [docs/design-process.md](docs/design-process.md) | How design work runs — motion approval, image sourcing, animation budget, asset locations, consulting order                                                                                    |
+| [docs/dev-rules.md](docs/dev-rules.md)           | Engineering conventions — naming, which folder a thing goes in, component patterns, the accessibility baseline. The layer below these hard rules                                               |
 
 ## When to update this file
 

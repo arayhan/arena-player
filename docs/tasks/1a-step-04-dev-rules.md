@@ -55,8 +55,12 @@ grep -c "uniq_active_slot\|23505" docs/dev-rules.md   # expect: 0 or a pointer, 
 # the a11y baseline is specific enough to check code against
 grep -nE "aria-describedby|aria-invalid|44px|focus" docs/dev-rules.md   # expect: all four present
 
-# the extraction boundary is stated
-grep -n "never imports from" docs/dev-rules.md
+# all three import rules are stated, not just the extraction boundary.
+# The old grep here was "never imports from", which is pre-02b phrasing from
+# when the rule was `lib/ never imports from app/`.
+grep -n "imports from \`src/app/\`" docs/dev-rules.md
+grep -n "modules never import each other" docs/dev-rules.md
+grep -n "relatively" docs/dev-rules.md
 ```
 
 **Not done until** an agent could open a new component file and answer "where does this go, what is it called, and what must it do for a keyboard user" without asking.
