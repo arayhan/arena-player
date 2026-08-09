@@ -8,14 +8,14 @@ Delivery is sequenced **frontend-first**. Phases 1a–3 build the UI against a m
 
 ## Phase overview
 
-| Phase | Track                   | Scope                                                                            | Blockers                |
-| ----- | ----------------------- | -------------------------------------------------------------------------------- | ----------------------- |
-| 1a    | Engineering foundation  | Architecture plan, scaffold, DX harness, dev rules, **API contract + mock layer** | None — start here       |
-| 1b    | Design foundation       | **Art direction** + hero copy → design system HTML, which doubles as the prototype. **Client checkpoint** | 1a scaffold running |
-| 2     | Landing page            | `/` — layout → order → hero → content → footer. **Client checkpoint**            | 1b                      |
-| 3     | Booking form            | `/booking` — layout → UI → validation → submission → TanStack Query + axios       | Phase 2                 |
-| 4     | Backend — **mandatory** | Neon schema, both API routes, anti-double-booking, R2 upload. **Nothing real works without it** | Design discussion after Phase 3 |
-| —     | Genuinely later         | WhatsApp bot, real content swap, deploy, handover                                | After Phase 4           |
+| Phase | Track                   | Scope                                                                                                     | Blockers                        |
+| ----- | ----------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 1a    | Engineering foundation  | Architecture plan, scaffold, DX harness, dev rules, **API contract + mock layer**                         | None — start here               |
+| 1b    | Design foundation       | **Art direction** + hero copy → design system HTML, which doubles as the prototype. **Client checkpoint** | 1a scaffold running             |
+| 2     | Landing page            | `/` — layout → order → hero → content → footer. **Client checkpoint**                                     | 1b                              |
+| 3     | Booking form            | `/booking` — layout → UI → validation → submission → TanStack Query + axios                               | Phase 2                         |
+| 4     | Backend — **mandatory** | Neon schema, both API routes, anti-double-booking, R2 upload. **Nothing real works without it**           | Design discussion after Phase 3 |
+| —     | Genuinely later         | WhatsApp bot, real content swap, deploy, handover                                                         | After Phase 4                   |
 
 **Phases 1a–3 produce a site that looks finished but cannot take a single real booking.** It runs entirely against the MSW mock. Phase 4 is where the hardest and most expensive work sits — the race condition that [database.md](database.md) calls the most expensive bug in this project. Worth stating plainly so a convincing Phase 3 demo is not mistaken for a nearly-done product.
 
@@ -27,18 +27,18 @@ Delivery is sequenced **frontend-first**. Phases 1a–3 build the UI against a m
 
 No product UI ships here. It ends with a repo that runs, rules that are written down, and an API contract the later phases can build against.
 
-| # | Task | Output |
-|---|------|--------|
-| 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form`, `zod`, or `axios` |
-| 2 | Scaffolding | Next.js 16 + TypeScript + Tailwind v4 installed via pnpm, runs at `localhost:3000` |
-| 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
-| 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `src/app/` |
-| 5 | Lock the API contract | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md) |
-| 6 | Shared primitives | **`src/domain/slots.ts`** (canonical `TIME_SLOTS`), **`src/domain/dates.ts`** (Asia/Jakarta helpers, today + 13 days), **`status.ts`**, and **`phone.ts`**, each with a colocated `*.test.ts`. They live in `src/domain/` because the admin repo keeps a byte-identical copy at the same path — see the shared-code contract in [architecture.md](architecture.md) |
-| 7 | Mock layer + data plumbing | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance |
-| 8 | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `src/lib/motion.ts` wrapping `gsap.matchMedia()` |
+| #   | Task                                | Output                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Plan the architecture               | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form`, `zod`, or `axios`                 |
+| 2   | Scaffolding                         | Next.js 16 + TypeScript + Tailwind v4 installed via pnpm, runs at `localhost:3000`                                                                                                                                                                                                                                                                                 |
+| 3   | Developer experience                | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase                                                                           |
+| 4   | Development rules                   | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `src/app/`                                                                                                                                         |
+| 5   | Lock the API contract               | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md)                                                                                                                                                                                                                                              |
+| 6   | Shared primitives                   | **`src/domain/slots.ts`** (canonical `TIME_SLOTS`), **`src/domain/dates.ts`** (Asia/Jakarta helpers, today + 13 days), **`status.ts`**, and **`phone.ts`**, each with a colocated `*.test.ts`. They live in `src/domain/` because the admin repo keeps a byte-identical copy at the same path — see the shared-code contract in [architecture.md](architecture.md) |
+| 7   | Mock layer + data plumbing          | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance                                                                                                                                                                                                                                               |
+| 8   | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `src/lib/motion.ts` wrapping `gsap.matchMedia()`                                                                                                                                                                                                                                            |
 
-**`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of *new* defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
+**`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of _new_ defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
 
 A `SessionStart` hook already injects the `arena-player-gotchas` trap list, so "every agent must load this once per session" is guaranteed rather than honor-system.
 
@@ -57,19 +57,19 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 
 ## Phase 1b — Design foundation
 
-| # | Task | Output |
-|---|------|--------|
-| 1 | **Establish the art direction** | A written direction: type scale, spacing rhythm, section-transition language, and what "surpass the benchmark, inverted to light blue-white" means concretely. Driven by `/impeccable` plus any benchmark/moodboard references |
-| 2 | **Draft the hero copy** | Indonesian headline, subheadline, and meta description — drafted as options, chosen by the user via `AskUserQuestion`. Decided here because copy and type scale are decided together: a 3-word headline and a 12-word one need different scales |
-| 3 | Analyze design system | Audit [DESIGN.md](DESIGN.md) against the direction and the brand tokens; resolve gaps before any pixel is drawn. Task 1's chosen direction becomes its Overview north star, which is deliberately left unset until then |
-| 4 | Design system HTML | One page rendering every token, type scale, and component state — including all three slot states and the date pill |
-| 5 | Make it walkable | Click handlers on that same page proving the landing → order → form journey |
+| #   | Task                            | Output                                                                                                                                                                                                                                          |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Establish the art direction** | A written direction: type scale, spacing rhythm, section-transition language, and what "surpass the benchmark, inverted to light blue-white" means concretely. Driven by `/impeccable` plus any benchmark/moodboard references                  |
+| 2   | **Draft the hero copy**         | Indonesian headline, subheadline, and meta description — drafted as options, chosen by the user via `AskUserQuestion`. Decided here because copy and type scale are decided together: a 3-word headline and a 12-word one need different scales |
+| 3   | Analyze design system           | Audit [DESIGN.md](DESIGN.md) against the direction and the brand tokens; resolve gaps before any pixel is drawn. Task 1's chosen direction becomes its Overview north star, which is deliberately left unset until then                         |
+| 4   | Design system HTML              | One page rendering every token, type scale, and component state — including all three slot states and the date pill                                                                                                                             |
+| 5   | Make it walkable                | Click handlers on that same page proving the landing → order → form journey                                                                                                                                                                     |
 
 **Task 1 is the one that keeps Phase 2 coherent.** The tokens are already decided (navy, accent, white); what is not decided anywhere is the art direction. Without it, Phase 2 runs `/impeccable` section by section and each section improvises its own visual idea — five sections, five directions, no through-line. That is exactly how a site reads as templated despite every section being individually fine. The direction is written once here and Phase 2 executes it.
 
 This is also where benchmark references get consumed: read them, write the findings into [DESIGN.md](DESIGN.md), then delete the files per `docs/references/README.md`.
 
-Tasks 4 and 5 are **one artifact, not two**. The design system page *is* the prototype; it then serves as the component reference Phase 2 builds from. Building a separate throwaway prototype would mean paying for the UI twice.
+Tasks 4 and 5 are **one artifact, not two**. The design system page _is_ the prototype; it then serves as the component reference Phase 2 builds from. Building a separate throwaway prototype would mean paying for the UI twice.
 
 Hero copy (task 2) is drafted in-house and user-approved — unlike the Ketentuan, which is verbatim client content. If the client later supplies their own wording, that is a `TODO(content)` swap in the same bucket as the WA number and bank details.
 
@@ -102,13 +102,13 @@ Passes only if all three hold:
 
 Built in this order — each section merges before the next starts. **Order section comes first**: it is the product, it carries all the state and data-fetching risk, and building it first gives it the most iteration time instead of the least.
 
-| # | Section | Notes |
-|---|---------|-------|
-| 1 | Layout | Page shell, grid, spacing rhythm, responsive frame 375px → 1440px |
-| 2 | Order | Anchor `#order`. Date picker (14 days) + time slot grid against the mock. **No pricing shown here** |
-| 3 | Hero | Full viewport, logo, headline, CTA "Pesan Lapangan" scrolling to `#order` |
-| 4 | Content | Ketentuan (10 rules, verbatim Indonesian) + Location & Contact |
-| 5 | Footer | Closing CTA back to `#order` + footer |
+| #   | Section | Notes                                                                                               |
+| --- | ------- | --------------------------------------------------------------------------------------------------- |
+| 1   | Layout  | Page shell, grid, spacing rhythm, responsive frame 375px → 1440px                                   |
+| 2   | Order   | Anchor `#order`. Date picker (14 days) + time slot grid against the mock. **No pricing shown here** |
+| 3   | Hero    | Full viewport, logo, headline, CTA "Pesan Lapangan" scrolling to `#order`                           |
+| 4   | Content | Ketentuan (10 rules, verbatim Indonesian) + Location & Contact                                      |
+| 5   | Footer  | Closing CTA back to `#order` + footer                                                               |
 
 **Skills:** `/impeccable` for design, executing the art direction written in 1b rather than inventing a new one per section. GSAP does the animation — `/remotion-create` is only for producing video assets, and only if the 1b hero-video gate passed.
 
@@ -124,14 +124,14 @@ Cheaper than the 1b checkpoint was, more expensive than nothing — which is why
 
 ## Phase 3 — Booking form (`/booking`)
 
-| # | Task | Notes |
-|---|------|-------|
-| 1 | Layout | Page shell + locked summary card showing the chosen date/time |
-| 2 | UI | Nama Tim, Nomor WhatsApp, notes, payment info card, proof upload control, honeypot |
-| 3 | Validation | Required fields, Indonesian phone format (08xx/62xx), image-only ≤2MB |
-| 4 | Submission | Success state, taken-slot state, error states |
-| 5 | API integration | TanStack Query mutation over the axios instance, against the Phase 1a mock |
-| 6 | End-to-end journey check | **Two legs, not one continuous flow** — WhatsApp is a deliberate break in the chain. Leg 1: landing → slot select → correct `wa.me` URL and message template. Leg 2: open `/booking?date=…&time=…` directly (as the admin's pasted link would) → fill → submit → success. Also verify all four param states from the Product Spec: valid, missing, expired, unavailable. The WA number is a `TODO(content)` placeholder — do not report that as a failure |
+| #   | Task                     | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Layout                   | Page shell + locked summary card showing the chosen date/time                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2   | UI                       | Nama Tim, Nomor WhatsApp, notes, payment info card, proof upload control, honeypot                                                                                                                                                                                                                                                                                                                                                                        |
+| 3   | Validation               | Required fields, Indonesian phone format (08xx/62xx), image-only ≤2MB                                                                                                                                                                                                                                                                                                                                                                                     |
+| 4   | Submission               | Success state, taken-slot state, error states                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 5   | API integration          | TanStack Query mutation over the axios instance, against the Phase 1a mock                                                                                                                                                                                                                                                                                                                                                                                |
+| 6   | End-to-end journey check | **Two legs, not one continuous flow** — WhatsApp is a deliberate break in the chain. Leg 1: landing → slot select → correct `wa.me` URL and message template. Leg 2: open `/booking?date=…&time=…` directly (as the admin's pasted link would) → fill → submit → success. Also verify all four param states from the Product Spec: valid, missing, expired, unavailable. The WA number is a `TODO(content)` placeholder — do not report that as a failure |
 
 **Skills:** `/impeccable` for design — the form is the conversion point, and a polished landing page handing off to a plain form is where the quality gap shows. `/qa` for task 6.
 
@@ -150,7 +150,7 @@ Cheaper than the 1b checkpoint was, more expensive than nothing — which is why
 
 # Product spec
 
-The full functional spec for everything Phases 1a–**4** build. Phase boundaries above say *when*; this section says *what*.
+The full functional spec for everything Phases 1a–**4** build. Phase boundaries above say _when_; this section says _what_.
 
 Note the split: the routes, sections, and form below are Phases 1a–3 and run against the mock. **The data model, API route behaviour, and anti-double-booking are Phase 4** — specified here because the contract has to be known before the UI is built against it, not because they ship earlier.
 
@@ -204,12 +204,12 @@ Full token table, typography, and animation budget: [DESIGN.md](DESIGN.md).
 
 **Entry is always a link carrying query params** — pasted by the admin over WhatsApp, or sent by the bot later. Nothing on `/` links here directly, so malformed and stale params are the normal case, not the edge case. Handle all four:
 
-| Params | Behaviour |
-|---|---|
-| Valid `date` + `time` | Normal — locked summary card, form enabled |
-| Missing or unparseable | Friendly message + button to `/#order` to pick a slot. Never a blank form or a crash |
-| Date outside the 14-day window, or a slot already past | Same treatment as missing — the link has expired, say so plainly |
-| Slot no longer available | Allowed to proceed; the 409 on submit is the authority. Checking here would be a check-then-insert race |
+| Params                                                 | Behaviour                                                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Valid `date` + `time`                                  | Normal — locked summary card, form enabled                                                              |
+| Missing or unparseable                                 | Friendly message + button to `/#order` to pick a slot. Never a blank form or a crash                    |
+| Date outside the 14-day window, or a slot already past | Same treatment as missing — the link has expired, say so plainly                                        |
+| Slot no longer available                               | Allowed to proceed; the 409 on submit is the authority. Checking here would be a check-then-insert race |
 
 - Reads `date` and `time` from query params, shown as a locked summary card (user can go back to change them, not edit inline)
 - Fields: Nama Tim (required), Nomor WhatsApp (required, accepts `08xx` / `62xx` / `+62xx`, **normalised to `628xxxxxxxxx` before storage**), notes (optional, **max 500 characters**)
@@ -273,7 +273,7 @@ Key behaviors:
 `POST /api/bookings` is public and unauthenticated by design — there is no auth in this repo. The honeypot stops naive bots and nothing else. Without the following, a trivial script can hold **all 126 slots** (9 × 14 days) in `pending` until lazy expiry releases them 24h later, and can burn unbounded R2 storage with 2MB uploads:
 
 - **Per-IP rate limit** on submissions. A real user submits once; anything beyond a handful per hour is not a customer.
-- **Reject before the R2 write** — size and MIME are validated server-side *before* anything is uploaded, so a rejected file never costs storage. Client-side checks are UX, not protection.
+- **Reject before the R2 write** — size and MIME are validated server-side _before_ anything is uploaded, so a rejected file never costs storage. Client-side checks are UX, not protection.
 - **Return 429** with a friendly Indonesian message, distinct from the 409 taken-slot path.
 
 Not a hypothetical worth dismissing on a booking site: holding every slot costs the client real revenue for a day, and the attack needs no skill.
@@ -401,29 +401,29 @@ Phase 4 (backend) is **mandatory before launch** — only its design discussion 
 
 ## Phase 4 — Backend (mandatory, design discussion deferred)
 
-**Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its *design* is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the MSW mock from Phase 1a.
+**Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its _design_ is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the MSW mock from Phase 1a.
 
 Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the ones colocated under `src/`, kept under a separate glob so `check:lib` never requires credentials.
 
 Agenda for the discussion:
 
-| Topic | What has to be decided |
-|---|---|
-| Schema + data types | `bookings` columns, `date` vs `timestamptz`, status as enum or text, index set |
-| Database structure | Migration strategy, how manual-run migrations stay ordered and idempotent |
-| Layered architecture | Route handler → service → repository boundaries, and how those interact with the existing extraction boundary (nothing under `src/` imports from `src/app/`) |
-| Validation | Which rules are shared client/server, which are server-only, and where the shared ones live |
-| **File upload** | **Presigned URL** — browser PUTs straight to R2, then POSTs the object key. This supersedes the multipart flow currently drawn in [architecture.md](architecture.md) and is why `POST /api/bookings` is marked provisional |
-| **Where expiry runs** | Lazy-on-read, scheduled job, or on-POST. Lazy-on-read is starved by the 30s shared cache — a cache hit never reaches the origin, so nothing frees an abandoned slot on a quiet night. Full statement of the problem and the three candidate fixes: [architecture.md](architecture.md) |
-| **Orphaned R2 objects** | Upload succeeds before the insert, so a crash in between leaves a file no row points at and nothing ever notices. Likely an R2 lifecycle rule on the `proofs/` prefix — confirm it is configured at handover, since it lives in the R2 dashboard and not in this repo |
-| **Security review** | `/security-review` over the route handlers before launch, and it belongs on this agenda rather than at the end. Phase 4 is the only phase that ships something publicly reachable: an unauthenticated `POST` accepting a 2MB file upload into private storage, guarded by a honeypot and a per-IP rate limit, sitting in front of a race the whole system is built around. Phases 1a–3 have no attack surface at all — a mistake there is wrong, a mistake here is exploitable. Decide **when** it runs: before the presigned-URL work or after, since that decision moves the upload path from the server to the browser |
-| **Re-adding the Neon MCP** | It was removed from `.mcp.json` during Phase 1a, deliberately. It gives an agent SQL execution and migration application, which is exactly what [database.md](database.md) forbids — migrations are run by hand in the Neon SQL editor. The failure it enables is silent: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that index is the only race guard there is. If it comes back, it comes back **with a written rule limiting agents to reads**, and `NEON_API_KEY` gets documented in `.env.local.example` at the same time |
+| Topic                      | What has to be decided                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema + data types        | `bookings` columns, `date` vs `timestamptz`, status as enum or text, index set                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Database structure         | Migration strategy, how manual-run migrations stay ordered and idempotent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Layered architecture       | Route handler → service → repository boundaries, and how those interact with the existing extraction boundary (nothing under `src/` imports from `src/app/`)                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Validation                 | Which rules are shared client/server, which are server-only, and where the shared ones live                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **File upload**            | **Presigned URL** — browser PUTs straight to R2, then POSTs the object key. This supersedes the multipart flow currently drawn in [architecture.md](architecture.md) and is why `POST /api/bookings` is marked provisional                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Where expiry runs**      | Lazy-on-read, scheduled job, or on-POST. Lazy-on-read is starved by the 30s shared cache — a cache hit never reaches the origin, so nothing frees an abandoned slot on a quiet night. Full statement of the problem and the three candidate fixes: [architecture.md](architecture.md)                                                                                                                                                                                                                                                                                                                                     |
+| **Orphaned R2 objects**    | Upload succeeds before the insert, so a crash in between leaves a file no row points at and nothing ever notices. Likely an R2 lifecycle rule on the `proofs/` prefix — confirm it is configured at handover, since it lives in the R2 dashboard and not in this repo                                                                                                                                                                                                                                                                                                                                                     |
+| **Security review**        | `/security-review` over the route handlers before launch, and it belongs on this agenda rather than at the end. Phase 4 is the only phase that ships something publicly reachable: an unauthenticated `POST` accepting a 2MB file upload into private storage, guarded by a honeypot and a per-IP rate limit, sitting in front of a race the whole system is built around. Phases 1a–3 have no attack surface at all — a mistake there is wrong, a mistake here is exploitable. Decide **when** it runs: before the presigned-URL work or after, since that decision moves the upload path from the server to the browser |
+| **Re-adding the Neon MCP** | It was removed from `.mcp.json` during Phase 1a, deliberately. It gives an agent SQL execution and migration application, which is exactly what [database.md](database.md) forbids — migrations are run by hand in the Neon SQL editor. The failure it enables is silent: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that index is the only race guard there is. If it comes back, it comes back **with a written rule limiting agents to reads**, and `NEON_API_KEY` gets documented in `.env.local.example` at the same time                       |
 
-Already locked, carried in unchanged — anti-double-booking via the `uniq_active_slot` partial index with its 409 contract, and the 24h expiry *rule itself*. Non-negotiable; see [database.md](database.md). Only the **mechanism** that runs the expiry is open, per the agenda row above.
+Already locked, carried in unchanged — anti-double-booking via the `uniq_active_slot` partial index with its 409 contract, and the 24h expiry _rule itself_. Non-negotiable; see [database.md](database.md). Only the **mechanism** that runs the expiry is open, per the agenda row above.
 
 ### Retiring MSW — required, not cleanup
 
-**MSW must not survive into production.** It registers a service worker, so a stray `mockServiceWorker.js` in the production build intercepts real requests and serves fake availability — and it fails *silently*, looking like a working site showing wrong data. This is the single most likely way this project ships a broken deploy.
+**MSW must not survive into production.** It registers a service worker, so a stray `mockServiceWorker.js` in the production build intercepts real requests and serves fake availability — and it fails _silently_, looking like a working site showing wrong data. This is the single most likely way this project ships a broken deploy.
 
 Required in this phase:
 

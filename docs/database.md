@@ -51,7 +51,7 @@ create index bookings_pending_expiry_idx
 commit;
 ```
 
-This file lives at `db/migrations/<timestamp>_create_bookings.sql` once the Phase 1 build starts. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
+This file lives at `db/migrations/<timestamp>_create_bookings.sql` once the Phase 1a build starts. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
 
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 
@@ -70,7 +70,7 @@ Nothing was touched by it, because it never connected. But it was dormant by acc
 **Conditions for bringing it back** — on the Phase 4 agenda in [PRD.md](PRD.md):
 
 - A written rule limiting agents to **reads**: inspect schema and connection state, never run DDL, never apply a migration.
-- `NEON_API_KEY` documented in `.env.local.example`, which it never was. It is a Neon **platform API key** from the console's API Keys page — a *different* credential from `DATABASE_URL`, which is the Postgres connection itself. It is never committed; `.mcp.json` references `${NEON_API_KEY}` and the value lives in your own shell environment.
+- `NEON_API_KEY` documented in `.env.local.example`, which it never was. It is a Neon **platform API key** from the console's API Keys page — a _different_ credential from `DATABASE_URL`, which is the Postgres connection itself. It is never committed; `.mcp.json` references `${NEON_API_KEY}` and the value lives in your own shell environment.
 - The package name verified against current docs. The previous entry (`@neondatabase/mcp-server-neon`) was written from training knowledge and never confirmed against `https://neon.tech/docs`.
 
 ## Error-code contract

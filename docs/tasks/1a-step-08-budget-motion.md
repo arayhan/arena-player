@@ -34,6 +34,7 @@ It must be **per route**, not just a total. A single global number hides the cas
 **Measured figures written back** into the budget table, replacing the `~` estimates, and the resolved versions written back into the versions table.
 
 **`src/lib/motion.ts`** — a single `gsap.matchMedia()` wrapper. GSAP has no built-in `prefers-reduced-motion` handling, which is the entire reason a direct `gsap.to()` in a component is banned. Also handle:
+
 - `useGSAP()` from `@gsap/react` for React cleanup
 - ScrollTrigger registration is client-only
 - ScrollTrigger must refresh on navigation between `/` and `/booking` — App Router client transitions do not recalculate trigger positions

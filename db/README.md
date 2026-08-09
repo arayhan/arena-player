@@ -6,7 +6,7 @@
 
 Files in `migrations/` are **never auto-applied** — not by a script, not by an agent, not on deploy. You paste them into the Neon SQL editor yourself.
 
-That is not caution for its own sake. The migration creates `bookings` *and* the partial unique index `uniq_active_slot` in one transaction, and that index is the **only** thing preventing two people booking the same slot. A table created without it looks completely healthy: inserts succeed, the API returns 200, the site works. It just double-books, silently, with no error anywhere.
+That is not caution for its own sake. The migration creates `bookings` _and_ the partial unique index `uniq_active_slot` in one transaction, and that index is the **only** thing preventing two people booking the same slot. A table created without it looks completely healthy: inserts succeed, the API returns 200, the site works. It just double-books, silently, with no error anywhere.
 
 The transaction wrapper exists so a paste that fails halfway cannot leave the table without its index. Do not run the statements individually.
 

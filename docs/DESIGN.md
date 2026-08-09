@@ -132,13 +132,13 @@ components:
 
 # Design System: Arena Player
 
-Machine-readable tokens are the frontmatter above; this prose says how to apply them. Motion, shadow, breakpoint, and border tokens have no home in the DESIGN.md schema and live in [`.impeccable/design.json`](../.impeccable/design.json). How design work is *run* here — motion approval, image sourcing, asset locations — is [design-process.md](design-process.md). Live render of everything below: [DESIGN.html](DESIGN.html).
+Machine-readable tokens are the frontmatter above; this prose says how to apply them. Motion, shadow, breakpoint, and border tokens have no home in the DESIGN.md schema and live in [`.impeccable/design.json`](../.impeccable/design.json). How design work is _run_ here — motion approval, image sourcing, asset locations — is [design-process.md](design-process.md). Live render of everything below: [DESIGN.html](DESIGN.html).
 
 ## Overview
 
 **Creative North Star: not yet established.** Art direction is Phase 1b task 1 and has not been decided. This document currently carries tokens and component behaviour only. Writing a north star here before that task runs would pre-empt the decision the phase exists to make — see [PRD.md](PRD.md).
 
-What *is* settled is the world's polarity. `bataskotapoint.com` is a binding reference **as an anti-reference**: dark, neon, saturated. Arena Player is its inverse — light, clean, blue-and-white, with whitespace treated as a material rather than as leftover room. Navy `#011A43` is sampled from the client's own logo, so the palette is inherited, not invented.
+What _is_ settled is the world's polarity. `bataskotapoint.com` is a binding reference **as an anti-reference**: dark, neon, saturated. Arena Player is its inverse — light, clean, blue-and-white, with whitespace treated as a material rather than as leftover room. Navy `#011A43` is sampled from the client's own logo, so the palette is inherited, not invented.
 
 The system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on near-sharp geometry and generous white space. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added. The one fully-round shape in the entire system is the date pill, and its roundness is functional.
 
@@ -158,14 +158,14 @@ The client asked for a **minimalist UI, but modern — with many animations, tra
 
 This is an **input to Phase 1b task 1, not a north star.** Task 1 still owns the art direction; this constrains what it may decide.
 
-Read as a whole rather than as two competing requests: **minimal in form, rich in behaviour.** Few elements, each responding precisely. The restraint is not despite the motion — it is what makes dense motion legible. The same effects on a busy layout read as noise. "Minimalist" here is confirmed to mean *few elements and generous whitespace*, which the system already says above, and **not** reduced colour: the status triples are an accessibility requirement, not decoration, and the palette is unchanged by this directive.
+Read as a whole rather than as two competing requests: **minimal in form, rich in behaviour.** Few elements, each responding precisely. The restraint is not despite the motion — it is what makes dense motion legible. The same effects on a busy layout read as noise. "Minimalist" here is confirmed to mean _few elements and generous whitespace_, which the system already says above, and **not** reduced colour: the status triples are an accessibility requirement, not decoration, and the palette is unchanged by this directive.
 
 **Where the motion lives — this split is a rule, not a preference:**
 
-| Area | Motion |
-|---|---|
-| Hero, content sections, section transitions | Expressive. This is where the directive is spent |
-| **Order section** | **Functional feedback only** — state change, selection, the elapsed collapse |
+| Area                                        | Motion                                                                       |
+| ------------------------------------------- | ---------------------------------------------------------------------------- |
+| Hero, content sections, section transitions | Expressive. This is where the directive is spent                             |
+| **Order section**                           | **Functional feedback only** — state change, selection, the elapsed collapse |
 
 The order section is exempt for a stated reason, not by oversight. It is where the booking happens, where the per-section Lighthouse gate bites hardest, and where the organiser is deciding fastest with people waiting on them. Motion that delays that decision works against the outcome the client is paying for. Withholding it there is the directive being honoured, not ignored.
 
@@ -180,7 +180,7 @@ The order section is exempt for a stated reason, not by oversight. It is where t
 - Light and blue-white, never dark — the anti-reference is binding
 - Oversized Orbitron display against Inter body; no third face
 - Near-sharp corners throughout; exactly one round shape, and it means something
-- Status is a colour *triple*, never a single hue
+- Status is a colour _triple_, never a single hue
 - Navy-tinted shadows only; black shadows read as dirt on a blue-white page
 - Whitespace is the layout device, not a shortage of content
 - Minimal in form, rich in behaviour — few elements, each responding precisely
@@ -218,24 +218,24 @@ Status colours are **triples**, never single hues. Each is a surface, a border, 
 
 The frontmatter carries **primitives only**, because a DESIGN.md token may not reference another token in the same group. The implementation adds a semantic layer between primitives and components, and that layer is the one a re-theme edits:
 
-| Semantic | Primitive | Purpose |
-|---|---|---|
-| `--color-bg` | `white` | Page background |
-| `--color-bg-subtle` | `grey-50` | Alternating section bands |
-| `--color-fg` | `navy-900` | Body and heading text |
-| `--color-fg-muted` | `navy-400` | Secondary text, captions |
-| `--color-interactive` | `blue-600` | Links, focus, available slots |
-| `--color-interactive-pressed` | `blue-700` | Active state |
-| `--color-border` | `grey-200` | Hairlines |
-| `--color-focus` | `blue-600` | Focus ring |
-| `--color-fg-inverse` | `white` | Text on a filled dark surface |
-| `--color-wash` | `blue-50` | The hover tint |
-| `--color-accent-strong` | `navy-900` | Heaviest actionable surface — primary button, secondary border |
-| `--color-accent-strong-hover` | `navy-700` | Its hover |
-| `--color-disabled-bg` | `grey-200` | Disabled fill |
-| `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple |
-| `--color-danger-surface` / `-line` / `-strong` | `red-100` / `-300` / `-800` | The booked triple, and the error boundary |
-| `--color-success-fg` | `navy-900` | Success carries on weight and copy, never on the interactive blue |
+| Semantic                                        | Primitive                     | Purpose                                                           |
+| ----------------------------------------------- | ----------------------------- | ----------------------------------------------------------------- |
+| `--color-bg`                                    | `white`                       | Page background                                                   |
+| `--color-bg-subtle`                             | `grey-50`                     | Alternating section bands                                         |
+| `--color-fg`                                    | `navy-900`                    | Body and heading text                                             |
+| `--color-fg-muted`                              | `navy-400`                    | Secondary text, captions                                          |
+| `--color-interactive`                           | `blue-600`                    | Links, focus, available slots                                     |
+| `--color-interactive-pressed`                   | `blue-700`                    | Active state                                                      |
+| `--color-border`                                | `grey-200`                    | Hairlines                                                         |
+| `--color-focus`                                 | `blue-600`                    | Focus ring                                                        |
+| `--color-fg-inverse`                            | `white`                       | Text on a filled dark surface                                     |
+| `--color-wash`                                  | `blue-50`                     | The hover tint                                                    |
+| `--color-accent-strong`                         | `navy-900`                    | Heaviest actionable surface — primary button, secondary border    |
+| `--color-accent-strong-hover`                   | `navy-700`                    | Its hover                                                         |
+| `--color-disabled-bg`                           | `grey-200`                    | Disabled fill                                                     |
+| `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple                                                |
+| `--color-danger-surface` / `-line` / `-strong`  | `red-100` / `-300` / `-800`   | The booked triple, and the error boundary                         |
+| `--color-success-fg`                            | `navy-900`                    | Success carries on weight and copy, never on the interactive blue |
 
 **State colour needs its own semantic tier.** Without one, every component showing a state
 reaches for a raw hue, and a re-theme silently misses all of them. That is not hypothetical: it
@@ -261,7 +261,7 @@ component tokens skipped this layer while the page argued they did not.
 - **Body** (Inter 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
 - **Sm** (Inter 400, 14px fixed, 1.5): state labels, helper text, field labels.
 - **Xs** (Inter 400, 12px fixed, 1.5): captions and metadata.
-There is no eyebrow or kicker role, deliberately. See the Don'ts.
+  There is no eyebrow or kicker role, deliberately. See the Don'ts.
 
 **The Fluid-Not-Stepped Rule.** The scale runs a 1.25 ratio at 375px growing to 1.5 at 1440px via `clamp()`. There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it.
 

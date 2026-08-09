@@ -4,14 +4,14 @@ Booking website for a mini soccer field. Users check slot availability, pick dat
 
 ## Docs (read in this order)
 
-| Doc | Content |
-|---|---|
-| [docs/PRODUCT.md](docs/PRODUCT.md) | Product truth — who the user is, what the product is for, what must not be fabricated, and which decisions are still the client's. Upstream of the PRD |
-| [docs/PRD.md](docs/PRD.md) | Product spec — phases, routes, static content, Definition of Done |
-| [docs/architecture.md](docs/architecture.md) | System diagram, request flow, folder structure, verification-script practice |
-| [docs/database.md](docs/database.md) | Neon + R2 schema, error-code contract, every hard-won gotcha |
-| [docs/DESIGN.md](docs/DESIGN.md) | Visual system — tokens, typography, components, do's and don'ts. Follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/); frontmatter tokens are normative |
-| [docs/design-process.md](docs/design-process.md) | How design work runs — motion approval, image sourcing, animation budget, asset locations, consulting order |
+| Doc                                              | Content                                                                                                                                                                                        |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [docs/PRODUCT.md](docs/PRODUCT.md)               | Product truth — who the user is, what the product is for, what must not be fabricated, and which decisions are still the client's. Upstream of the PRD                                         |
+| [docs/PRD.md](docs/PRD.md)                       | Product spec — phases, routes, static content, Definition of Done                                                                                                                              |
+| [docs/architecture.md](docs/architecture.md)     | System diagram, request flow, folder structure, verification-script practice                                                                                                                   |
+| [docs/database.md](docs/database.md)             | Neon + R2 schema, error-code contract, every hard-won gotcha                                                                                                                                   |
+| [docs/DESIGN.md](docs/DESIGN.md)                 | Visual system — tokens, typography, components, do's and don'ts. Follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/); frontmatter tokens are normative |
+| [docs/design-process.md](docs/design-process.md) | How design work runs — motion approval, image sourcing, animation budget, asset locations, consulting order                                                                                    |
 
 ## When to update this file
 
@@ -40,14 +40,14 @@ A `Stop` hook nudges **once per session** when `docs/PRD.md`, `docs/architecture
 
 Frontend-first. See [docs/PRD.md](docs/PRD.md) for the task breakdown per phase.
 
-| Phase | Scope | Status |
-|---|---|---|
-| 1a | Engineering foundation — architecture, scaffold, DX, dev rules, API contract, MSW mock | Build now |
-| 1b | Design foundation — **art direction** + hero copy, design system HTML doubling as the prototype. **Client checkpoint** | After 1a scaffold |
-| 2 | Landing page `/` — layout → order → hero → content → footer. **Client checkpoint** | After 1b |
-| 3 | Booking form `/booking` — layout → UI → validation → submission → TanStack Query + axios | After Phase 2 |
-| 4 | Backend — **mandatory**, nothing real works without it. Design discussion deferred | After Phase 3 |
-| — | WhatsApp bot, real content, deploy, handover | After Phase 4 |
+| Phase | Scope                                                                                                                  | Status            |
+| ----- | ---------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1a    | Engineering foundation — architecture, scaffold, DX, dev rules, API contract, MSW mock                                 | Build now         |
+| 1b    | Design foundation — **art direction** + hero copy, design system HTML doubling as the prototype. **Client checkpoint** | After 1a scaffold |
+| 2     | Landing page `/` — layout → order → hero → content → footer. **Client checkpoint**                                     | After 1b          |
+| 3     | Booking form `/booking` — layout → UI → validation → submission → TanStack Query + axios                               | After Phase 2     |
+| 4     | Backend — **mandatory**, nothing real works without it. Design discussion deferred                                     | After Phase 3     |
+| —     | WhatsApp bot, real content, deploy, handover                                                                           | After Phase 4     |
 
 **Phases 1a–3 run entirely against a mock — the site will look finished while taking zero real bookings.** Phase 4 holds the race condition, the most expensive bug in this project.
 

@@ -4,7 +4,7 @@ Entries from the planning phase, before Phase 1a scaffolding began. Moved out of
 `../PROGRESS.md` verbatim to keep the live log short, because every agent is instructed
 to read it before working and it had reached 44 KB.
 
-Consult this only when tracing *why* an older decision was made. What is currently
+Consult this only when tracing _why_ an older decision was made. What is currently
 **true** lives in PRD.md, architecture.md, DESIGN.md, and PRODUCT.md — not here.
 
 ---

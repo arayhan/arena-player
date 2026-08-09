@@ -1,0 +1,9 @@
+.next/
+node_modules/
+pnpm-lock.yaml
+public/mockServiceWorker.js
+
+# Reference artifact, hand-authored, not production. Reformatting it would
+# produce a large meaningless diff and fight the impeccable detector that
+# scans it.
+docs/DESIGN.html

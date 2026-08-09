@@ -66,7 +66,7 @@ The mechanism is the anti-double-booking guarantee: a partial unique index is th
 
 With same-day booking confirmed as the primary journey, it becomes a direct conflict with the success goal. Someone opening the page at 19.00 sees 06.00 through 18.00 all labelled **"Terisi"** — the day looks sold out when six of those hours were simply never available to them. A page that makes today look full is the worst possible outcome for a product measured on filling empty slots.
 
-**Resolved in the order-section brief — and it needs no API change.** The client already knows the current time and the canonical slot starts from `src/domain/slots.ts` / `src/domain/dates.ts`, so it can compute "elapsed" locally and stop *displaying* those hours as "Terisi". `GET /api/availability` returning `booked` is harmless once the client owns the label. The contract stays FIRM.
+**Resolved in the order-section brief — and it needs no API change.** The client already knows the current time and the canonical slot starts from `src/domain/slots.ts` / `src/domain/dates.ts`, so it can compute "elapsed" locally and stop _displaying_ those hours as "Terisi". `GET /api/availability` returning `booked` is harmless once the client owns the label. The contract stays FIRM.
 
 The design response: elapsed hours for today collapse into a single expandable `Sudah lewat (N)` row at the top of the list, so the section opens on what is actually bookable, the day never reads as sold out, and nothing is hidden. See `.impeccable/surfaces/app-page-tsx.md`.
 
@@ -90,7 +90,7 @@ Very little is real yet, and that matters more than usual because this page repr
 
 **Not yet supplied — must not be fabricated:** WhatsApp number, bank account number and holder name, street address and map coordinates, the logo file itself, and any photograph of the field. All six are tracked as `TODO(content)` placeholders.
 
-The photography absence has a hard rule attached: AI-generated imagery may be abstract or decorative, but nothing may depict something a customer would read as *this specific field*. A generated photo of "a mini soccer field" would mislead someone into booking a venue they have not actually seen. Real venue photos come from the client or the site ships without them.
+The photography absence has a hard rule attached: AI-generated imagery may be abstract or decorative, but nothing may depict something a customer would read as _this specific field_. A generated photo of "a mini soccer field" would mislead someone into booking a venue they have not actually seen. Real venue photos come from the client or the site ships without them.
 
 ## Product Principles
 
@@ -100,7 +100,7 @@ The photography absence has a hard rule attached: AI-generated imagery may be ab
 4. **The organiser is mid-conversation.** They are deciding fast, on a phone, with people waiting on them. Optimise for speed of comprehension over completeness of information.
 5. **Today is the default, not one of fourteen.** Demand is same-day. The design should open on the day people actually want and treat the far end of the window as a secondary path — spending the scarcest screen space on the least-used dates is backwards.
 6. **An empty slot is an opportunity, not blank space.** Success is measured on filling dead hours, so the design owes quiet slots more than absence of a label. Whatever that affordance becomes, it cannot imply a discount — no pricing is confirmed.
-5. **Placeholders are visibly placeholders.** With six unsupplied content items, the honest failure mode is an obvious gap the client can fill — never plausible-looking invented detail that ships unnoticed.
+7. **Placeholders are visibly placeholders.** With six unsupplied content items, the honest failure mode is an obvious gap the client can fill — never plausible-looking invented detail that ships unnoticed.
 
 ## Accessibility & Inclusion
 

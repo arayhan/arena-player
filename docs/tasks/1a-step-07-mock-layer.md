@@ -15,6 +15,7 @@ Training data gets this wrong. v2 is `http.get()` and `HttpResponse.json()`; v1'
 ## Deliverables
 
 **`src/mocks/handlers.ts`**
+
 - `GET /api/availability?date=` — always all 9 slots, always canonical order, **derived from `TIME_SLOTS`**. A mock with its own hardcoded slot strings is a second source of truth that drifts silently and only surfaces when the real backend lands, which is why step 06 comes first
 - Realistic mixed data, not all-available. Some `pending`, some `booked`, and at least one date that is fully booked so Phase 2 has to design that state
 - `400` on a malformed date or one outside the 14-day window
@@ -26,12 +27,12 @@ Training data gets this wrong. v2 is `http.get()` and `HttpResponse.json()`; v1'
 
 **The data layer, split across four files rather than one folder** — the route split is structural now, so this step lands each piece where it belongs:
 
-| File | Holds |
-|---|---|
-| `src/services/api-client.ts` | the axios instance — **`/booking` only** |
+| File                               | Holds                                          |
+| ---------------------------------- | ---------------------------------------------- |
+| `src/services/api-client.ts`       | the axios instance — **`/booking` only**       |
 | `src/modules/home/home.service.ts` | the availability GET, native `fetch`, no axios |
-| `src/modules/home/home.queries.ts` | `useAvailability` |
-| `src/lib/query-client.ts` | the `QueryClient` factory and its defaults |
+| `src/modules/home/home.queries.ts` | `useAvailability`                              |
+| `src/lib/query-client.ts`          | the `QueryClient` factory and its defaults     |
 
 No bare `fetch` in a component: components call `*.queries.ts`, which calls `*.service.ts`.
 

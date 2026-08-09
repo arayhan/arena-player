@@ -21,22 +21,26 @@ Full reasoning, and why a copy beat a workspace, a package, and a submodule: the
 ## Deliverables
 
 **`src/domain/slots.ts`**
+
 - `TIME_SLOTS` — nine 2-hour slots, 06.00–24.00, in canonical order and canonical string form
 - Slot canonicalisation, so a near-miss format cannot reach the database
 - `slotStartHour()` or equivalent, for elapsed-slot derivation
 
 **`src/domain/dates.ts`** — the only file here with dependencies
+
 - Asia/Jakarta helpers. Never `toISOString()` for a date — that is the shape of the bug `database.md` already documents
 - The booking window: today + 13 days
 - `isPastSlot` — **must cover dates before today**, not only today's elapsed hours. That was a real bug once: yesterday was bookable without it. It needs `slotStartHour()`, so this is the one file that imports a sibling (`from "./slots"`)
 
 **`src/domain/status.ts`** — zero dependencies
+
 - `BOOKING_STATUSES` — the four row states: `pending`, `confirmed`, `rejected`, `expired`
 - `SLOT_STATUSES` — the three API states: `available`, `pending`, `booked`
 - `ACTIVE_STATUSES` — `pending` and `confirmed`, mirroring `uniq_active_slot`'s `WHERE` clause. **If this drifts from the index, the race guard changes meaning silently**
 - `toSlotStatus()` — the 4→3 mapping as code. `rejected` and `expired` map to **`available`**, which architecture.md calls the half that gets guessed wrong: guessing `booked` there renders a full day that is actually empty, and nothing errors
 
 **`src/domain/phone.ts`** — zero dependencies
+
 - `normalisePhone()` — `08xx` or `62xx` as typed → `628xxxxxxxxx`. Shared because the site stores it and the admin searches it; two implementations means one person looks like two
 - `isValidIndonesianMobile()`
 
@@ -53,7 +57,7 @@ const jakarta = tz("Asia/Jakarta");
 format(add(date, { days: 13 }, { in: jakarta }), "yyyy-MM-dd", { in: jakarta });
 ```
 
-**Prefer `TZDateMini` over `TZDate`, and check what it saves.** The docs describe it as *"recommended for internal use when string formatting is not needed"*, and list what it drops: `toString()`, `toDateString()`, `toTimeString()`, `toISOString()`, and the three `toLocale*` methods. Same constructors, same `withTimeZone()`, same getters and setters.
+**Prefer `TZDateMini` over `TZDate`, and check what it saves.** The docs describe it as _"recommended for internal use when string formatting is not needed"_, and list what it drops: `toString()`, `toDateString()`, `toTimeString()`, `toISOString()`, and the three `toLocale*` methods. Same constructors, same `withTimeZone()`, same getters and setters.
 
 Two reasons that matters here, in order of importance:
 

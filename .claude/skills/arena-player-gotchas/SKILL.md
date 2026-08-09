@@ -11,7 +11,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 
 - **Frontend-first phase cut**: 1a engineering foundation → 1b design foundation → 2 landing page `/` → 3 booking form `/booking`. Phases 2 and 3 ARE the work, not context.
 - **Out of scope entirely**: the admin app (separate repo, `arena-player-admin`) — never add auth, admin routes, or admin UI here.
-- **Phase 4 = backend, MANDATORY.** Not "later" in the optional sense — the site takes zero real bookings without it. Only its *design discussion* is deferred, held after Phase 3. Phases 2–3 run against the MSW mock, not real Neon data. If a task needs the backend, stop and hand off to project-manager.
+- **Phase 4 = backend, MANDATORY.** Not "later" in the optional sense — the site takes zero real bookings without it. Only its _design discussion_ is deferred, held after Phase 3. Phases 2–3 run against the MSW mock, not real Neon data. If a task needs the backend, stop and hand off to project-manager.
 - **Genuinely optional / blocked on client, after Phase 4**: WhatsApp bot, real content swap, production deploy, handover.
 - **Client checkpoints are DoD items, not courtesies.** 1b is not done until the client has seen the design system HTML and approved the direction; Phase 2 is not done until they have seen the landing page on a real phone. A slow client is schedule risk to escalate — never a reason to build on an unapproved direction.
 - Tight-budget freelance job: ship the Definition of Done for the current phase, don't explore alternatives.
@@ -40,7 +40,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 
 ## MSW must never reach production (Phase 4 trap)
 
-The likeliest way this project ships a broken deploy. MSW registers a **service worker**, so a stray `mockServiceWorker.js` in a production build intercepts real requests and serves fake availability — and it fails *silently*, looking like a working site showing wrong data.
+The likeliest way this project ships a broken deploy. MSW registers a **service worker**, so a stray `mockServiceWorker.js` in a production build intercepts real requests and serves fake availability — and it fails _silently_, looking like a working site showing wrong data.
 
 - Gate registration on `NODE_ENV` — development only.
 - Confirm `mockServiceWorker.js` is absent from the **built output**, not just the source.

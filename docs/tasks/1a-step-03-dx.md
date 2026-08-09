@@ -25,24 +25,24 @@ The commands that let anyone — human or agent — prove a claim instead of ass
 
 So catch the damage instead of the intent. The superseded APIs are visible in the source:
 
-| Reject | Because |
-|---|---|
-| `rest.get(`, `rest.post(` | MSW v1. v2 is `http.get` / `http.post` |
-| `res(ctx.…)` | MSW v1. v2 is `HttpResponse.json` |
+| Reject                             | Because                                      |
+| ---------------------------------- | -------------------------------------------- |
+| `rest.get(`, `rest.post(`          | MSW v1. v2 is `http.get` / `http.post`       |
+| `res(ctx.…)`                       | MSW v1. v2 is `HttpResponse.json`            |
 | `isLoading` on a `useQuery` result | TanStack Query v4. v5 renamed it `isPending` |
 
 Each rule carries a message naming the replacement, not just "banned".
 
-**State the limit honestly in a comment beside them:** this catches *known* mistakes only. An API invented wholesale still passes lint. It is a floor, not a guarantee — and it was chosen over a reminder hook because this repo already proved that a nudge nobody is forced to act on gets ignored. The `Stop` hook ran a full session without firing and nobody noticed.
+**State the limit honestly in a comment beside them:** this catches _known_ mistakes only. An API invented wholesale still passes lint. It is a floor, not a guarantee — and it was chosen over a reminder hook because this repo already proved that a nudge nobody is forced to act on gets ignored. The `Stop` hook ran a full session without firing and nobody noticed.
 
 These rules are also the reason the route-split zone rule lands here: same file, same mechanism, one pass. Step 02b restructured the paths it guards, so write it against these and not against anything older:
 
-| Package | May be imported from |
-|---|---|
-| `axios` | `src/services/api-client.ts`, `src/modules/booking-form/**` |
-| `react-hook-form` | `src/modules/booking-form/**` |
-| `zod` | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
-| `@/server/*` | `src/app/api/**` only |
+| Package           | May be imported from                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `axios`           | `src/services/api-client.ts`, `src/modules/booking-form/**`      |
+| `react-hook-form` | `src/modules/booking-form/**`                                    |
+| `zod`             | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
+| `@/server/*`      | `src/app/api/**` only                                            |
 
 Everything else — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages.
 
@@ -53,7 +53,7 @@ Two structural rules the zones cannot express, so assert them in `check:docs` in
 
 ## Why check:docs exists
 
-Three review rounds found roughly half the issues were pure greps — and that mechanical edits became the largest source of *new* defects. It catches the agent's own mistakes. Wire it to a `Stop` hook exiting 2 so failures loop back, and **guard on `stop_hook_active` or it recurses forever**. That guard is not optional; the existing `check-claudemd.ps1` hook documents why.
+Three review rounds found roughly half the issues were pure greps — and that mechanical edits became the largest source of _new_ defects. It catches the agent's own mistakes. Wire it to a `Stop` hook exiting 2 so failures loop back, and **guard on `stop_hook_active` or it recurses forever**. That guard is not optional; the existing `check-claudemd.ps1` hook documents why.
 
 ## A check worth adding while you are here
 
@@ -67,14 +67,14 @@ pnpm check:lib                     # runs; passes trivially until step 06 adds r
 pnpm check:docs                    # exits 0 today, and exits non-zero if you plant a TODO(phase2)
 
 # prove check:docs actually fails rather than always passing
-echo "// TODO(phase2)" > /tmp/probe.ts && cp /tmp/probe.ts lib/_probe.ts
+printf '// TODO(phase2): planted probe\n' > src/_probe.ts
 pnpm check:docs ; echo "expect non-zero: $?"
-rm lib/_probe.ts
+rm src/_probe.ts
 
 # check:lib must not require credentials
 mv .env.local .env.local.bak && pnpm check:lib ; echo "expect 0: $?" ; mv .env.local.bak .env.local
 ```
 
-**Not done until** `check:docs` has been proven to *fail* on a planted violation. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
+**Not done until** `check:docs` has been proven to _fail_ on a planted violation. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
 
 handoff: `code-reviewer` — checkpoint before step 04

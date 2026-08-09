@@ -1,6 +1,6 @@
 # Arena Player — Design Process
 
-How design work is *run* on this project. The visual system itself — tokens, type, components, guardrails — is [DESIGN.md](DESIGN.md), which follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/) and is therefore strictly visual. The rules below have no home in that format but are binding all the same.
+How design work is _run_ on this project. The visual system itself — tokens, type, components, guardrails — is [DESIGN.md](DESIGN.md), which follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/) and is therefore strictly visual. The rules below have no home in that format but are binding all the same.
 
 ## Choosing motion — ask, don't decide
 
@@ -48,15 +48,15 @@ Then wire it up once the file lands.
 This is a booking page for a real venue that real customers pay to use.
 
 - **Fine**: abstract and decorative work — background textures, gradient meshes, grain, pattern, atmospheric shapes.
-- **Not fine**: anything a customer would reasonably read as *this specific field*. A generated photo of "a mini soccer field" on a booking page misleads someone into booking a facility they have not actually seen. Real venue photos come from the client, and stay `TODO(content)` until they arrive.
+- **Not fine**: anything a customer would reasonably read as _this specific field_. A generated photo of "a mini soccer field" on a booking page misleads someone into booking a facility they have not actually seen. Real venue photos come from the client, and stay `TODO(content)` until they arrive.
 
 ## Where visual files live
 
-| Kind | Location |
-|---|---|
+| Kind                                                                                                          | Location                                                                       |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Reference / inspiration — benchmark screenshots, icon style examples, hero and banner inspiration, moodboards | `docs/references/` — **gitignored scratch, deleted after use**; see its README |
-| Production assets — logo, favicon, OG image, anything shipped | `public/` |
-| Throwaway "does this look right" screenshots | `.claude/screenshots/` (gitignored) |
+| Production assets — logo, favicon, OG image, anything shipped                                                 | `public/`                                                                      |
+| Throwaway "does this look right" screenshots                                                                  | `.claude/screenshots/` (gitignored)                                            |
 
 **Findings from a reference image get written into [DESIGN.md](DESIGN.md) before the source file is deleted.** Reference files are never committed and do not survive the work they informed, so an observation left only in the image is an observation lost. `docs/references/` being empty means the references were consumed, not that none existed — **DESIGN.md is the durable record, that folder is only a staging area.**
 
@@ -98,10 +98,10 @@ Rendered top to bottom:
 
 `/impeccable hooks on` is enabled for this project. It runs the impeccable detector after every edit to a design file (`.tsx`, `.html`, `.css`, and friends) and surfaces the immediate tier only — broken images, clipped content, **contrast failures**, design-system drift. A deeper pass over everything touched runs once at the end of a session.
 
-It earns its place on evidence rather than principle. Two defects reached commits during Phase 1b — overstated contrast ratios and a WCAG 1.4.11 failure — and the review that caught the first recorded that *"the detector's real contribution was independent contrast verification, which caught an error the LLM review missed entirely."* This turns that from a once-per-review check into a per-edit one.
+It earns its place on evidence rather than principle. Two defects reached commits during Phase 1b — overstated contrast ratios and a WCAG 1.4.11 failure — and the review that caught the first recorded that _"the detector's real contribution was independent contrast verification, which caught an error the LLM review missed entirely."_ This turns that from a once-per-review check into a per-edit one.
 
 **It is machine-local and optional.** `.impeccable/config.json` is tracked and carries `hook.enabled`, but the hook manifest lives in `.claude/settings.local.json`, which is gitignored. A developer without impeccable installed loses the check and nothing else — no build breaks, no command fails.
 
-**Installing it needs a manual step here.** `hook-admin.mjs on` writes the config but reports *"no installed provider skill folders found to repair"*, because impeccable is installed globally rather than vendored into this repo, so it cannot find a manifest to write. The `PostToolUse` and `Stop` entries in `.claude/settings.local.json` were added by hand, pointing at `hook.mjs` in the global install. If you clone this repo fresh, that step will not have happened — `hook-admin.mjs status` reporting `enabled` is **not** proof the hook runs. Check that `.claude/settings.local.json` has a `hooks` key.
+**Installing it needs a manual step here.** `hook-admin.mjs on` writes the config but reports _"no installed provider skill folders found to repair"_, because impeccable is installed globally rather than vendored into this repo, so it cannot find a manifest to write. The `PostToolUse` and `Stop` entries in `.claude/settings.local.json` were added by hand, pointing at `hook.mjs` in the global install. If you clone this repo fresh, that step will not have happened — `hook-admin.mjs status` reporting `enabled` is **not** proof the hook runs. Check that `.claude/settings.local.json` has a `hooks` key.
 
-Detector findings are not automatically defects. Three on `docs/DESIGN.html` — Inter as an overused font, Cascadia Code as a display face, em-dash density — were each assessed and accepted: Inter is a locked brand commitment, Cascadia Code is a monospace *fallback* behind `ui-monospace`, and the em-dash count is a writing-voice observation on a spec document. None are suppressed in config, because none of them surface through the hook; they only appear on a manual `detect.mjs` run.
+Detector findings are not automatically defects. Three on `docs/DESIGN.html` — Inter as an overused font, Cascadia Code as a display face, em-dash density — were each assessed and accepted: Inter is a locked brand commitment, Cascadia Code is a monospace _fallback_ behind `ui-monospace`, and the em-dash count is a writing-voice observation on a spec document. None are suppressed in config, because none of them surface through the hook; they only appear on a manual `detect.mjs` run.

@@ -46,13 +46,13 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 
 **Status mapping — the database has four states, this API has three.** Write it down or it gets guessed:
 
-| Row state in `bookings` | API `status` | Why |
-|---|---|---|
-| no row for that slot | `available` | Never booked |
-| `pending` | `pending` | Awaiting admin confirmation |
-| `confirmed` | `booked` | Taken |
-| `rejected` | `available` | Admin declined — **the slot is free again** |
-| `expired` | `available` | Pending lapsed past 24h — **the slot is free again** |
+| Row state in `bookings` | API `status` | Why                                                  |
+| ----------------------- | ------------ | ---------------------------------------------------- |
+| no row for that slot    | `available`  | Never booked                                         |
+| `pending`               | `pending`    | Awaiting admin confirmation                          |
+| `confirmed`             | `booked`     | Taken                                                |
+| `rejected`              | `available`  | Admin declined — **the slot is free again**          |
+| `expired`               | `available`  | Pending lapsed past 24h — **the slot is free again** |
 
 `rejected` and `expired` mapping to `available` is the half that gets guessed wrong. Guessing `booked` there blocks slots that are genuinely open, and nothing errors — the client just renders a full day that is actually empty. This matches `uniq_active_slot`, whose `WHERE status IN ('pending', 'confirmed')` clause defines the same two active states and nothing else.
 
@@ -64,15 +64,15 @@ That is a server-side simplification, not the label the user sees. The client kn
 
 Request — `multipart/form-data`. Field names are the contract: the form, the MSW handler, and the Phase 4 route handler must all use exactly these, and the `fields` keys in a 400 response are these same names.
 
-| Field | Type | Required | Rule |
-|---|---|---|---|
-| `date` | string | yes | `YYYY-MM-DD`, inside the 14-day window |
-| `slot` | string | yes | Exact member of `TIME_SLOTS` — `"18.00 - 20.00"`, not `"18.00-20.00"` |
-| `teamName` | string | yes | 2–60 chars after trim |
-| `phone` | string | yes | Indonesian mobile, `08xx` or `62xx` as typed. **Server normalises to `628xxxxxxxxx` before insert** — the client sends what the user typed |
-| `notes` | string | no | ≤ 500 chars — same number as the `notes_length` constraint in [database.md](database.md), not a second opinion |
-| `proof` | File | yes | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `src/modules/booking-form/booking-form.proof.ts` — never retyped here or in the form |
-| `website` | string | yes (empty) | Honeypot. Must be present and empty. Non-empty → respond **201 with a fabricated id** and write nothing. A 400 tells the bot what tripped it |
+| Field      | Type   | Required    | Rule                                                                                                                                                            |
+| ---------- | ------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `date`     | string | yes         | `YYYY-MM-DD`, inside the 14-day window                                                                                                                          |
+| `slot`     | string | yes         | Exact member of `TIME_SLOTS` — `"18.00 - 20.00"`, not `"18.00-20.00"`                                                                                           |
+| `teamName` | string | yes         | 2–60 chars after trim                                                                                                                                           |
+| `phone`    | string | yes         | Indonesian mobile, `08xx` or `62xx` as typed. **Server normalises to `628xxxxxxxxx` before insert** — the client sends what the user typed                      |
+| `notes`    | string | no          | ≤ 500 chars — same number as the `notes_length` constraint in [database.md](database.md), not a second opinion                                                  |
+| `proof`    | File   | yes         | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `src/modules/booking-form/booking-form.proof.ts` — never retyped here or in the form |
+| `website`  | string | yes (empty) | Honeypot. Must be present and empty. Non-empty → respond **201 with a fabricated id** and write nothing. A 400 tells the bot what tripped it                    |
 
 `slot` is validated against `TIME_SLOTS`, not a regex. The `uniq_active_slot` index compares `time_slot` as text, so a near-miss format silently books the same slot twice — see [database.md](database.md).
 
@@ -103,7 +103,7 @@ MSW must mock all four codes, or Phase 3 builds UI for states it has never seen.
 TanStack Start is not the weaker framework; it lost on this project's constraints:
 
 - **Handover.** Paid project, 14-day bug warranty, then someone else maintains it. Next.js developers are abundant; TanStack Start developers are scarce. That asymmetry outlives every technical argument.
-- **`next/font` and `next/image` are load-bearing.** DESIGN.md leans on `next/font` for zero-CLS webfont loading and `next/image` for reserved space, and both feed hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s, hero *text* as the LCP element). Switching frameworks means hand-rolling those guarantees.
+- **`next/font` and `next/image` are load-bearing.** DESIGN.md leans on `next/font` for zero-CLS webfont loading and `next/image` for reserved space, and both feed hard rule 6 (no CLS) and hard rule 7 (LCP < 2.5s, hero _text_ as the LCP element). Switching frameworks means hand-rolling those guarantees.
 - **Maturity** matters during a warranty period on a tight budget.
 
 Its one real advantage here — TanStack Router's type-safe `validateSearch` mapping neatly onto the four `/booking` param states — is worth roughly 15 lines of zod parsing in Next. Not enough.
@@ -121,6 +121,7 @@ Rationale: Neon's HTTP-based serverless driver fits Next.js route handlers (no c
 ## Request flow
 
 **`GET /api/availability?date=`**
+
 1. Validate `date` is `YYYY-MM-DD` and inside the 14-day window → 400 otherwise, never 500.
 2. Lazy expiry first, same request, scoped to that date: flip pending rows older than 24h to `expired`.
 3. Select active rows for the date, map onto the 9 canonical `TIME_SLOTS` (mapping table above).
@@ -159,7 +160,7 @@ Fix costs no code: an **R2 lifecycle rule** deleting objects under the `proofs/`
 
 ## Anti-double-booking (non-negotiable)
 
-The partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE status IN ('pending', 'confirmed')` is the *only* race guard. **Never check-then-insert.** Insert, catch the unique violation, return 409. Full error-code contract and SQL: [database.md](database.md).
+The partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE status IN ('pending', 'confirmed')` is the _only_ race guard. **Never check-then-insert.** Insert, catch the unique violation, return 409. Full error-code contract and SQL: [database.md](database.md).
 
 ## Known gotchas (summary — full detail in database.md)
 
@@ -191,12 +192,12 @@ Exactly one WebGL effect is allowed, in the hero only. It is permitted because i
 
 Written during Phase 1a task 8. Its purpose is to make every future "can we add library X?" a question of arithmetic rather than taste.
 
-| Budget line | Limit |
-|---|---|
-| Initial JS, first load | **≤ 240KB gzip** — raised from 200 in step 02, see below |
-| Lazy WebGL chunk (hero only, see below) | **≤ 40KB gzip** |
-| LCP, mid-range mobile | **< 2.5s** |
-| Lighthouse mobile Performance | **≥ 85** |
+| Budget line                             | Limit                                                    |
+| --------------------------------------- | -------------------------------------------------------- |
+| Initial JS, first load                  | **≤ 240KB gzip** — raised from 200 in step 02, see below |
+| Lazy WebGL chunk (hero only, see below) | **≤ 40KB gzip**                                          |
+| LCP, mid-range mobile                   | **< 2.5s**                                               |
+| Lighthouse mobile Performance           | **≥ 85**                                                 |
 
 ### What `/` actually costs — measured, Phase 1a step 02
 
@@ -204,19 +205,19 @@ Every figure below came from `node scripts/measure-bundle.mjs` against a real `p
 
 Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only legacy browsers fetch it, and the target device does not.
 
-| Item | KB gzip on `/` |
-|---|---|
-| Next 16 + React 19 framework baseline | **126.5** |
-| TanStack Query | 10.0 |
-| `date-fns` + `@date-fns/tz` | 8.1 |
-| `clsx` + `tailwind-merge` (`cn()`) | 8.2 |
-| `react-icons`, six icons | 2.2 |
-| zustand | 0.7 |
-| GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6) |
-| axios — **`/booking` only** | (17.5) |
-| zod, react-hook-form — `/booking` only | not yet measured, Phase 3 |
-| **Subtotal on `/` before any component** | **155.7** |
-| **Headroom for every component on the landing page** | **~84** |
+| Item                                                            | KB gzip on `/`            |
+| --------------------------------------------------------------- | ------------------------- |
+| Next 16 + React 19 framework baseline                           | **126.5**                 |
+| TanStack Query                                                  | 10.0                      |
+| `date-fns` + `@date-fns/tz`                                     | 8.1                       |
+| `clsx` + `tailwind-merge` (`cn()`)                              | 8.2                       |
+| `react-icons`, six icons                                        | 2.2                       |
+| zustand                                                         | 0.7                       |
+| GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6)                    |
+| axios — **`/booking` only**                                     | (17.5)                    |
+| zod, react-hook-form — `/booking` only                          | not yet measured, Phase 3 |
+| **Subtotal on `/` before any component**                        | **155.7**                 |
+| **Headroom for every component on the landing page**            | **~84**                   |
 
 `cn()` was measured in step 02b over three builds, each probe isolated against a
 control route so the `"use client"` boundary is subtracted rather than blamed on
@@ -231,19 +232,19 @@ Raised deliberately in step 02, with the measured numbers in hand rather than ah
 
 200 was never breached after the two route-split fixes — `/` sat at 147.5KB, which left ~52KB. The raise buys margin for a 5-section landing page plus the form, not permission to stop caring. Step 02b spent 8.2KB of that margin on `cn()`, deliberately and against a measured number; the subtotal is now 155.7KB.
 
-**400 was considered and rejected.** The binding cost on this project's target device is CPU, not download. 400KB gzip is roughly 1.6MB of JavaScript to parse and compile, which is about two seconds on a mid-range Android *before anything renders* — and the visitor is inside the Instagram in-app browser, which is slower than Chrome. That breaks two constraints this document also owns: LCP < 2.5s and Lighthouse mobile ≥ 85, whose TBT metric measures exactly that stall. A budget that contradicts two other rules is not a budget.
+**400 was considered and rejected.** The binding cost on this project's target device is CPU, not download. 400KB gzip is roughly 1.6MB of JavaScript to parse and compile, which is about two seconds on a mid-range Android _before anything renders_ — and the visitor is inside the Instagram in-app browser, which is slower than Chrome. That breaks two constraints this document also owns: LCP < 2.5s and Lighthouse mobile ≥ 85, whose TBT metric measures exactly that stall. A budget that contradicts two other rules is not a budget.
 
 For scale: Next 15's build output coloured First Load JS red above **128KB**. 240 is already generous against the framework's own guidance; it is the last raise that does not cost a different guarantee.
 
 **The framework is the overrun, and it is not negotiable.** 126.5KB against an estimated 90 is Next 16 plus React 19 with nothing imported. React Compiler, which Next 16 enables by default, was measured separately and costs **0KB** — it stays on.
 
-Two things went better than feared. `react-icons` is a re-export barrel and was flagged as a gamble; it tree-shakes correctly at **2.2KB for six icons**, so the fallback in step 02 was never needed. TanStack Query came in *under* estimate.
+Two things went better than feared. `react-icons` is a re-export barrel and was flagged as a gamble; it tree-shakes correctly at **2.2KB for six icons**, so the fallback in step 02 was never needed. TanStack Query came in _under_ estimate.
 
 ### Two libraries are kept off `/` to pay for that overrun
 
 Closing the gap needed ~30KB. These two found 61:
 
-**GSAP loads lazily, through `src/lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero *entrance* must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
+**GSAP loads lazily, through `src/lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero _entrance_ must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
 
 **axios is a `/booking` dependency, not a shared one.** `/` makes one GET for availability and native `fetch` does that in 0KB. `/booking` keeps axios because `onUploadProgress` reports progress on the 2MB proof upload and `fetch` cannot — on Indonesian mobile data, an upload with no progress indicator reads as a frozen page.
 
@@ -275,15 +276,15 @@ Intent is not a mechanism. Three layers, in the order they catch a mistake:
 
 **1. Structure.** The module split does the work. `src/modules/booking-form/**` owns the form and everything it needs; `src/modules/home/**` renders `/` and imports none of it.
 
-| Package | May be imported from |
-|---|---|
-| `axios` | `src/services/api-client.ts`, `src/modules/booking-form/**` |
-| `react-hook-form` | `src/modules/booking-form/**` |
-| `zod` | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
+| Package           | May be imported from                                             |
+| ----------------- | ---------------------------------------------------------------- |
+| `axios`           | `src/services/api-client.ts`, `src/modules/booking-form/**`      |
+| `react-hook-form` | `src/modules/booking-form/**`                                    |
+| `zod`             | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
 
 Route handlers and `src/server/` run server-side, so `zod` there costs the client bundle nothing — the rule is about client code, not about the package.
 
-`/` calls the availability endpoint with native `fetch` from `src/modules/home/home.service.ts`. The PRD's "no bare `fetch` in a component" rule is about the *component*, not the transport: the component calls `home.queries.ts`, which calls the service. `src/services/api-client.ts` is the axios instance and is `/booking`-only.
+`/` calls the availability endpoint with native `fetch` from `src/modules/home/home.service.ts`. The PRD's "no bare `fetch` in a component" rule is about the _component_, not the transport: the component calls `home.queries.ts`, which calls the service. `src/services/api-client.ts` is the axios instance and is `/booking`-only.
 
 **Feature modules never import each other.** That rule is load-bearing here, not stylistic: one `home` → `booking-form` import is all it takes for a later `import { z }` inside `booking-form` to ship zod to `/` with nothing failing. Shared vocabulary goes in `src/domain/`, which is why that folder exists instead of living inside the booking module.
 
@@ -406,31 +407,31 @@ All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during
 
 Every version below was resolved against the registry on 2026-08-08 and is pinned exactly in `package.json`. An earlier draft pinned figures from memory; a wrong pin fails `pnpm install` on day one with a confusing error, and false precision reads as "someone checked this" when nobody did.
 
-| Package | Version |
-|---|---|
-| `next` | 16.3.0 |
-| `react` / `react-dom` | 19.2.8 |
-| `gsap` | 3.15.0 — Standard "no charge" licence, verified at install |
-| `@gsap/react` | 2.1.2 |
-| `axios` | 1.19.0 — `/booking` only |
-| `zod` | 4.4.3 — `/booking`, `src/app/api/`, and `src/server/` only |
-| `clsx` | 2.1.1 — measured at 0.2KB |
-| `tailwind-merge` | 3.6.0 — measured at 8.0KB. The v3 line targets Tailwind v4; a separate `tailwind-merge-2` dist-tag still serves the v3 line |
-| `react-hook-form` | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below |
-| `zustand` | 5.0.14 |
-| `@tanstack/react-query` | 5.101.4 |
-| `date-fns` | 4.4.0 — **also a peer requirement of the admin repo**, see the shared-code contract |
-| `@date-fns/tz` | 1.5.0 — same peer requirement |
-| `react-icons` | 5.7.0 — barrel package; measured at 2.2KB for six icons, tree-shaking confirmed |
-| `tailwindcss` / `@tailwindcss/postcss` | 4.3.3 |
-| `typescript` (dev) | 5.9.3 |
-| `eslint` (dev) | 9.39.5 |
-| `msw` (dev) | 2.15.0 |
-| `vitest` (dev) | 4.1.10 |
-| `@neondatabase/serverless` | **not installed** — Phase 4 |
-| `@aws-sdk/client-s3` | **not installed** — Phase 4 |
-| `server-only` | 0.0.1 |
-| pnpm (`packageManager`) | 11.17.0 |
+| Package                                | Version                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `next`                                 | 16.3.0                                                                                                                      |
+| `react` / `react-dom`                  | 19.2.8                                                                                                                      |
+| `gsap`                                 | 3.15.0 — Standard "no charge" licence, verified at install                                                                  |
+| `@gsap/react`                          | 2.1.2                                                                                                                       |
+| `axios`                                | 1.19.0 — `/booking` only                                                                                                    |
+| `zod`                                  | 4.4.3 — `/booking`, `src/app/api/`, and `src/server/` only                                                                  |
+| `clsx`                                 | 2.1.1 — measured at 0.2KB                                                                                                   |
+| `tailwind-merge`                       | 3.6.0 — measured at 8.0KB. The v3 line targets Tailwind v4; a separate `tailwind-merge-2` dist-tag still serves the v3 line |
+| `react-hook-form`                      | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below                                                  |
+| `zustand`                              | 5.0.14                                                                                                                      |
+| `@tanstack/react-query`                | 5.101.4                                                                                                                     |
+| `date-fns`                             | 4.4.0 — **also a peer requirement of the admin repo**, see the shared-code contract                                         |
+| `@date-fns/tz`                         | 1.5.0 — same peer requirement                                                                                               |
+| `react-icons`                          | 5.7.0 — barrel package; measured at 2.2KB for six icons, tree-shaking confirmed                                             |
+| `tailwindcss` / `@tailwindcss/postcss` | 4.3.3                                                                                                                       |
+| `typescript` (dev)                     | 5.9.3                                                                                                                       |
+| `eslint` (dev)                         | 9.39.5                                                                                                                      |
+| `msw` (dev)                            | 2.15.0                                                                                                                      |
+| `vitest` (dev)                         | 4.1.10                                                                                                                      |
+| `@neondatabase/serverless`             | **not installed** — Phase 4                                                                                                 |
+| `@aws-sdk/client-s3`                   | **not installed** — Phase 4                                                                                                 |
+| `server-only`                          | 0.0.1                                                                                                                       |
+| pnpm (`packageManager`)                | 11.17.0                                                                                                                     |
 
 ### Three resolution traps this hit, so the next person does not
 
@@ -464,20 +465,20 @@ Nothing under `src/` imports from `src/app/`. The admin app lives in its own rep
 
 Everything both repos must agree on lives in **`src/domain/`**, at **the same path in both**, and is **byte-identical**:
 
-| Module | Dependencies | Why both repos need it |
-|---|---|---|
-| `slots.ts` | none | `TIME_SLOTS` and slot canonicalisation |
-| `dates.ts` | `date-fns`, `@date-fns/tz` | Asia/Jakarta helpers, the booking window, `isPastSlot` |
-| `status.ts` | none | The two status vocabularies, `ACTIVE_STATUSES` mirroring `uniq_active_slot`'s `WHERE` clause, and the 4→3 mapping the admin mutates and the site reads |
-| `phone.ts` | none | Normalisation to `628xxxxxxxxx`, so a number the site stores and a number the admin searches for are the same string |
+| Module      | Dependencies               | Why both repos need it                                                                                                                                 |
+| ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `slots.ts`  | none                       | `TIME_SLOTS` and slot canonicalisation                                                                                                                 |
+| `dates.ts`  | `date-fns`, `@date-fns/tz` | Asia/Jakarta helpers, the booking window, `isPastSlot`                                                                                                 |
+| `status.ts` | none                       | The two status vocabularies, `ACTIVE_STATUSES` mirroring `uniq_active_slot`'s `WHERE` clause, and the 4→3 mapping the admin mutates and the site reads |
+| `phone.ts`  | none                       | Normalisation to `628xxxxxxxxx`, so a number the site stores and a number the admin searches for are the same string                                   |
 
-**Named `domain/`, not `shared/`.** Not DDD — there are no aggregates or repositories here, just business rules. The name was chosen over `shared/` because once `src/modules/` exists, "shared" reads as *shared between modules* and attracts the first cross-module button component into a folder that can never accept one.
+**Named `domain/`, not `shared/`.** Not DDD — there are no aggregates or repositories here, just business rules. The name was chosen over `shared/` because once `src/modules/` exists, "shared" reads as _shared between modules_ and attracts the first cross-module button component into a folder that can never accept one.
 
 **Three of the four have no dependencies, and that is deliberate** — see the peer-dependency section below. Only `dates.ts` reaches for `date-fns`, so importing `TIME_SLOTS` costs no date library.
 
-**The booking form's zod schema is *not* here.** It lives in `src/modules/booking-form/booking-form.schema.ts`, because the admin never creates a booking and putting zod in the frozen folder would oblige the admin repo to install it.
+**The booking form's zod schema is _not_ here.** It lives in `src/modules/booking-form/booking-form.schema.ts`, because the admin never creates a booking and putting zod in the frozen folder would oblige the admin repo to install it.
 
-**`booking-form.proof.ts` is deliberately *not* here either.** The 2MB limit and the MIME allowlist govern uploading, and the admin only ever reads proofs. Putting upload-only constants under a byte-identical drift check buys the admin repo nothing and gives the check a file it has no reason to care about.
+**`booking-form.proof.ts` is deliberately _not_ here either.** The 2MB limit and the MIME allowlist govern uploading, and the admin only ever reads proofs. Putting upload-only constants under a byte-identical drift check buys the admin repo nothing and gives the check a file it has no reason to care about.
 
 **Why byte-identical and not merely equivalent.** `uniq_active_slot` compares `time_slot` as **text**. `'06.00 - 08.00'` and `'06.00-08.00'` are two different slots to Postgres, so a one-character drift between the repos means the admin writes rows the site cannot match — and **anti-double-booking silently stops working for both**. Nothing throws. The index is the only race guard there is, and a drifted string disables it without a symptom.
 

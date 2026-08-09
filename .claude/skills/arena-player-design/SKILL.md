@@ -5,7 +5,7 @@ description: Use before any UI, styling, animation, or design work in arena-play
 
 # Arena Player — design gotchas
 
-Two docs, not one. [docs/DESIGN.md](../../../docs/DESIGN.md) is the visual system — tokens, type, components, do's and don'ts. [docs/design-process.md](../../../docs/design-process.md) is how design work *runs* — motion approval, image sourcing, the animation budget, asset locations, the landing page content map, and the consulting order. This skill is the quick-reference for both and should not drift from either.
+Two docs, not one. [docs/DESIGN.md](../../../docs/DESIGN.md) is the visual system — tokens, type, components, do's and don'ts. [docs/design-process.md](../../../docs/design-process.md) is how design work _runs_ — motion approval, image sourcing, the animation budget, asset locations, the landing page content map, and the consulting order. This skill is the quick-reference for both and should not drift from either.
 
 ## Direction — mostly NOT decided yet
 

@@ -16,13 +16,13 @@ Drop-off point for visual reference material — benchmark screenshots, icon sty
 
 ## Naming
 
-| Prefix | Contents |
-|---|---|
+| Prefix        | Contents                                                             |
+| ------------- | -------------------------------------------------------------------- |
 | `benchmark-*` | Screenshots of bataskotapoint.com or any other site being referenced |
-| `icon-*` | Icon style examples — stroke weight, corner radius, fill vs outline |
-| `hero-*` | Hero layout and composition inspiration |
-| `banner-*` | Banner and section-break inspiration |
-| `moodboard-*` | Palette, type, texture, general direction |
+| `icon-*`      | Icon style examples — stroke weight, corner radius, fill vs outline  |
+| `hero-*`      | Hero layout and composition inspiration                              |
+| `banner-*`    | Banner and section-break inspiration                                 |
+| `moodboard-*` | Palette, type, texture, general direction                            |
 
 - **PNG or JPG.** Those read reliably; other formats may not.
 - **Descriptive filenames** — `benchmark-bataskota-hero-mobile.png`, not `Screenshot 2026-08-07 141233.png`. The filename is how the right reference gets found without opening all of them.
@@ -31,10 +31,10 @@ Drop-off point for visual reference material — benchmark screenshots, icon sty
 
 ## Where everything else goes
 
-| Kind | Location | Committed? |
-|---|---|---|
-| Reference / inspiration | `docs/references/` | No — gitignored, deleted after use |
-| Production assets (logo, favicon, OG image, any shipped image) | `public/` | Yes — Next.js serves this directory |
-| Throwaway "does this look right" screenshots | `.claude/screenshots/` | No — already gitignored |
+| Kind                                                           | Location               | Committed?                          |
+| -------------------------------------------------------------- | ---------------------- | ----------------------------------- |
+| Reference / inspiration                                        | `docs/references/`     | No — gitignored, deleted after use  |
+| Production assets (logo, favicon, OG image, any shipped image) | `public/`              | Yes — Next.js serves this directory |
+| Throwaway "does this look right" screenshots                   | `.claude/screenshots/` | No — already gitignored             |
 
 Nothing visual belongs in `.claude/` beyond that screenshot folder. That directory is agent config — skills, agents, hooks, settings.

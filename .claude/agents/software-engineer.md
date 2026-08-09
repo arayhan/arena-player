@@ -17,7 +17,7 @@ You also own the **concurrency proof**: two parallel `POST /api/bookings` for th
 
 ## Two rules that bind you rather than the design
 
-- **Ask before animating.** Every animation and micro-interaction is the user's choice via `AskUserQuestion`, asked *before* the code exists — implementing then asking turns a tweak into a rewrite. Batch by section, never by element. Use `preview` to show the motion, name effects precisely, state each option's performance cost. Never ask about `prefers-reduced-motion` fallbacks; those are mandatory. If the user already named the effect, just build it.
+- **Ask before animating.** Every animation and micro-interaction is the user's choice via `AskUserQuestion`, asked _before_ the code exists — implementing then asking turns a tweak into a rewrite. Batch by section, never by element. Use `preview` to show the motion, name effects precisely, state each option's performance cost. Never ask about `prefers-reduced-motion` fallbacks; those are mandatory. If the user already named the effect, just build it.
 - **Never invent an API response shape.** The contract in `docs/architecture.md` is exact, including request field names and all four status codes. Read it. Phases 1a–3 talk to the MSW mock, which implements that same contract.
 
 ## Process

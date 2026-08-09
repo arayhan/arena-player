@@ -11,7 +11,7 @@ Produced by `/impeccable shape`, confirmed 2026-08-07. Covers the order section 
 
 ## 1. Job and audience
 
-A team captain arrives on a mid-range Android inside the Instagram in-app browser at 375px, mid-conversation in another chat, with 8–12 people waiting on a decision. They are booking **today or tomorrow**. They need one thing: *is anything free tonight, and can I lock it before someone else does.*
+A team captain arrives on a mid-range Android inside the Instagram in-app browser at 375px, mid-conversation in another chat, with 8–12 people waiting on a decision. They are booking **today or tomorrow**. They need one thing: _is anything free tonight, and can I lock it before someone else does._
 
 Surface mode is **Persuade** — `/` is a landing page and this section is its conversion moment. But the section's interior is **Operate**: scanability and speed of comprehension outrank expression everywhere the two conflict.
 
@@ -31,7 +31,7 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 **Fill affordance — a scarcity counter, not a discount.** `Hari ini · sisa 3 slot` above the grid, derived from data the availability response already carries. Creates genuine urgency when a day is filling, implies no price, needs no new endpoint.
 
-**Structural thesis:** the section opens on *the smallest set of things the organiser can act on right now*, and everything else — other dates, elapsed hours — is one deliberate tap away rather than in the way.
+**Structural thesis:** the section opens on _the smallest set of things the organiser can act on right now_, and everything else — other dates, elapsed hours — is one deliberate tap away rather than in the way.
 
 **Load-bearing implementation consequence:** elapsed slots are computed **client-side** from the current time and the canonical starts in `lib/slots.ts` / `lib/dates.ts`. `GET /api/availability` needs no `past` status and stays FIRM. This was previously recorded as a Phase 4 API dependency; it is not one.
 
@@ -50,15 +50,15 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 ## 5. States and ranges
 
-| State | Condition | Behaviour |
-|---|---|---|
-| Loading | availability in flight | Skeleton rows at the real row height, so nothing shifts when data lands |
-| Error | fetch failed | Message + retry. Never an empty grid that reads as "fully booked" |
-| Normal | ≥1 available | Date row, scarcity line if applicable, slot list |
-| All booked | 0 available, none elapsed | "Hari ini penuh." + a direct path to tomorrow |
+| State           | Condition                           | Behaviour                                                                                                                                                                     |
+| --------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading         | availability in flight              | Skeleton rows at the real row height, so nothing shifts when data lands                                                                                                       |
+| Error           | fetch failed                        | Message + retry. Never an empty grid that reads as "fully booked"                                                                                                             |
+| Normal          | ≥1 available                        | Date row, scarcity line if applicable, slot list                                                                                                                              |
+| All booked      | 0 available, none elapsed           | "Hari ini penuh." + a direct path to tomorrow                                                                                                                                 |
 | **All elapsed** | viewing today late, every slot past | "Semua slot hari ini sudah lewat." + direct path to tomorrow. Distinct from "penuh" — the day was not full, it is over. After 24.00 this is the only state the page can be in |
-| Mixed | some elapsed, some available | `Sudah lewat (N)` collapsed at top, bookable rows below |
-| Selected | a slot chosen | Exactly one at a time; reversible before the handoff |
+| Mixed           | some elapsed, some available        | `Sudah lewat (N)` collapsed at top, bookable rows below                                                                                                                       |
+| Selected        | a slot chosen                       | Exactly one at a time; reversible before the handoff                                                                                                                          |
 
 **Scarcity counter rule.** Appears only when **1–3** slots remain. Above that it is suppressed — "sisa 8 slot" is not scarcity, it advertises an empty venue, which works directly against the client's goal. Counts genuinely available slots only; elapsed slots are never counted.
 

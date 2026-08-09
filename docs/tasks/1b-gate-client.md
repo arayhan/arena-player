@@ -8,7 +8,7 @@
 
 This is a **Definition-of-Done item**, not a courtesy. Phase 1b is not complete until this
 checkpoint has happened and the outcome is written down below. Phase 2 must not start on an
-unapproved direction — the PRD calls this *"the cheapest rework you will ever buy"*, because
+unapproved direction — the PRD calls this _"the cheapest rework you will ever buy"_, because
 rejecting a direction here costs one HTML page and rejecting it in Phase 2 costs five rebuilt
 sections.
 
@@ -73,14 +73,14 @@ it change by hour, day, or weekend?
 
 None of these can be invented. The site ships with placeholders until they arrive.
 
-| Item | Status |
-|---|---|
-| WhatsApp number | _____ |
-| Bank account + account holder name | _____ |
-| Address + Google Maps location | _____ |
-| Photos of the field | _____ |
-| Logo file | _____ |
-| Headline wording (we can draft; they approve) | _____ |
+| Item                                          | Status |
+| --------------------------------------------- | ------ |
+| WhatsApp number                               | _____  |
+| Bank account + account holder name            | _____  |
+| Address + Google Maps location                | _____  |
+| Photos of the field                           | _____  |
+| Logo file                                     | _____  |
+| Headline wording (we can draft; they approve) | _____  |
 
 On photos specifically: we will not generate fake images of a football field. A customer
 booking a venue they have not actually seen is a real problem. Real photos or none.
@@ -119,14 +119,14 @@ would change the database, the API, and the booking screen. Worth confirming out
 ### Decisions taken
 
 | Decision | Outcome | Decided by |
-|---|---|---|
-| | | |
+| -------- | ------- | ---------- |
+|          |         |            |
 
 ### Changes requested
 
 | Change | In 1b scope, or defers to Phase 2? |
-|---|---|
-| | |
+| ------ | ---------------------------------- |
+|        |                                    |
 
 ### Sign-off
 

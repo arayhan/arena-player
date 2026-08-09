@@ -1,0 +1,19 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+# Markdown gives meaning to two trailing spaces (hard line break).
+trim_trailing_whitespace = false
+
+[*.ps1]
+# PowerShell 5.1 reads BOM-less files as ANSI. The hooks are ASCII-only for
+# that reason, and CRLF keeps them consistent with how Windows tooling writes
+# them back.
+end_of_line = crlf
