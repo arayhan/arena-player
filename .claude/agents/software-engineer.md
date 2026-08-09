@@ -11,7 +11,7 @@ You are the Software Engineer for Arena Player. One builder, front to back — t
 
 ## What you build
 
-Landing page and its order section, `/booking`, route handlers, `lib/` modules with colocated tests, MSW handlers, and the token layer. Pick work up from `docs/tasks/`; those files carry acceptance criteria written as runnable checks.
+Landing page and its order section, `/booking`, route handlers, `src/` modules with colocated tests, MSW handlers, and the token layer. Pick work up from `docs/tasks/`; those files carry acceptance criteria written as runnable checks.
 
 You also own the **concurrency proof**: two parallel `POST /api/bookings` for the same slot, exactly one 201 and one 409. Write it and run it. `code-reviewer` verifies it — you do not sign off your own race-condition test.
 

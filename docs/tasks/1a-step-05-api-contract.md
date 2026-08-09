@@ -18,7 +18,7 @@ The contract lives in the **API contract** section of [architecture.md](../archi
 
 ## What must stay true
 
-- `GET /api/availability` is **FIRM**. Nothing on the deferred backend agenda changes it, including the elapsed-slot question — the client derives elapsed itself from `lib/shared/slots.ts`, so no `past` status is needed
+- `GET /api/availability` is **FIRM**. Nothing on the deferred backend agenda changes it, including the elapsed-slot question — the client derives elapsed itself from `src/domain/slots.ts`, so no `past` status is needed
 - `POST /api/bookings` is **PROVISIONAL** and labelled so. Presigned-URL upload would replace the `proof` part with a `proofKey` string and change nothing else
 - `rejected` and `expired` map to `available`. This is the half that gets guessed wrong, and guessing `booked` blocks slots that are genuinely open with nothing erroring
 - 409 and 429 are **not interchangeable in the UI**. Showing 409 copy on a 429 tells a legitimate user their slot was taken when it was not

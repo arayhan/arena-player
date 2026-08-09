@@ -172,7 +172,7 @@ The order section is exempt for a stated reason, not by oversight. It is where t
 **What this does not change:**
 
 - **Every effect is still chosen by the user before code is written**, via `AskUserQuestion`, batched by section — see [design-process.md](design-process.md). This directive raises the ceiling; it pre-approves nothing.
-- **Everything still routes through `lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
+- **Everything still routes through `src/lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
 - **No CLS, and the performance budget is untouched.** GSAP is already the largest single item in a tight budget, so added effects reuse the existing instance. On a mid-range Android in an in-app webview the binding cost is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the Lighthouse gate.
 
 **Key Characteristics:**
@@ -331,7 +331,7 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 **Elapsed slots are not booked slots, and the distinction is now the client's to make.** `GET /api/availability` returns `booked` for today's elapsed slots, so an earlier draft of this section concluded the client could not tell them apart and that separating them needed a `past` status in the API contract — a Phase 4 change.
 
-That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `lib/shared/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
+That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `src/domain/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
 
 Why it mattered enough to reopen: with same-day booking confirmed as the primary journey, a page opened at 19.00 rendered the whole day as "Terisi" and read as sold out. For a product measured on filling empty hours, that is the worst outcome the design can produce, and it was one derivation away from being avoidable.
 
@@ -366,7 +366,7 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 
 - **Do** keep every reference flowing primitive → semantic → component. A hex code in a component file is a defect.
 - **Do** express every booking status as a surface + border + text triple that passes AA at the stated ratio.
-- **Do** route every animation through `lib/motion.ts`. GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned — that is exactly how one component ships without the check.
+- **Do** route every animation through `src/lib/motion.ts`. GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned — that is exactly how one component ships without the check.
 - **Do** animate `transform` and `opacity` only, and reserve space before animating in. No CLS.
 - **Do** keep the hero LCP element as text or logo, never an image.
 - **Do** tint shadows navy at low alpha.

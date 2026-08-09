@@ -30,7 +30,7 @@ try {
         'PLACEHOLDERS: marker is TODO(content), NOT TODO(phase2) - the re-cut made "Phase 2" mean the landing page.',
         'Six categories: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy.',
         '',
-        'ANIMATION: CSS transforms + GSAP only. All animation goes through lib/motion.ts (GSAP has no built-in reduced-motion).',
+        'ANIMATION: CSS transforms + GSAP only. All animation goes through src/lib/motion.ts (GSAP has no built-in reduced-motion).',
         'One capped WebGL moment permitted, hero only, max 40KB gzip lazy chunk. Stay inside the perf budget in architecture.md.',
         'Ask the user via AskUserQuestion which effect they want BEFORE writing any animation.',
         '',

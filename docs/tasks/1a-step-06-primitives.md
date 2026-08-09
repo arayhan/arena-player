@@ -1,30 +1,46 @@
 # 1a · step 06 — Shared primitives, and the drift check that guards them
 
-**Depends**: 02 (repo runs), 03 (Vitest exists to run the tests)
+**Depends**: 02b (the `src/` layout exists), 03 (Vitest exists to run the tests)
 **Blocks**: 07 (the mock imports these), and every later slot or date calculation in both repos
 **Agent**: `software-engineer`
 
 ## Goal
 
-`lib/shared/slots.ts` and `lib/shared/dates.ts`, each with a colocated test that actually asserts, plus `pnpm check:shared` — the check that keeps the admin repo's copy identical to this one.
+Four files in `src/domain/` — `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` — each with a colocated test that actually asserts, plus `pnpm check:shared`, the check that keeps the admin repo's copy identical to this one.
 
-## Why these live under `shared/`
+**Keep three of the four dependency-free.** Only `dates.ts` may import `date-fns` / `@date-fns/tz`. Every package added here is one the admin repo is obliged to install, and merging the four into one file would make a date library mandatory for anyone who only wants `TIME_SLOTS`.
 
-`arena-player-admin` talks to the same database and needs the same constants. Both repos keep a **byte-identical copy** in `lib/shared/`, because `uniq_active_slot` compares `time_slot` as **text**: `'06.00 - 08.00'` and `'06.00-08.00'` are different slots to Postgres. A one-character drift means the admin writes rows this site cannot match, and **anti-double-booking silently stops working for both apps**. Nothing throws.
+**Import siblings relatively** — `from "./slots"`, never `from "@/domain/slots"`. A byte-identical copy must resolve the same in both repos regardless of either `tsconfig`. This is the one documented exception to `@/`-everywhere.
+
+## Why these live in `src/domain/`
+
+`arena-player-admin` talks to the same database and needs the same constants. Both repos keep a **byte-identical copy** in `src/domain/`, because `uniq_active_slot` compares `time_slot` as **text**: `'06.00 - 08.00'` and `'06.00-08.00'` are different slots to Postgres. A one-character drift means the admin writes rows this site cannot match, and **anti-double-booking silently stops working for both apps**. Nothing throws.
 
 Full reasoning, and why a copy beat a workspace, a package, and a submodule: the shared-code contract in [architecture.md](../architecture.md).
 
 ## Deliverables
 
-**`lib/shared/slots.ts`**
+**`src/domain/slots.ts`**
 - `TIME_SLOTS` — nine 2-hour slots, 06.00–24.00, in canonical order and canonical string form
 - Slot canonicalisation, so a near-miss format cannot reach the database
 - `slotStartHour()` or equivalent, for elapsed-slot derivation
 
-**`lib/shared/dates.ts`**
+**`src/domain/dates.ts`** — the only file here with dependencies
 - Asia/Jakarta helpers. Never `toISOString()` for a date — that is the shape of the bug `database.md` already documents
 - The booking window: today + 13 days
-- `isPastSlot` — **must cover dates before today**, not only today's elapsed hours. That was a real bug once: yesterday was bookable without it
+- `isPastSlot` — **must cover dates before today**, not only today's elapsed hours. That was a real bug once: yesterday was bookable without it. It needs `slotStartHour()`, so this is the one file that imports a sibling (`from "./slots"`)
+
+**`src/domain/status.ts`** — zero dependencies
+- `BOOKING_STATUSES` — the four row states: `pending`, `confirmed`, `rejected`, `expired`
+- `SLOT_STATUSES` — the three API states: `available`, `pending`, `booked`
+- `ACTIVE_STATUSES` — `pending` and `confirmed`, mirroring `uniq_active_slot`'s `WHERE` clause. **If this drifts from the index, the race guard changes meaning silently**
+- `toSlotStatus()` — the 4→3 mapping as code. `rejected` and `expired` map to **`available`**, which architecture.md calls the half that gets guessed wrong: guessing `booked` there renders a full day that is actually empty, and nothing errors
+
+**`src/domain/phone.ts`** — zero dependencies
+- `normalisePhone()` — `08xx` or `62xx` as typed → `628xxxxxxxxx`. Shared because the site stores it and the admin searches it; two implementations means one person looks like two
+- `isValidIndonesianMobile()`
+
+**Not here, deliberately**: the booking form's zod schema (`booking-form.schema.ts` — the admin never creates a booking, and zod here would oblige the admin repo to install it) and the proof upload limits (`booking-form.proof.ts` — the admin only reads proofs).
 
 ### Two findings from Context7, verified before this step runs
 
@@ -49,16 +65,28 @@ Two reasons that matters here, in order of importance:
 ## Acceptance
 
 ```bash
-# the tests assert something real, not just that the module imports
+# all four have tests that assert something real, not just that the module imports
 pnpm check:lib
-grep -c "expect(" lib/shared/slots.test.ts lib/shared/dates.test.ts   # expect: non-trivial
+grep -c "expect(" src/domain/{slots,dates,status,phone}.test.ts   # expect: non-trivial, all four
 
 # the canonical form is exactly what the database will compare
-node -e "const {TIME_SLOTS}=require('./lib/shared/slots.ts');console.log(JSON.stringify(TIME_SLOTS))"
+node -e "const {TIME_SLOTS}=require('./src/domain/slots.ts');console.log(JSON.stringify(TIME_SLOTS))"
 # expect: 9 entries, and the separator matches db/migrations/ exactly
 
 # isPastSlot covers yesterday, not just this morning
-grep -n "isPastSlot" lib/shared/dates.test.ts   # expect: a case with a date before today
+grep -n "isPastSlot" src/domain/dates.test.ts   # expect: a case with a date before today
+
+# rejected and expired map to available — the half that gets guessed wrong
+grep -n "rejected\|expired" src/domain/status.test.ts   # expect: both asserted as available
+
+# ACTIVE_STATUSES still matches the index's WHERE clause
+grep -rn "pending.*confirmed" src/domain/status.ts db/migrations/
+
+# three of the four stay dependency-free
+grep -ln "date-fns\|from \"zod\"" src/domain/*.ts   # expect: dates.ts and nothing else
+
+# the frozen copy is alias-agnostic
+grep -n '@/domain' src/domain/                      # expect: no match
 ```
 
 ### The check must be proven to fail
@@ -67,9 +95,9 @@ A check that has only ever passed is a check nobody has tested. This repo shippe
 
 ```bash
 pnpm check:shared                                    # passes
-sed -i 's/06.00 - 08.00/06.00 -08.00/' lib/shared/slots.ts
+sed -i 's/06.00 - 08.00/06.00 -08.00/' src/domain/slots.ts
 pnpm check:shared ; echo "expect non-zero: $?"       # MUST fail
-git checkout lib/shared/slots.ts
+git checkout src/domain/slots.ts
 pnpm check:shared                                    # passes again
 ```
 

@@ -24,7 +24,7 @@ These are the regressions that are silent — nothing errors when they are wrong
 - **`uniq_active_slot` is the only race guard.** Never check-then-insert. Insert, catch `23505`, return 409. Confirm `isSlotConflict()` matches the constraint name as well as the code — a bare code check misreports an unrelated unique violation as "slot taken".
 - **The Neon DATE/TIMESTAMPTZ OID parser override is present and untouched.** The single easiest regression to reintroduce silently; it shifts `booking_date` back a day on Asia/Jakarta machines.
 - **R2 checksum settings** are `WHEN_REQUIRED` on both request and response.
-- **Secrets never reach the client bundle.** Grep for `DATABASE_URL` and `R2_` in anything under `app/` that is not a route handler. `server-only` should make this fail the build — confirm it is imported in `lib/db/` and `lib/storage/`.
+- **Secrets never reach the client bundle.** Grep for `DATABASE_URL` and `R2_` in anything under `src/` that is not a route handler. `server-only` should make this fail the build — confirm every file in `src/server/` opens with it, and that nothing outside `src/app/api/**` imports `@/server/*`.
 - **Component CSS routes through the semantic token tier.** A component rule reaching a raw hue is a defect; a finish review already caught seventeen of them as a P0.
 - **Contrast ratios printed in any artifact are computed, not carried forward.** Two overstated figures shipped once. Recompute rather than trust.
 - **A border carrying a state alone clears 3:1**, and no state depends on hue alone.

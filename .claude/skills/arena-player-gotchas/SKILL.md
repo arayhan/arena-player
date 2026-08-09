@@ -36,7 +36,7 @@ Source of truth: [docs/PRD.md](../../../docs/PRD.md) and [docs/architecture.md](
 - **NEVER check-then-insert.** Insert, catch unique violation (Postgres code `23505`), return HTTP 409. Full contract in `arena-player-database` skill.
 - Slot becomes PENDING only AFTER successful form submit with proof upload. Selecting a slot on the landing page holds nothing.
 - Expiry: the **rule** is locked — pending older than 24h becomes `expired` and frees the slot. **Where it runs is UNRESOLVED.** Lazy-on-read was the original assumption and it is starved by the 30s shared cache: a cache hit never reaches the origin, so on a quiet night nothing frees an abandoned slot and it stays held. Three candidates (scheduled job, on-POST, drop the cache) are written out in docs/architecture.md. Do not build either half before it is settled.
-- All of the above is **backend behaviour, Phase 4**. In Phases 2–3 the grid and form talk to the MSW mock in `mocks/`. Never invent response shapes — read the API contract section in docs/architecture.md.
+- All of the above is **backend behaviour, Phase 4**. In Phases 2–3 the grid and form talk to the MSW mock in `src/mocks/`. Never invent response shapes — read the API contract section in docs/architecture.md.
 
 ## MSW must never reach production (Phase 4 trap)
 

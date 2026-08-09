@@ -26,7 +26,7 @@ How to ask so it stays useful rather than becoming noise:
 
 **Forbidden**: Lottie files over 100KB, autoplaying video (unless the Phase 1b hero-video gate passes), animating layout properties (`width`/`height`/`top`/`left` — causes CLS), a second animation runtime alongside GSAP.
 
-**Every** animated component goes through the `gsap.matchMedia()` wrapper in `lib/motion.ts`. Reduced = static or opacity-only.
+**Every** animated component goes through the `gsap.matchMedia()` wrapper in `src/lib/motion.ts`. Reduced = static or opacity-only.
 
 All of the above stays inside the performance budget in [architecture.md](architecture.md) — that table is the single source; do not restate its numbers here.
 

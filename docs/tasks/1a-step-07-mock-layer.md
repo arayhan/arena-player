@@ -14,7 +14,7 @@ Training data gets this wrong. v2 is `http.get()` and `HttpResponse.json()`; v1'
 
 ## Deliverables
 
-**`mocks/handlers.ts`**
+**`src/mocks/handlers.ts`**
 - `GET /api/availability?date=` — always all 9 slots, always canonical order, **derived from `TIME_SLOTS`**. A mock with its own hardcoded slot strings is a second source of truth that drifts silently and only surfaces when the real backend lands, which is why step 06 comes first
 - Realistic mixed data, not all-available. Some `pending`, some `booked`, and at least one date that is fully booked so Phase 2 has to design that state
 - `400` on a malformed date or one outside the 14-day window
@@ -24,9 +24,18 @@ Training data gets this wrong. v2 is `http.get()` and `HttpResponse.json()`; v1'
 
 **Elapsed slots stay a client concern.** The contract says the server returns `booked` for today's passed hours, but the client derives elapsed itself and renders `Sudah lewat (N)` collapsed into one row. The mock implements the server side of that; it does not invent a `past` status.
 
-**`lib/api/`** — the axios instance and the TanStack Query hooks. No bare `fetch` in a component.
+**The data layer, split across four files rather than one folder** — the route split is structural now, so this step lands each piece where it belongs:
 
-**`QueryClientProvider`** wired in the App Router layout, with deliberate defaults. `staleTime` matters: availability that never refetches shows a slot as free after someone else took it.
+| File | Holds |
+|---|---|
+| `src/services/api-client.ts` | the axios instance — **`/booking` only** |
+| `src/modules/home/home.service.ts` | the availability GET, native `fetch`, no axios |
+| `src/modules/home/home.queries.ts` | `useAvailability` |
+| `src/lib/query-client.ts` | the `QueryClient` factory and its defaults |
+
+No bare `fetch` in a component: components call `*.queries.ts`, which calls `*.service.ts`.
+
+**`QueryClientProvider`** wired via `src/app/providers.tsx` (a client component) into the App Router layout, with deliberate defaults. `staleTime` matters: availability that never refetches shows a slot as free after someone else took it.
 
 ## The production trap
 

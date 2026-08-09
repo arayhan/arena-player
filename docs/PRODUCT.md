@@ -66,7 +66,7 @@ The mechanism is the anti-double-booking guarantee: a partial unique index is th
 
 With same-day booking confirmed as the primary journey, it becomes a direct conflict with the success goal. Someone opening the page at 19.00 sees 06.00 through 18.00 all labelled **"Terisi"** — the day looks sold out when six of those hours were simply never available to them. A page that makes today look full is the worst possible outcome for a product measured on filling empty slots.
 
-**Resolved in the order-section brief — and it needs no API change.** The client already knows the current time and the canonical slot starts from `lib/shared/slots.ts` / `lib/shared/dates.ts`, so it can compute "elapsed" locally and stop *displaying* those hours as "Terisi". `GET /api/availability` returning `booked` is harmless once the client owns the label. The contract stays FIRM.
+**Resolved in the order-section brief — and it needs no API change.** The client already knows the current time and the canonical slot starts from `src/domain/slots.ts` / `src/domain/dates.ts`, so it can compute "elapsed" locally and stop *displaying* those hours as "Terisi". `GET /api/availability` returning `booked` is harmless once the client owns the label. The contract stays FIRM.
 
 The design response: elapsed hours for today collapse into a single expandable `Sudah lewat (N)` row at the top of the list, so the section opens on what is actually bookable, the day never reads as sold out, and nothing is hidden. See `.impeccable/surfaces/app-page-tsx.md`.
 

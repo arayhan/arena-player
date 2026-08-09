@@ -58,7 +58,7 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 
 **One override sits on top of the table:** for today's date, any slot whose start hour has passed returns `booked` regardless of row state.
 
-That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `lib/shared/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
+That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `src/domain/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
 
 **`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
 
@@ -71,7 +71,7 @@ Request — `multipart/form-data`. Field names are the contract: the form, the M
 | `teamName` | string | yes | 2–60 chars after trim |
 | `phone` | string | yes | Indonesian mobile, `08xx` or `62xx` as typed. **Server normalises to `628xxxxxxxxx` before insert** — the client sends what the user typed |
 | `notes` | string | no | ≤ 500 chars — same number as the `notes_length` constraint in [database.md](database.md), not a second opinion |
-| `proof` | File | yes | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `lib/proof.ts` — never retyped here or in the form |
+| `proof` | File | yes | ≤ 2MB, mime in `image/jpeg` \| `image/png` \| `image/webp`. Limits live in `src/modules/booking-form/booking-form.proof.ts` — never retyped here or in the form |
 | `website` | string | yes (empty) | Honeypot. Must be present and empty. Non-empty → respond **201 with a fabricated id** and write nothing. A 400 tells the bot what tripped it |
 
 `slot` is validated against `TIME_SLOTS`, not a regex. The `uniq_active_slot` index compares `time_slot` as text, so a near-miss format silently books the same slot twice — see [database.md](database.md).
@@ -165,13 +165,13 @@ The partial unique index `uniq_active_slot` on `(booking_date, time_slot) WHERE 
 
 - **Neon date/timestamptz parsing**: the driver's default type parsers return JS `Date` objects for `DATE`/`TIMESTAMPTZ` columns, which silently corrupts `booking_date` by one day on an Asia/Jakarta machine when serialized. Must override both OID parsers to pass raw strings through. This is a blocker-class bug, found and fixed once already — see database.md for the exact fix.
 - **R2 checksum headers**: the AWS SDK's default flexible-checksum behavior gets rejected by R2 on some upload paths. The `S3Client` config needs explicit checksum settings.
-- **`server-only` is how hard rule 4 stops being honour-system.** `import "server-only"` at the top of `lib/db/client.ts` and `lib/storage/r2.ts` makes the **build fail** the moment any client component imports either one, directly or through a chain. Without it, a stray import inlines `DATABASE_URL` or an R2 secret into the client bundle and nothing complains — the site works, and the credential ships to every visitor. A written rule is a request; this is enforcement. It is listed in the package table for this reason alone.
+- **`server-only` is how hard rule 4 stops being honour-system.** `import "server-only"` at the top of every file in `src/server/` — `db.ts`, `storage.ts`, `env.ts` — makes the **build fail** the moment any client component imports either one, directly or through a chain. Without it, a stray import inlines `DATABASE_URL` or an R2 secret into the client bundle and nothing complains — the site works, and the credential ships to every visitor. A written rule is a request; this is enforcement. It is listed in the package table for this reason alone.
 
 ### GSAP gotchas (the cost of dropping Framer Motion)
 
 Framer Motion handled `prefers-reduced-motion` for free via `useReducedMotion`. GSAP does not, and [design-process.md](design-process.md) mandates that check on **every** animated component — so the swap is only safe if the mechanism below replaces it. These are blocker-class if skipped.
 
-- **Reduced motion is manual.** All animation goes through a single `gsap.matchMedia()` wrapper in `lib/motion.ts`. Calling `gsap.to()` directly inside a component is **banned** — that is precisely how the rule gets silently skipped on one component and ships.
+- **Reduced motion is manual.** All animation goes through a single `gsap.matchMedia()` wrapper in `src/lib/motion.ts`. Calling `gsap.to()` directly inside a component is **banned** — that is precisely how the rule gets silently skipped on one component and ships.
 - **React cleanup needs `useGSAP()`** from `@gsap/react`. A bare `gsap.to()` inside `useEffect` leaks animations on remount under React 19 Strict Mode; the double-invoke in development makes this look intermittent rather than broken.
 - **ScrollTrigger registration is client-only.** Register under `'use client'` with `gsap.registerPlugin(ScrollTrigger)`, and refresh on navigation between `/` and `/booking` — App Router client-side transitions do not recalculate trigger positions on their own.
 - **Licensing must be verified at install.** This is a paid client project, so confirming GSAP's current terms for commercial use is a commercial check, not an academic one. Do not assume from memory.
@@ -209,19 +209,27 @@ Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only le
 | Next 16 + React 19 framework baseline | **126.5** |
 | TanStack Query | 10.0 |
 | `date-fns` + `@date-fns/tz` | 8.1 |
+| `clsx` + `tailwind-merge` (`cn()`) | 8.2 |
 | `react-icons`, six icons | 2.2 |
 | zustand | 0.7 |
 | GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6) |
 | axios — **`/booking` only** | (17.5) |
 | zod, react-hook-form — `/booking` only | not yet measured, Phase 3 |
-| **Subtotal on `/` before any component** | **147.5** |
-| **Headroom for every component on the landing page** | **~92** |
+| **Subtotal on `/` before any component** | **155.7** |
+| **Headroom for every component on the landing page** | **~84** |
+
+`cn()` was measured in step 02b over three builds, each probe isolated against a
+control route so the `"use client"` boundary is subtracted rather than blamed on
+the library: control 0.5KB, clsx alone 0.2KB, clsx + `tailwind-merge` 8.2KB —
+so `tailwind-merge` accounts for 8.0 of it. Kept deliberately, with the
+clsx-only fallback (0.2KB) already measured and a one-file swap away, because
+`cn()`'s signature does not change between them.
 
 #### Why the ceiling is 240 and not 200, and why not 400
 
 Raised deliberately in step 02, with the measured numbers in hand rather than ahead of them.
 
-200 was never breached after the two route-split fixes — `/` sits at 147.5KB, which left ~52KB. The raise buys margin for a 5-section landing page plus the form, not permission to stop caring.
+200 was never breached after the two route-split fixes — `/` sat at 147.5KB, which left ~52KB. The raise buys margin for a 5-section landing page plus the form, not permission to stop caring. Step 02b spent 8.2KB of that margin on `cn()`, deliberately and against a measured number; the subtotal is now 155.7KB.
 
 **400 was considered and rejected.** The binding cost on this project's target device is CPU, not download. 400KB gzip is roughly 1.6MB of JavaScript to parse and compile, which is about two seconds on a mid-range Android *before anything renders* — and the visitor is inside the Instagram in-app browser, which is slower than Chrome. That breaks two constraints this document also owns: LCP < 2.5s and Lighthouse mobile ≥ 85, whose TBT metric measures exactly that stall. A budget that contradicts two other rules is not a budget.
 
@@ -235,11 +243,11 @@ Two things went better than feared. `react-icons` is a re-export barrel and was 
 
 Closing the gap needed ~30KB. These two found 61:
 
-**GSAP loads lazily, through `lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero *entrance* must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
+**GSAP loads lazily, through `src/lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero *entrance* must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
 
 **axios is a `/booking` dependency, not a shared one.** `/` makes one GET for availability and native `fetch` does that in 0KB. `/booking` keeps axios because `onUploadProgress` reports progress on the 2MB proof upload and `fetch` cannot — on Indonesian mobile data, an upload with no progress indicator reads as a frozen page.
 
-This is the same rule zod and react-hook-form already live under, now with a third member. "No bare `fetch` in a component" still holds: `/` calls through `lib/api/`, which wraps fetch.
+This is the same rule zod and react-hook-form already live under, now with a third member. "No bare `fetch` in a component" still holds: `/` calls through `src/modules/home/home.service.ts`.
 
 **A budget nothing measures is a wish.** Phase 1a task 8 must land the enforcement alongside the numbers: a `pnpm check:budget` that fails on breach, so a dependency added in Phase 2 is rejected by a command rather than by whoever happens to remember this table.
 
@@ -257,7 +265,7 @@ The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) 
 
 It is a re-export barrel, so tree-shaking is the risk, and against ~17–21KB of headroom a barrel that does not shake is not a rounding error. **The `~1–2` figure in the table above is a hope until step 02 measures it**, with a throwaway probe page importing all six against a baseline build. `experimental.optimizePackageImports: ['react-icons']` is the first mitigation.
 
-**Agreed fallback, decided now so it is not argued under deadline:** if the measured cost breaches even with `optimizePackageImports`, extract the six used glyphs into `components/icons/*.tsx` and drop the dependency. Identical rendering, ~1KB, and the paths come from the installed package rather than being drawn by hand.
+**That fallback is retired — the gamble paid off.** Step 02 measured 2.2KB for six icons, so the plan to extract the glyphs into `src/components/icons/*.tsx` and drop the dependency was never needed. Recorded here because a retired fallback that still reads as live gets implemented by someone tidying up.
 
 ## The route split — how `/` is kept from paying for the form
 
@@ -265,11 +273,23 @@ Three packages are `/booking`-only: `react-hook-form`, `zod`, and **axios** (17.
 
 Intent is not a mechanism. Three layers, in the order they catch a mistake:
 
-**1. Structure.** The App Router already splits per route. `react-hook-form` and axios are imported only under `app/booking/**`; `zod` only under `app/booking/**`, `app/api/**`, and `lib/validation.ts`. Route handlers run server-side, so `zod` in `app/api/**` costs the client bundle nothing — the rule is about client code, not about the package.
+**1. Structure.** The module split does the work. `src/modules/booking-form/**` owns the form and everything it needs; `src/modules/home/**` renders `/` and imports none of it.
 
-`/` reaches the availability endpoint through `lib/api/`, which wraps native `fetch`. The PRD's "no bare `fetch` in a component" rule is about the *component*, not the transport, and is unaffected.
+| Package | May be imported from |
+|---|---|
+| `axios` | `src/services/api-client.ts`, `src/modules/booking-form/**` |
+| `react-hook-form` | `src/modules/booking-form/**` |
+| `zod` | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
 
-**2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule rejects `zod`, `react-hook-form`, and `axios` from `app/page.tsx`, `components/` outside a booking scope, `lib/shared/**`, and `lib/motion.ts`. This is the layer that gives a useful error message, naming the rule instead of a byte count.
+Route handlers and `src/server/` run server-side, so `zod` there costs the client bundle nothing — the rule is about client code, not about the package.
+
+`/` calls the availability endpoint with native `fetch` from `src/modules/home/home.service.ts`. The PRD's "no bare `fetch` in a component" rule is about the *component*, not the transport: the component calls `home.queries.ts`, which calls the service. `src/services/api-client.ts` is the axios instance and is `/booking`-only.
+
+**Feature modules never import each other.** That rule is load-bearing here, not stylistic: one `home` → `booking-form` import is all it takes for a later `import { z }` inside `booking-form` to ship zod to `/` with nothing failing. Shared vocabulary goes in `src/domain/`, which is why that folder exists instead of living inside the booking module.
+
+**No `index.ts` barrels under `src/modules/`.** A barrel re-exporting the form drags zod, react-hook-form, and axios along with any single import from that module. Import deep paths.
+
+**2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule enforces the table above, plus `@/server/*` importable only from `src/app/api/**`. Everything not listed — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages. This is the layer that gives a useful error message, naming the rule instead of a byte count.
 
 **3. `pnpm check:budget`, at build time.** Reads Next's **per-route** First Load JS and fails on breach. Per-route matters: a single global total hides exactly the case this section exists to prevent. This is the backstop for the path lint cannot see — a transitive import through a shared module.
 
@@ -277,9 +297,9 @@ The failure this prevents is quiet. Nothing errors when `/` grows 22KB; the page
 
 ## Verification practice (required, not incidental)
 
-Every `lib/` module that has non-trivial logic gets covered by one of two Vitest runs:
+Every module with non-trivial logic — anything under `src/` that is not a component — gets covered by one of two Vitest runs:
 
-- **`pnpm check:lib`** → `vitest run lib` — pure unit assertions on `lib/` functions (date math, validation, slot logic), in `*.test.ts` files colocated beside the module they cover. No DB, no network, no credentials. Runs in CI and on any machine that has only cloned the repo.
+- **`pnpm check:lib`** → `vitest run src` — pure unit assertions on non-component logic (date math, validation, slot logic), in `*.test.ts` files colocated beside the module they cover. The name is kept for continuity; the glob is `src/` because the logic no longer lives in one folder. No DB, no network, no credentials. Runs in CI and on any machine that has only cloned the repo.
 - **`pnpm check:setup`** → `vitest run scripts` — a preflight that actually connects to Neon and R2 to confirm the migration ran and credentials work, before any feature work starts on top of them. Needs `.env.local`. **Built in Phase 4, not Phase 1a** — there is no Neon project and no R2 bucket before the backend phase, so writing it earlier produces a check that can only fail.
 
 The two are kept as separate globs on purpose: `check:lib` must never need credentials, or it stops being runnable at the moment it is most useful.
@@ -288,9 +308,9 @@ This is how "Never claim done without running the command and quoting output" ge
 
 ### Why Vitest and not a hand-rolled Node script
 
-An earlier draft of this document specified two plain scripts run under `node --experimental-strip-types`, chosen for zero dependencies. That version has a hidden cost that outweighs the saved dependency: plain Node cannot resolve the `@/` bundler alias, so **every** `lib/` module would have been forced to import its siblings by relative path with explicit `.ts` extensions, and both `tsconfig.json` and `scripts/tsconfig.json` would have needed `allowImportingTsExtensions: true`. That is production import style being bent to suit a test harness.
+An earlier draft of this document specified two plain scripts run under `node --experimental-strip-types`, chosen for zero dependencies. That version has a hidden cost that outweighs the saved dependency: plain Node cannot resolve the `@/` bundler alias, so **every** module would have been forced to import its siblings by relative path with explicit `.ts` extensions, and both `tsconfig.json` and `scripts/tsconfig.json` would have needed `allowImportingTsExtensions: true`. That is production import style being bent to suit a test harness.
 
-Vitest resolves `@/` through `tsconfig` paths, which removes that constraint entirely, and adds per-test isolation (one failing assertion no longer aborts the rest of the run), real failure diffs, and watch mode. `check:setup` goes through Vitest too rather than staying a plain script — otherwise the `@/` restriction survives in `lib/db/` and `lib/storage/` and the whole trade is lost for nothing.
+Vitest resolves `@/` through `tsconfig` paths, which removes that constraint entirely, and adds per-test isolation (one failing assertion no longer aborts the rest of the run), real failure diffs, and watch mode. `check:setup` goes through Vitest too rather than staying a plain script — otherwise the `@/` restriction survives in `src/server/` and the whole trade is lost for nothing.
 
 ## Folder structure
 
@@ -324,37 +344,61 @@ arena-player-web/
 │   ├── favicon.ico             # derived from the logo
 │   ├── og-image.png            # derived from the logo
 │   └── mockServiceWorker.js    # MSW, dev only — MUST be absent from prod builds
-├── db/
-│   ├── migrations/            # SQL run manually in the Neon SQL editor
+├── db/                         # NOT under src/ — SQL run by hand, never imported
+│   ├── migrations/            # run manually in the Neon SQL editor
 │   └── README.md
-├── app/                        # Next.js App Router
-│   ├── page.tsx
-│   ├── booking/page.tsx
-│   └── api/
-│       ├── availability/route.ts
-│       └── bookings/route.ts
-├── components/
-├── mocks/                      # MSW handlers — dev only, retired in Phase 4
-├── lib/                        # *.test.ts colocated beside the module each one covers
-│   ├── api/                    # TanStack Query hooks. fetch on /, axios on /booking only
-│   ├── db/client.ts            # Neon client, OID parser override
-│   ├── storage/r2.ts           # R2 client, checksum config
-│   ├── motion.ts               # gsap.matchMedia() wrapper, LAZY-imports GSAP — all animation goes through it
-│   ├── shared/                 # BYTE-IDENTICAL with arena-player-admin — see the shared-code contract
-│   │   ├── slots.ts            # canonical TIME_SLOTS, canonicalisation, slotStartHour()
-│   │   ├── slots.test.ts
-│   │   ├── dates.ts            # Asia/Jakarta helpers, booking window, isPastSlot
-│   │   ├── dates.test.ts
-│   │   ├── validation.ts       # phone normalisation, status values
-│   │   └── validation.test.ts
-│   ├── store/                  # zustand — client state only, see the scope rule in CLAUDE.md
-│   ├── proof.ts                # upload constraints (MIME + size) — web only, admin never uploads
-│   ├── proof.test.ts
-│   └── env.ts
+├── src/                        # *.test.ts colocated beside the module each one covers
+│   ├── app/                    # Next.js App Router — the composition layer
+│   │   ├── page.tsx
+│   │   ├── providers.tsx       # QueryClientProvider, client component
+│   │   ├── booking/page.tsx
+│   │   └── api/
+│   │       ├── availability/route.ts
+│   │       └── bookings/route.ts
+│   ├── modules/                # named after SURFACES. Modules never import each other.
+│   │   │                       # No index.ts barrels — see the route split
+│   │   ├── home/               # renders /
+│   │   │   ├── components/     # hero, order-section, rules, location, cta-footer
+│   │   │   ├── home.service.ts # native fetch — the availability GET
+│   │   │   ├── home.queries.ts # TanStack Query hooks
+│   │   │   └── home.types.ts
+│   │   └── booking-form/       # renders /booking. Named booking-FORM because / is
+│   │       │                   # also about booking — its product is the slot grid
+│   │       ├── components/
+│   │       ├── booking-form.schema.ts  # zod
+│   │       ├── booking-form.service.ts # axios, via services/api-client
+│   │       ├── booking-form.proof.ts   # upload MIME + size — web only, admin never uploads
+│   │       ├── booking-form.queries.ts
+│   │       └── booking-form.types.ts
+│   ├── domain/                 # BYTE-IDENTICAL with arena-player-admin — see the contract below
+│   │   ├── slots.ts            # 0 deps — TIME_SLOTS, canonicalisation, slotStartHour()
+│   │   ├── dates.ts            # date-fns — Asia/Jakarta helpers, booking window, isPastSlot
+│   │   ├── status.ts           # 0 deps — the two status vocabularies and the 4→3 mapping
+│   │   ├── phone.ts            # 0 deps — normalisation, Indonesian mobile check
+│   │   └── *.test.ts           # one beside each
+│   ├── server/                 # every file opens with import "server-only"
+│   │   ├── db.ts               # Neon client, OID parser override
+│   │   ├── storage.ts          # R2 client, checksum config
+│   │   └── env.ts              # zod-validated process.env
+│   ├── services/api-client.ts  # axios instance — /booking ONLY
+│   ├── components/             # cross-module UI primitives only. One consumer = it
+│   │                           # belongs in that module's components/ instead
+│   ├── lib/                    # polish for installed libraries, flat, no subfolders
+│   │   ├── cn.ts               # clsx + tailwind-merge
+│   │   ├── motion.ts           # gsap.matchMedia() wrapper, LAZY-imports GSAP
+│   │   └── query-client.ts
+│   ├── utils/                  # web-only helpers
+│   │   ├── error.ts            # isNetworkError/isServerError/isClientError, apiErrorMessage()
+│   │   └── formatter.ts        # date, phone, and file-size display formatting
+│   └── mocks/                  # MSW handlers — dev only, retired in Phase 4
 ├── scripts/
 │   └── check-setup.test.ts     # live Neon + R2 preflight — Phase 4, needs .env.local
 └── vitest.config.ts
 ```
+
+`db/` stays outside `src/` deliberately: it holds SQL executed by hand in the Neon
+console, not source anything imports. `public/` stays at the root because Next
+requires it there even with a `src/` root.
 
 All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during **Phase 1a** — not part of this scaffolding pass.
 
@@ -369,7 +413,9 @@ Every version below was resolved against the registry on 2026-08-08 and is pinne
 | `gsap` | 3.15.0 — Standard "no charge" licence, verified at install |
 | `@gsap/react` | 2.1.2 |
 | `axios` | 1.19.0 — `/booking` only |
-| `zod` | 4.4.3 — `/booking` and `app/api/` only |
+| `zod` | 4.4.3 — `/booking`, `src/app/api/`, and `src/server/` only |
+| `clsx` | 2.1.1 — measured at 0.2KB |
+| `tailwind-merge` | 3.6.0 — measured at 8.0KB. The v3 line targets Tailwind v4; a separate `tailwind-merge-2` dist-tag still serves the v3 line |
 | `react-hook-form` | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below |
 | `zustand` | 5.0.14 |
 | `@tanstack/react-query` | 5.101.4 |
@@ -398,27 +444,40 @@ Every version below was resolved against the registry on 2026-08-08 and is pinne
 
 An unapproved dependency build script fails the whole install. Decisions live in `pnpm-workspace.yaml` under `allowBuilds`, each with the reason inline. `msw` is allowed: its postinstall re-copies `mockServiceWorker.js` so the worker cannot drift from the installed library version.
 
-## `lib/` import convention
+## Import conventions
 
-`lib/` modules use the `@/` alias like everything else (`from "@/lib/shared/dates"`). Vitest resolves it through `tsconfig` paths, so there is no separate resolution mode to satisfy and no `allowImportingTsExtensions` anywhere.
+`"@/*"` resolves to `./src/*`. Everything uses it — `from "@/domain/dates"`, `from "@/lib/cn"`. Vitest resolves the same alias through `tsconfig` paths, so there is no separate resolution mode to satisfy and no `allowImportingTsExtensions` anywhere.
 
-The one rule that still binds is the [extraction boundary](#extraction-boundary) below: `lib/` never imports from `app/`.
+**One documented exception: `src/domain/` imports its own siblings relatively** — `from "./slots"`, never `from "@/domain/slots"`. Those files are byte-identical copies living in two repos, and a relative import resolves the same in both no matter what either `tsconfig` aliases. The alias form would silently tie the frozen copy to one repo's path config.
+
+Three directional rules, all enforced by the ESLint zones in [the route split](#the-route-split--how--is-kept-from-paying-for-the-form):
+
+- **Nothing under `src/` imports from `src/app/`** — the extraction boundary, below.
+- **Feature modules never import each other.** `src/app/` composes them; shared vocabulary lives in `src/domain/`.
+- **`src/domain/` imports nothing from the rest of `src/`.** It is the bottom of the graph.
 
 ## Extraction boundary, and the shared-code contract
 
-`lib/` never imports from `app/`. The admin app lives in its own repo (`arena-player-admin`) and talks to the same database, so this boundary is what keeps slot math, date helpers, and validation shareable rather than reimplemented.
+Nothing under `src/` imports from `src/app/`. The admin app lives in its own repo (`arena-player-admin`) and talks to the same database, so this boundary is what keeps slot math, date helpers, and validation shareable rather than reimplemented.
 
-### `lib/shared/` is a contract, not a convenience
+### `src/domain/` is a contract, not a convenience
 
-Everything both repos must agree on lives in **`lib/shared/`** and is **byte-identical in both**:
+Everything both repos must agree on lives in **`src/domain/`**, at **the same path in both**, and is **byte-identical**:
 
-| Module | Why both repos need it |
-|---|---|
-| `slots.ts` | `TIME_SLOTS` and slot canonicalisation |
-| `dates.ts` | Asia/Jakarta helpers, the booking window, `isPastSlot` |
-| `validation.ts` | Phone normalisation (the admin displays phone numbers) and the status values (the admin mutates them) |
+| Module | Dependencies | Why both repos need it |
+|---|---|---|
+| `slots.ts` | none | `TIME_SLOTS` and slot canonicalisation |
+| `dates.ts` | `date-fns`, `@date-fns/tz` | Asia/Jakarta helpers, the booking window, `isPastSlot` |
+| `status.ts` | none | The two status vocabularies, `ACTIVE_STATUSES` mirroring `uniq_active_slot`'s `WHERE` clause, and the 4→3 mapping the admin mutates and the site reads |
+| `phone.ts` | none | Normalisation to `628xxxxxxxxx`, so a number the site stores and a number the admin searches for are the same string |
 
-**`lib/proof.ts` is deliberately *not* here.** The 2MB limit and the MIME allowlist govern uploading, and the admin only ever reads proofs. Putting upload-only constants under a byte-identical drift check buys the admin repo nothing and gives the check a file it has no reason to care about.
+**Named `domain/`, not `shared/`.** Not DDD — there are no aggregates or repositories here, just business rules. The name was chosen over `shared/` because once `src/modules/` exists, "shared" reads as *shared between modules* and attracts the first cross-module button component into a folder that can never accept one.
+
+**Three of the four have no dependencies, and that is deliberate** — see the peer-dependency section below. Only `dates.ts` reaches for `date-fns`, so importing `TIME_SLOTS` costs no date library.
+
+**The booking form's zod schema is *not* here.** It lives in `src/modules/booking-form/booking-form.schema.ts`, because the admin never creates a booking and putting zod in the frozen folder would oblige the admin repo to install it.
+
+**`booking-form.proof.ts` is deliberately *not* here either.** The 2MB limit and the MIME allowlist govern uploading, and the admin only ever reads proofs. Putting upload-only constants under a byte-identical drift check buys the admin repo nothing and gives the check a file it has no reason to care about.
 
 **Why byte-identical and not merely equivalent.** `uniq_active_slot` compares `time_slot` as **text**. `'06.00 - 08.00'` and `'06.00-08.00'` are two different slots to Postgres, so a one-character drift between the repos means the admin writes rows the site cannot match — and **anti-double-booking silently stops working for both**. Nothing throws. The index is the only race guard there is, and a drifted string disables it without a symptom.
 
@@ -427,24 +486,24 @@ Everything both repos must agree on lives in **`lib/shared/`** and is **byte-ide
 The copy is only defensible because the check exists:
 
 ```bash
-pnpm check:shared     # diffs lib/shared/ against the other repo's copy, exits non-zero on any difference
+pnpm check:shared     # diffs src/domain/ against the other repo's copy, exits non-zero on any difference
 ```
 
 `scripts/check-shared.mjs` fetches the sibling repo and diffs each file. It runs inside `check:lib`, so it cannot be forgotten.
 
-**The check must be proven to fail before it is trusted.** Change one character in a `lib/shared/` file, watch it exit non-zero, revert. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
+**The check must be proven to fail before it is trusted.** Change one character in a `src/domain/` file, watch it exit non-zero, revert. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.
 
 ### A byte-identical copy carries its dependencies with it
 
-`lib/shared/dates.ts` imports `date-fns` and `@date-fns/tz`, so **the admin repo must install both at the same major version** or the copy passes `check:shared` and then fails to build. This is a real cost of choosing a date library over native `Intl`, which would have left `lib/shared/` dependency-free — worth naming rather than discovering in the admin repo's first install.
+`src/domain/dates.ts` imports `date-fns` and `@date-fns/tz`, so **the admin repo must install both at the same major version** or the copy passes `check:shared` and then fails to build. This is a real cost of choosing a date library over native `Intl`, which would have left `src/domain/` dependency-free — worth naming rather than discovering in the admin repo's first install.
 
 `check-shared.mjs` therefore diffs two things, not one:
 
-1. Every file under `lib/shared/`, byte for byte
+1. Every file under `src/domain/`, byte for byte
 2. The version range of each shared peer dependency in both `package.json` files
 
 The second check is not decoration. `date-fns` v3 and v4 differ in exactly the timezone API this project relies on, so two repos on different majors produce a byte-identical `dates.ts` that computes different dates — the same silent-wrong-answer failure the first check exists to prevent, arriving through the lockfile instead of the source.
 
-**Keep the shared surface's dependency list as short as it is.** Every package added to `lib/shared/` is a package the admin repo is now obliged to carry.
+**Keep the shared surface's dependency list as short as it is.** Every package added to `src/domain/` is a package the admin repo is now obliged to carry.
 
 **Web owns `db/migrations/`.** The admin repo reads the schema and never alters it. Two repos migrating one database is a conflict with no owner to resolve it.

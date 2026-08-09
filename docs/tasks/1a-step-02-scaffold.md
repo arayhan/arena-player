@@ -4,6 +4,9 @@
 **Blocks**: 03, 04, 06, 07, 08 — everything downstream needs a repo that runs
 **Agent**: `software-engineer`
 
+> **Superseded paths.** This step ran before step 02b moved everything under `src/` and renamed `lib/shared/` to `src/domain/`. Paths below are left as they were when the work happened — this is a record, not a spec. Current layout: [architecture.md](../architecture.md).
+
+
 ## Goal
 
 Next.js 16 App Router + TypeScript + Tailwind, installed with pnpm, serving at `localhost:3000`. Nothing product-shaped ships here — no page content, no components beyond what the scaffold generates.

@@ -13,7 +13,7 @@ The commands that let anyone — human or agent — prove a claim instead of ass
 ## Deliverables
 
 - Lint, format, typecheck scripts, all running clean on the scaffold
-- **Vitest** wired as `pnpm check:lib` → `vitest run lib`. Tests are colocated `*.test.ts` beside the module they cover. It must never need credentials — that is why the Phase 4 preflight lives under a separate glob
+- **Vitest** wired as `pnpm check:lib` → `vitest run src`. Tests are colocated `*.test.ts` beside the module they cover. It must never need credentials — that is why the Phase 4 preflight lives under a separate glob
 - **`pnpm check:docs`** — the mechanical half of doc review, spec'd in [PRD.md](../PRD.md) Phase 1a. It asserts: no `TODO(phase2)` survives anywhere; `TODO(content)` finds exactly the six declared categories; no bare "Phase 1" references, only 1a/1b/4; and the phase overview table names the same phases as the detail sections
 - **ESLint `no-restricted-syntax` rules that reject known-superseded library APIs.** Decided in step 02's discussion; see below
 - Editor config
@@ -35,7 +35,21 @@ Each rule carries a message naming the replacement, not just "banned".
 
 **State the limit honestly in a comment beside them:** this catches *known* mistakes only. An API invented wholesale still passes lint. It is a floor, not a guarantee — and it was chosen over a reminder hook because this repo already proved that a nudge nobody is forced to act on gets ignored. The `Stop` hook ran a full session without firing and nobody noticed.
 
-These rules are also the reason the route-split zone rule from step 01 lands here: same file, same mechanism, one pass.
+These rules are also the reason the route-split zone rule lands here: same file, same mechanism, one pass. Step 02b restructured the paths it guards, so write it against these and not against anything older:
+
+| Package | May be imported from |
+|---|---|
+| `axios` | `src/services/api-client.ts`, `src/modules/booking-form/**` |
+| `react-hook-form` | `src/modules/booking-form/**` |
+| `zod` | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
+| `@/server/*` | `src/app/api/**` only |
+
+Everything else — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages.
+
+Two structural rules the zones cannot express, so assert them in `check:docs` instead:
+
+- **No `index.ts` anywhere under `src/modules/`.** A barrel re-exporting the form drags zod, react-hook-form, and axios along with any single import from that module — `find src/modules -name "index.ts"` must return nothing.
+- **Feature modules never import each other.** `src/modules/home/**` must not reference `@/modules/booking-form`, and vice versa.
 
 ## Why check:docs exists
 

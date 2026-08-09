@@ -32,11 +32,11 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 | 1 | Plan the architecture | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form`, `zod`, or `axios` |
 | 2 | Scaffolding | Next.js 16 + TypeScript + Tailwind v4 installed via pnpm, runs at `localhost:3000` |
 | 3 | Developer experience | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase |
-| 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `app/` |
+| 4 | Development rules | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `src/app/` |
 | 5 | Lock the API contract | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md) |
-| 6 | Shared primitives | **`lib/shared/slots.ts`** (canonical `TIME_SLOTS`) and **`lib/shared/dates.ts`** (Asia/Jakarta helpers, today + 13 days), each with a colocated `*.test.ts`. They live under `shared/` because the admin repo keeps a byte-identical copy — see the shared-code contract in [architecture.md](architecture.md) |
+| 6 | Shared primitives | **`src/domain/slots.ts`** (canonical `TIME_SLOTS`), **`src/domain/dates.ts`** (Asia/Jakarta helpers, today + 13 days), **`status.ts`**, and **`phone.ts`**, each with a colocated `*.test.ts`. They live in `src/domain/` because the admin repo keeps a byte-identical copy at the same path — see the shared-code contract in [architecture.md](architecture.md) |
 | 7 | Mock layer + data plumbing | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance |
-| 8 | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `lib/motion.ts` wrapping `gsap.matchMedia()` |
+| 8 | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `src/lib/motion.ts` wrapping `gsap.matchMedia()` |
 
 **`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of *new* defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
 
@@ -53,7 +53,7 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 
 **Skills:** `/plan-eng-review` and `/plan-devex-review` on the plan before building; `/devex-review` on the scaffolded repo after.
 
-**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:lib` passes with real assertions on `lib/shared/slots.ts` and `lib/shared/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `lib/motion.ts` exists so no component can animate without a reduced-motion check.
+**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:lib` passes with real assertions on `src/domain/slots.ts` and `src/domain/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check.
 
 ## Phase 1b — Design foundation
 
@@ -235,7 +235,7 @@ create table bookings (
 
   -- The unique index below compares time_slot as TEXT. Without this constraint
   -- '06.00 - 08.00' and '06.00-08.00' are different rows that book the same slot,
-  -- and the race guard silently does nothing. lib/shared/slots.ts canonicalises in app
+  -- and the race guard silently does nothing. src/domain/slots.ts canonicalises in app
   -- code; this is what enforces it in the database.
   constraint time_slot_canonical check (time_slot in (
     '06.00 - 08.00','08.00 - 10.00','10.00 - 12.00','12.00 - 14.00','14.00 - 16.00',
@@ -253,7 +253,7 @@ create unique index uniq_active_slot
 
 Three deliberate choices in that schema:
 
-- **`time_slot_canonical`** — the race guard is a unique index on a text column, so it only protects when the string is byte-identical. This constraint is what makes the most expensive bug in the project impossible to reintroduce by formatting drift. The list must stay in lockstep with `lib/shared/slots.ts`.
+- **`time_slot_canonical`** — the race guard is a unique index on a text column, so it only protects when the string is byte-identical. This constraint is what makes the most expensive bug in the project impossible to reintroduce by formatting drift. The list must stay in lockstep with `src/domain/slots.ts`.
 - **`proof_key`, not `proof_url`** — it stores an R2 object key. Naming it `_url` invites someone to write `<img src={proof_key}>` and get a broken image with no obvious cause.
 - **`phone` normalised to `628xxxxxxxxx`** — accept `08xx`, `62xx`, or `+62xx` at the boundary, store one form. This is the format `wa.me` and the WhatsApp API both use, so the later bot can match an inbound number to a booking with a direct lookup instead of fuzzy matching.
 
@@ -301,7 +301,7 @@ Animation level: HEAVY, but mobile-performant:
 
 Hard performance guardrails:
 
-- CSS transforms + GSAP only; `prefers-reduced-motion` respected on every animated component via the `lib/motion.ts` wrapper — GSAP has no built-in equivalent of Framer's `useReducedMotion`, so the wrapper is the mechanism
+- CSS transforms + GSAP only; `prefers-reduced-motion` respected on every animated component via the `src/lib/motion.ts` wrapper — GSAP has no built-in equivalent of Framer's `useReducedMotion`, so the wrapper is the mechanism
 - **One** WebGL moment permitted, hero only, under the conditions in [architecture.md](architecture.md) — dynamically imported, static fallback, ≤ 40KB gzip, deletable in one commit. That cap excludes three.js and pixi.js
 - No Lottie files over 100KB. No autoplaying video unless the Phase 1b hero-video gate passes
 - Everything stays inside the performance budget in [architecture.md](architecture.md) — that table is the single source, do not restate its numbers here
@@ -342,8 +342,8 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 - Date window: today + 13 days, timezone Asia/Jakarta. Today's slots whose start time has passed render disabled (visible, not hidden).
 - Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). The admin app renders each proof through a short-lived **presigned GET** it generates itself; the bucket stays private and no public URL is ever created. That work belongs to `arena-player-admin` — this repo only ever writes to R2 and must never mint a read URL.
 - Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
-- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`lib/shared/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
-- HTTP client on the frontend: TanStack Query over two transports, split by route. `/` uses native `fetch`; `/booking` uses axios, which is kept off the landing bundle — it costs 17.5KB measured, and `/` makes one GET. `/booking` earns it back with `onUploadProgress` on the 2MB proof upload, which `fetch` cannot report. Both instances and `QueryClientProvider` are **built in Phase 1a task 7**. **No bare `fetch` in a component** — that rule is about the component, not the transport; calls go through `lib/api/`.
+- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`src/domain/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
+- HTTP client on the frontend: TanStack Query over two transports, split by route. `/` uses native `fetch`; `/booking` uses axios, which is kept off the landing bundle — it costs 17.5KB measured, and `/` makes one GET. `/booking` earns it back with `onUploadProgress` on the 2MB proof upload, which `fetch` cannot report. Both instances and `QueryClientProvider` are **built in Phase 1a task 7**. **No bare `fetch` in a component** — that rule is about the component, not the transport; calls go through each module's `*.service.ts`, reached via its `*.queries.ts`. `src/services/api-client.ts` holds the axios instance and is `/booking`-only.
 
 ## Definition of Done — Phases 1a–3
 
@@ -353,10 +353,10 @@ Phase 1a:
 - [ ] Lint / format / typecheck scripts run clean; Vitest wired and `pnpm check:lib` passes (`check:setup` belongs to Phase 4)
 - [ ] Development rules written down, including the accessibility baseline
 - [ ] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
-- [ ] `lib/shared/slots.ts` + `lib/shared/dates.ts` exist with colocated tests that actually assert — not an empty harness
+- [ ] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [ ] `pnpm check:shared` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [ ] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
-- [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `lib/motion.ts` exists so no component can animate without a reduced-motion check
+- [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
 Phase 1b:
@@ -403,7 +403,7 @@ Phase 4 (backend) is **mandatory before launch** — only its design discussion 
 
 **Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its *design* is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the MSW mock from Phase 1a.
 
-Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the `lib/` ones, kept under a separate glob so `check:lib` never requires credentials.
+Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the ones colocated under `src/`, kept under a separate glob so `check:lib` never requires credentials.
 
 Agenda for the discussion:
 
@@ -411,7 +411,7 @@ Agenda for the discussion:
 |---|---|
 | Schema + data types | `bookings` columns, `date` vs `timestamptz`, status as enum or text, index set |
 | Database structure | Migration strategy, how manual-run migrations stay ordered and idempotent |
-| Layered architecture | Route handler → service → repository boundaries, and how those interact with the existing `lib/` extraction boundary |
+| Layered architecture | Route handler → service → repository boundaries, and how those interact with the existing extraction boundary (nothing under `src/` imports from `src/app/`) |
 | Validation | Which rules are shared client/server, which are server-only, and where the shared ones live |
 | **File upload** | **Presigned URL** — browser PUTs straight to R2, then POSTs the object key. This supersedes the multipart flow currently drawn in [architecture.md](architecture.md) and is why `POST /api/bookings` is marked provisional |
 | **Where expiry runs** | Lazy-on-read, scheduled job, or on-POST. Lazy-on-read is starved by the 30s shared cache — a cache hit never reaches the origin, so nothing frees an abandoned slot on a quiet night. Full statement of the problem and the three candidate fixes: [architecture.md](architecture.md) |

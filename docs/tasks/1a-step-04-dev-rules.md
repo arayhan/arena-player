@@ -17,12 +17,14 @@ Do not duplicate. If a rule already lives in `CLAUDE.md` or `architecture.md`, p
 ## Deliverables
 
 **Naming and file layout**
-- Component files, hooks, lib modules, test files, and route handlers — one convention each, with an example
-- Where a thing goes when it could plausibly go in two places. `components/` versus a colocated component; `lib/` versus `lib/shared/`
+- Component files, hooks, module files, test files, and route handlers — one convention each, with an example. Modules use `<module>.<role>.ts`: `home.service.ts`, `booking-form.schema.ts`
+- Where a thing goes when it could plausibly go in two places. The eight `src/` folders each have one job, and the ambiguous pairs are worth writing down: `src/components/` versus a module's own `components/` (one consumer means it belongs to the module); `src/lib/` versus `src/utils/` (lib polishes an installed library, utils is our own helper); `src/utils/` versus `src/domain/` (does the admin repo need it?); `src/services/` versus a module's `*.service.ts` (the shared axios instance versus the calls that use it)
 
-**What never goes in `app/`**
-- `app/` holds routes and layouts. Business logic, data shaping, and reusable UI live elsewhere
-- `lib/` never imports from `app/` — that is the extraction boundary that lets slot and date code move to the admin repo later
+**What never goes in `src/app/`**
+- `src/app/` holds routes, layouts, and composition. Business logic, data shaping, and reusable UI live in modules
+- Nothing under `src/` imports from `src/app/` — the extraction boundary that lets slot and date code stay shareable with the admin repo
+- **Feature modules never import each other.** Shared vocabulary goes in `src/domain/`. One `home` → `booking-form` import is all it takes for a later `import { z }` there to ship zod to `/` with nothing failing
+- **No `index.ts` barrels under `src/modules/`** — a barrel re-exporting the form drags zod, react-hook-form, and axios along with any import from that module
 
 **Component patterns**
 - Server Component by default; `"use client"` is a decision that gets justified, not a reflex

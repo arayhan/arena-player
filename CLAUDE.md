@@ -74,13 +74,19 @@ arena-player-web/
 ├── CLAUDE.md
 ├── docs/            # PRODUCT, PRD, architecture, database, DESIGN, PROGRESS.md (current phase), progress-archive/, tasks/
 ├── .claude/         # agents, skills, hooks, settings
-├── db/migrations/   # SQL, run manually
-├── app/             # Next.js App Router — page.tsx, booking/page.tsx, api/
-├── components/
-├── lib/             # shared/ (slots, dates, validation — BYTE-IDENTICAL with the admin repo), db/storage clients,
-│                    # proof.ts (web-only upload limits), motion.ts (lazy GSAP), api/ (fetch on /, axios on /booking),
-│                    # store/ (zustand) + colocated *.test.ts
-├── mocks/           # MSW handlers implementing the API contract
+├── db/migrations/   # SQL, run manually — outside src/ because nothing imports it
+├── src/
+│   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/
+│   ├── modules/     # named after SURFACES. home/ (renders /), booking-form/ (renders /booking).
+│   │                # Modules NEVER import each other, and carry no index.ts barrel
+│   ├── domain/      # BYTE-IDENTICAL with the admin repo, same path there — slots, dates,
+│   │                # status, phone. Only dates.ts has a dependency
+│   ├── server/      # import "server-only" — db.ts, storage.ts, env.ts
+│   ├── services/    # api-client.ts (axios, /booking only)
+│   ├── components/  # cross-module UI primitives only
+│   ├── lib/         # polish for installed libraries, flat — cn, motion (lazy GSAP), query-client
+│   ├── utils/       # web-only helpers — error.ts, formatter.ts
+│   └── mocks/       # MSW handlers implementing the API contract
 └── scripts/         # check-setup.test.ts — live Neon + R2 preflight, Phase 4
 ```
 
@@ -93,7 +99,8 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - Never commit `.env.local`.
 - **Start Claude sessions inside `arena-player-web/`** — hooks and settings load from session root; starting one level up leaves `Stop`/`Notification`/`SubagentStop` hooks silently inactive.
 - Parallel sessions: `claude --worktree <branch-name>`.
-- `lib/` never imports from `app/` (extraction boundary). **`lib/shared/` is byte-identical with `arena-player-admin`** and guarded by `pnpm check:shared` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too.
+- **Three import rules, all lint-enforced.** Nothing under `src/` imports from `src/app/` (extraction boundary). Feature modules never import each other — shared vocabulary goes in `src/domain/`. `src/domain/` imports nothing from the rest of `src/` and uses **relative** sibling imports (`./slots`), the one exception to `@/`-everywhere, so the copy resolves identically in both repos.
+- **`src/domain/` is byte-identical with `arena-player-admin` at the same path** and guarded by `pnpm check:shared` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too, which is why three of its four files have none.
 - No attribution trailers on commits.
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
 
@@ -104,10 +111,10 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 3. **Placeholders** marked `// TODO(content)` — six categories, complete: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy. `rg "TODO\(content\)"` must find all six and nothing else. Named `content` not `phase2` because the re-cut made "Phase 2" the landing page; these swap after Phase 4.
 4. **`DATABASE_URL` and R2 secrets** never in client code, never `NEXT_PUBLIC_*`. Browser never touches Neon or R2 — only route handlers do.
 5. **Rules section** ("Ketentuan") verbatim Indonesian from the PRD. UI copy Indonesian, code/comments English.
-6. **Animation guardrails**: CSS transforms + GSAP only. Every animation goes through `lib/motion.ts` — GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned. **One** WebGL moment permitted, hero only, under the conditions in docs/architecture.md (dynamic import, static fallback, ≤ 40KB gzip, deletable in one commit) — that cap excludes three.js and pixi.js. No Lottie >100KB. No autoplay video unless the Phase 1b hero-video gate passes. No CLS. Stay inside the performance budget in docs/architecture.md.
+6. **Animation guardrails**: CSS transforms + GSAP only. Every animation goes through `src/lib/motion.ts` — GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned. **One** WebGL moment permitted, hero only, under the conditions in docs/architecture.md (dynamic import, static fallback, ≤ 40KB gzip, deletable in one commit) — that cap excludes three.js and pixi.js. No Lottie >100KB. No autoplay video unless the Phase 1b hero-video gate passes. No CLS. Stay inside the performance budget in docs/architecture.md.
 7. **Performance**: LCP < 2.5s mobile, Lighthouse mobile Performance ≥ 85, order section reachable within 1–2 scrolls at 375px. Verified per section as it merges, not batched to the end of the phase.
-8. Every non-trivial `lib/` module gets a colocated Vitest `*.test.ts`, run by `pnpm check:lib`. Never claim something works without running the check and quoting output.
-9. **Stack is fixed** — Next 16, TypeScript, Tailwind v4, GSAP, TanStack Query, MSW, zod, react-hook-form, zustand, `date-fns` + `@date-fns/tz`, `react-icons`, Vitest v4. All versions are resolved and pinned in the table in docs/architecture.md. Anything else needs user approval and must clear the budget there. **Three packages are `/booking`-only and must never reach `/`**: `axios`, `zod`, `react-hook-form` — the landing page uses native `fetch` through `lib/api/`. **GSAP loads lazily** via `lib/motion.ts`. Both rules exist because the measured framework baseline is 126.5KB, not the 90 that was estimated, and without them `/` breaches the budget before a single component is written. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
+8. Every non-trivial module under `src/` gets a colocated Vitest `*.test.ts`, run by `pnpm check:lib` (glob: `src/`). Never claim something works without running the check and quoting output.
+9. **Stack is fixed** — Next 16, TypeScript, Tailwind v4, GSAP, TanStack Query, MSW, zod, react-hook-form, zustand, `date-fns` + `@date-fns/tz`, `react-icons`, `clsx` + `tailwind-merge`, Vitest v4. All versions are resolved and pinned in the table in docs/architecture.md. Anything else needs user approval and must clear the budget there. **Three packages are `/booking`-only and must never reach `/`**: `axios`, `zod`, `react-hook-form` — the landing page uses native `fetch` from `src/modules/home/home.service.ts`. **GSAP loads lazily** via `src/lib/motion.ts`. Both rules exist because the measured framework baseline is 126.5KB, not the 90 that was estimated, and without them `/` breaches the budget before a single component is written. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
 10. **One writing session per worktree.** Two sessions editing this repo simultaneously shipped two defects in one day — overstated contrast ratios and a WCAG 1.4.11 failure — because neither could see the other's work. Commit before handing off, or use `claude --worktree <branch>`. And **`.impeccable/critique/` is gitignored**, so a graded review of a design artifact is invisible to `git log` and to the next session: read it before editing anything under `docs/DESIGN.*`. That exact blind spot is what produced both defects.
 
 @AGENTS.md

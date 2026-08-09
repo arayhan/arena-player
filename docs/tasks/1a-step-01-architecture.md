@@ -4,6 +4,9 @@
 **Blocks**: 02 (scaffold installs what this decides), 06 (`lib/shared/dates.ts` shape depends on the date choice), 08 (both choices spend budget)
 **Agent**: `engineering-lead`
 
+> **Superseded paths.** This step ran before step 02b moved everything under `src/` and renamed `lib/shared/` to `src/domain/`. Paths below are left as they were when the work happened — this is a record, not a spec. Current layout: [architecture.md](../architecture.md).
+
+
 ## Goal
 
 Close the two library decisions the PRD leaves open, and confirm the route-split assumption the performance budget depends on. No code ships in this step — it ends with decisions written into [architecture.md](../architecture.md), which is where the next steps read them from.
