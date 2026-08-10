@@ -26,19 +26,28 @@ The contract lives in the **API contract** section of [architecture.md](../archi
 ## Acceptance
 
 ```bash
-# the three copies of notes agree
-grep -rn "280" docs/architecture.md docs/PRD.md docs/database.md   # expect: no match
-
-# field names are identical between the contract and the PRD form spec
-grep -nE "teamName|proofKey|website" docs/architecture.md
+# notes is 500 in every copy — now FOUR, since db/migrations/ landed.
+# Scoped to `notes`: a bare grep for 280 matches --dur-base:280ms in DESIGN.html
+# and the PROGRESS entries recording this very contradiction.
+grep -rn "notes.*280\|280.*notes" docs/ db/    # expect: no match
+grep -rn "length(notes) <= " docs/ db/         # expect: 500 in every hit
 
 # both routes still carry their firmness label
-grep -n "FIRM\|PROVISIONAL" docs/architecture.md   # expect: both, unchanged
+grep -c "FIRM" docs/architecture.md            # expect: 2
+grep -c "PROVISIONAL" docs/architecture.md     # expect: 2
 
-# all four response codes are specified, or step 07 mocks states it has never seen
-grep -cE "^// (201|400|409|429)" docs/architecture.md
+# every response code is specified, or step 07 mocks states it has never seen.
+# Expect 5, not 4: 400 is spelled out for BOTH routes.
+grep -oE "^\s*// (200|201|400|409|429)" docs/architecture.md | sort -u   # expect: all five
+
+# the schema values agree everywhere they are written — machine-checked now
+pnpm check:docs                                # schema-value-drift
 ```
 
-**Not done until** the `notes` number is the same in all three files and the DoD box is ticked with that verified, not assumed.
+**Two of these greps were wrong, and neither doc was.** The response-code one read `^// (…)` and returned 0 while all the codes sat at lines 45 and 97–103; and `grep -rn "280"` returned six hits that are a CSS duration token and this file's own prose. An acceptance that fails on correct content trains people to ignore it, which is worse than not having it — so both were fixed rather than deleted, because the assertions themselves are worth keeping.
+
+**The field-name grep is gone deliberately.** It compared `architecture.md` against "the PRD form spec", but the PRD lists **UI labels** (`Nama Tim`, `Nomor WhatsApp`) and never the wire names. That is correct single-sourcing, not a gap, and a grep implying otherwise invites someone to duplicate the field table into the PRD.
+
+**Not done until** the `notes` number is the same in every copy, `schema-value-drift` passes, and the DoD box is ticked with that verified rather than assumed.
 
 handoff: `software-engineer` for step 06

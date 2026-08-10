@@ -91,6 +91,10 @@ Request — `multipart/form-data`. Field names are the contract: the form, the M
 
 `slot` is validated against `TIME_SLOTS`, not a regex. The `uniq_active_slot` index compares `time_slot` as text, so a near-miss format silently books the same slot twice — see [database.md](database.md).
 
+**The query param is `time`; the POST field is `slot`. That is deliberate, and it is written down here so nobody harmonises them.** `/booking?date=…&time=…` is a link a human admin types into WhatsApp, and `time` is the word they would guess; `slot` is the wire name that matches `TIME_SLOTS` and the `time_slot` column. Renaming the param breaks every link already pasted into a chat, which is the one place in this system with no deploy and no rollback. Phase 3 reads `time` from the URL and submits `slot`.
+
+**The PRD's field list is UI labels — "Nama Tim", "Nomor WhatsApp" — not wire names.** The wire names live in the table above and nowhere else, on purpose. Do not "complete" the PRD by adding them; that creates the second copy this contract exists to avoid.
+
 The honeypot's fake 201 is the one place this API lies on purpose. Everywhere else, a status code means what it says.
 
 ```jsonc

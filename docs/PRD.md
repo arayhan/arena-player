@@ -352,7 +352,7 @@ Phase 1a:
 - [x] Repo scaffolded, `pnpm dev` serves `localhost:3000`
 - [x] Lint / format / typecheck scripts run clean; Vitest wired and `pnpm check:unit` passes (`check:setup` belongs to Phase 4)
 - [x] Development rules written down, including the accessibility baseline
-- [ ] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
+- [x] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
 - [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [x] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired

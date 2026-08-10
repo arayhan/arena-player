@@ -51,7 +51,7 @@ create index bookings_pending_expiry_idx
 commit;
 ```
 
-This block lives at `db/migrations/20260809_create_bookings.sql`, byte-identical, and `pnpm check:docs` asserts the nine canonical slot strings there match `TIME_SLOTS` in `src/domain/slots.ts`. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
+This block lives at `db/migrations/20260809_create_bookings.sql`, byte-identical, and `pnpm check:docs` holds it to that — plus the same values in [PRD.md](PRD.md), which carries a shorter comment-free variant of the same DDL. `schema-value-drift` asserts across all three that `time_slot_canonical` matches `TIME_SLOTS`, `status_valid` matches `BOOKING_STATUSES`, `uniq_active_slot`'s `WHERE` matches `ACTIVE_STATUSES`, and `notes_length` is 500. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
 
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 

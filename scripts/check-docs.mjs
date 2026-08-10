@@ -167,55 +167,126 @@ for (const f of ALL) {
   }
 }
 
-// --- 4b. TIME_SLOTS matches the migration's time_slot_canonical constraint ---
+// --- 4b. Schema values agree everywhere they are written ---------------------
 //
-// The nine canonical strings now exist in two places, which is the exact shape
-// this repo has lost time to three separate ways: a value copied out of a
-// source with nothing checking the copy. Here it is the worst instance
-// available. uniq_active_slot compares time_slot as TEXT, so a separator drift
-// means either every insert is rejected by the constraint, or — if the app side
-// is the one that drifts — two rows book the same slot and the only race guard
-// in the system quietly does nothing.
+// The schema is spelled out in THREE places — db/migrations/*.sql,
+// docs/database.md, and docs/PRD.md — plus src/domain/, which is a fourth copy
+// of the same vocabulary in TypeScript. That is the copied-value shape this
+// repo has already lost time to three separate ways, and here it is the worst
+// instance available:
+//
+//   uniq_active_slot compares time_slot as TEXT. A separator drift means either
+//   every insert is rejected by the constraint, or — if the app side is the one
+//   that moved — two rows book the same slot and the only race guard in the
+//   system quietly does nothing.
+//
+//   ACTIVE_STATUSES mirrors that index's WHERE clause. If the two disagree, the
+//   guard silently changes meaning.
+//
+// An earlier version of this check watched the migration alone, which left the
+// two doc copies unguarded on the day the migration file was created.
 //
 // .sql is deliberately absent from TEXT above: widening that glob would drag
-// SQL through the prose-oriented checks 1-3. This reads the file by path.
+// SQL through the prose-oriented checks 1-3. These files are read by path.
 {
-  // BOTH sides are scoped to their declaration. The first version of this
-  // check matched every quoted slot-shaped string in the file and compared
-  // three prose mentions in slots.ts' own doc comments against the nine in the
-  // SQL — a checker that fell for exactly the copied-value confusion it exists
-  // to catch. Scope first, then extract.
-  const SLOT = /["'](\d{2}\.\d{2} - \d{2}\.\d{2})["']/g;
+  // Scope to the declaration FIRST, then extract inside the slice. The first
+  // version skipped this and compared three prose mentions in slots.ts' own doc
+  // comments against the nine in the SQL — a checker taken in by exactly the
+  // confusion it exists to catch.
   const between = (text, start, end) => {
     const from = text.indexOf(start);
-    if (from === -1) return "";
-    const to = text.indexOf(end, from);
-    return to === -1 ? "" : text.slice(from, to);
+    if (from === -1) return null;
+    const to = text.indexOf(end, from + start.length);
+    return to === -1 ? null : text.slice(from, to);
   };
-  const extract = (text) => (text.match(SLOT) ?? []).map((s) => s.slice(1, -1));
+  const quoted = (slice) => (slice?.match(/["']([^"']+)["']/g) ?? []).map((s) => s.slice(1, -1));
+  const read = (f) => linesOf(f).join("\n");
 
-  const migrations = ALL.filter((f) => /^db\/migrations\/.*\.sql$/.test(f));
-  const domainSlots = extract(
-    between(linesOf("src/domain/slots.ts").join("\n"), "TIME_SLOTS = [", "]"),
-  );
+  // Every file that writes the schema out. The migration is authoritative; the
+  // other two are copies that must agree with it.
+  const SQL_SOURCES = [
+    ...ALL.filter((f) => /^db\/migrations\/.*\.sql$/.test(f)),
+    "docs/database.md",
+    "docs/PRD.md",
+  ];
 
-  // Silence is the failure mode to avoid: before step 06 slots.ts does not
-  // exist, and a check that compares two empty lists reports success having
+  const expected = {
+    slots: quoted(between(read("src/domain/slots.ts"), "TIME_SLOTS = [", "]")),
+    statuses: quoted(between(read("src/domain/status.ts"), "BOOKING_STATUSES = [", "]")),
+    active: quoted(between(read("src/domain/status.ts"), "ACTIVE_STATUSES = [", "]")),
+  };
+
+  // SILENCE IS THE FAILURE MODE TO AVOID. Before step 06 these files do not
+  // exist, and a check comparing two empty lists reports success having
   // compared nothing.
-  if (domainSlots.length > 0) {
-    for (const f of migrations) {
-      const sqlSlots = extract(
-        between(linesOf(f).join("\n"), "constraint time_slot_canonical", "))"),
-      );
-      if (sqlSlots.length === 0) continue; // a migration that does not touch time_slot
-      if (JSON.stringify(sqlSlots) !== JSON.stringify(domainSlots)) {
-        fail(
-          "slot-canonical-drift",
-          `${f} — time_slot_canonical does not match TIME_SLOTS in src/domain/slots.ts.\n` +
-            `        sql   : ${JSON.stringify(sqlSlots)}\n` +
-            `        domain: ${JSON.stringify(domainSlots)}`,
-        );
+  if (expected.slots.length > 0 && expected.statuses.length > 0) {
+    const CLAIMS = [
+      {
+        what: "time_slot_canonical",
+        start: "constraint time_slot_canonical",
+        end: "))",
+        against: expected.slots,
+        source: "TIME_SLOTS in src/domain/slots.ts",
+      },
+      {
+        what: "status_valid",
+        start: "constraint status_valid",
+        end: "))",
+        against: expected.statuses,
+        source: "BOOKING_STATUSES in src/domain/status.ts",
+      },
+      {
+        what: "uniq_active_slot WHERE",
+        start: "create unique index uniq_active_slot",
+        end: ";",
+        against: expected.active,
+        source: "ACTIVE_STATUSES in src/domain/status.ts",
+      },
+    ];
+
+    for (const f of SQL_SOURCES) {
+      const text = read(f);
+      for (const claim of CLAIMS) {
+        const slice = between(text, claim.start, claim.end);
+        if (slice === null) continue; // this file does not spell that one out
+        const found = quoted(slice);
+        if (JSON.stringify(found) !== JSON.stringify(claim.against)) {
+          fail(
+            "schema-value-drift",
+            `${f} — ${claim.what} does not match ${claim.source}\n` +
+              `        here    : ${JSON.stringify(found)}\n` +
+              `        expected: ${JSON.stringify(claim.against)}`,
+          );
+        }
       }
+
+      // notes_length: one number, four copies, and the PRD field list already
+      // disagreed with it once before the pre-flight pass caught it.
+      const notes = text.match(/notes_length check \(notes is null or length\(notes\) <= (\d+)\)/);
+      if (notes && notes[1] !== "500") {
+        fail("schema-value-drift", `${f} — notes_length is ${notes[1]}, not 500`);
+      }
+    }
+
+    // docs/database.md claims at line 54 that its block IS the migration.
+    // Cheap to hold it to that; docs/PRD.md is deliberately exempt, since its
+    // block is a shorter comment-free summary and is covered by the value
+    // checks above.
+    const fenced = (f) => {
+      const text = read(f);
+      const open = text.indexOf("```sql");
+      if (open === -1) return null;
+      const close = text.indexOf("```", open + 6);
+      return close === -1 ? null : text.slice(open + 6, close).replace(/^\n/, "");
+    };
+    const migration = SQL_SOURCES.find((f) => f.startsWith("db/migrations/"));
+    const block = fenced("docs/database.md");
+    if (migration && block !== null && block !== read(migration)) {
+      fail(
+        "schema-value-drift",
+        `docs/database.md — its SQL block is no longer byte-identical to ${migration}, ` +
+          `which that file states it is`,
+      );
     }
   }
 }
@@ -453,7 +524,7 @@ const CHECKS = [
   "todo-content-category",
   "bare-phase-1",
   "module-barrel",
-  "slot-canonical-drift",
+  "schema-value-drift",
   "gsap-outside-motion",
   "cross-module-import",
   "shared-layer-inversion",
