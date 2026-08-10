@@ -6,7 +6,7 @@
 
 ## Goal
 
-Four files in `src/domain/` — `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` — each with a colocated test that actually asserts, plus `pnpm check:shared`, the check that keeps the admin repo's copy identical to this one.
+Four files in `src/domain/` — `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` — each with a colocated test that actually asserts, plus `pnpm check:domain`, the check that keeps the admin repo's copy identical to this one.
 
 **Keep three of the four dependency-free.** Only `dates.ts` may import `date-fns` / `@date-fns/tz`. Every package added here is one the admin repo is obliged to install, and merging the four into one file would make a date library mandatory for anyone who only wants `TIME_SLOTS`.
 
@@ -64,13 +64,13 @@ Two reasons that matters here, in order of importance:
 1. **It cannot break the `toISOString()` rule, because the method does not exist.** This project bans `toISOString()` anywhere near `booking_date` — it shifts to UTC and can move the date across midnight. A ban enforced by absence beats a ban enforced by review.
 2. `date-fns` + `@date-fns/tz` measured **8.1KB** on `/`. `TZDateMini` may reduce that. **Measure it with `node scripts/measure-bundle.mjs`, do not assume it** — every estimate in this project so far has been wrong by 30%.
 
-**`scripts/check-shared.mjs`** + a `check:shared` script that runs inside `check:lib`, so it cannot be skipped.
+**`scripts/check-domain.mjs`** + a `check:domain` script. It was originally specified as running _inside_ `check:unit` so it could not be skipped; that bundling was replaced by `pnpm check`, which runs the whole gate and covers five checks rather than two.
 
 ## Acceptance
 
 ```bash
 # all four have tests that assert something real, not just that the module imports
-pnpm check:lib
+pnpm check:unit
 grep -c "expect(" src/domain/{slots,dates,status,phone}.test.ts   # expect: non-trivial, all four
 
 # the canonical form is exactly what the database will compare
@@ -98,13 +98,13 @@ grep -n '@/domain' src/domain/                      # expect: no match
 A check that has only ever passed is a check nobody has tested. This repo shipped a `Stop` hook that never fired once for exactly that reason.
 
 ```bash
-pnpm check:shared                                    # passes
+pnpm check:domain                                    # passes
 sed -i 's/06.00 - 08.00/06.00 -08.00/' src/domain/slots.ts
-pnpm check:shared ; echo "expect non-zero: $?"       # MUST fail
+pnpm check:domain ; echo "expect non-zero: $?"       # MUST fail
 git checkout src/domain/slots.ts
-pnpm check:shared                                    # passes again
+pnpm check:domain                                    # passes again
 ```
 
-**Not done until that sequence has actually been run.** Until the admin repo exists, `check:shared` may have nothing to diff against — in that case it must **skip loudly and say so**, never pass silently. A check that reports success when it did nothing is worse than no check.
+**Not done until that sequence has actually been run.** Until the admin repo exists, `check:domain` may have nothing to diff against — in that case it must **skip loudly and say so**, never pass silently. A check that reports success when it did nothing is worse than no check.
 
 handoff: `code-reviewer`, then `software-engineer` for step 07

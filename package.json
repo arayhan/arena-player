@@ -11,8 +11,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "check:lib": "node scripts/check-shared.mjs && vitest run src",
-    "check:shared": "node scripts/check-shared.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm check:domain && pnpm check:docs && pnpm check:unit",
+    "check:unit": "vitest run src",
+    "check:domain": "node scripts/check-domain.mjs",
     "check:docs": "node scripts/check-docs.mjs"
   },
   "dependencies": {

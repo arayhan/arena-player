@@ -183,7 +183,7 @@ const eslintConfig = defineConfig([
             // are this folder's own house style, so the wrong one is a single
             // keystroke from the right one. Worse, the failure is invisible —
             // the admin repo has no src/utils/ or src/server/, so such a file
-            // stays byte-identical (check:shared passes) and simply does not
+            // stays byte-identical (check:domain passes) and simply does not
             // build over there. `./slots` is unaffected; only `..` matches.
             {
               group: ["../*"],

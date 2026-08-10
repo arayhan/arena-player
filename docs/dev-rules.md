@@ -140,8 +140,9 @@ Never claim something works without running the check and quoting the decisive l
 | ------------------- | ------------------------------------------------------------------------ |
 | `pnpm lint`         | banned APIs, route-split zones, the `@/` form of all three import rules  |
 | `pnpm typecheck`    | types resolve                                                            |
-| `pnpm check:lib`    | logic gives the right answers — no credentials, ever                     |
-| `pnpm check:shared` | `src/domain/` has not drifted from the admin repo's copy                 |
+| `pnpm check`        | all six below, cheapest first — the whole gate in one command            |
+| `pnpm check:unit`   | logic gives the right answers — no credentials, ever                     |
+| `pnpm check:domain` | `src/domain/` has not drifted from the admin repo's copy                 |
 | `pnpm check:docs`   | the docs still describe reality, and the relative form of the same rules |
 | `pnpm format:check` | formatting is settled, not argued                                        |
 

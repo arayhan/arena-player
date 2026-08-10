@@ -6,14 +6,14 @@
 
 ## Goal
 
-The commands that let anyone — human or agent — prove a claim instead of asserting it. Lint, format, typecheck, `check:lib`, and `check:docs`.
+The commands that let anyone — human or agent — prove a claim instead of asserting it. Lint, format, typecheck, `check:unit`, and `check:docs`.
 
 **`check:setup` is not built here.** It connects to Neon and R2, neither of which exists before Phase 4, so writing it now produces a script that can only fail.
 
 ## Deliverables
 
 - Lint, format, typecheck scripts, all running clean on the scaffold
-- **Vitest** wired as `pnpm check:lib` → `vitest run src`. Tests are colocated `*.test.ts` beside the module they cover. It must never need credentials — that is why the Phase 4 preflight lives under a separate glob
+- **Vitest** wired as `pnpm check:unit` → `vitest run src`. Tests are colocated `*.test.ts` beside the module they cover. It must never need credentials — that is why the Phase 4 preflight lives under a separate glob
 - **`pnpm check:docs`** — the mechanical half of doc review, spec'd in [PRD.md](../PRD.md) Phase 1a. It asserts: no `TODO(phase2)` survives anywhere; `TODO(content)` finds exactly the six declared categories; no bare "Phase 1" references, only 1a/1b/4; and the phase overview table names the same phases as the detail sections
 - **ESLint `no-restricted-syntax` rules that reject known-superseded library APIs.** Decided in step 02's discussion; see below
 - Editor config
@@ -63,7 +63,7 @@ The repo has now lost time three separate ways to the same failure: a value copi
 
 ```bash
 pnpm lint && pnpm typecheck        # both exit 0 on the scaffold
-pnpm check:lib                     # runs; passes trivially until step 06 adds real tests
+pnpm check:unit                     # runs; passes trivially until step 06 adds real tests
 pnpm check:docs                    # exits 0 today, and exits non-zero if you plant a TODO(phase2)
 
 # prove check:docs actually fails rather than always passing
@@ -71,8 +71,8 @@ printf '// TODO(phase2): planted probe\n' > src/_probe.ts
 pnpm check:docs ; echo "expect non-zero: $?"
 rm src/_probe.ts
 
-# check:lib must not require credentials
-mv .env.local .env.local.bak && pnpm check:lib ; echo "expect 0: $?" ; mv .env.local.bak .env.local
+# check:unit must not require credentials
+mv .env.local .env.local.bak && pnpm check:unit ; echo "expect 0: $?" ; mv .env.local.bak .env.local
 ```
 
 **Not done until** `check:docs` has been proven to _fail_ on a planted violation. A check that has only ever passed is a check nobody has tested — this repo shipped a `Stop` hook that never fired once for exactly that reason.

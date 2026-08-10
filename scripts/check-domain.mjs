@@ -63,7 +63,7 @@ const theirs = listShared(SIBLING);
 // than no check at all. This repo has already shipped one of those.
 if (theirs === null) {
   console.log(
-    `check:shared — SKIPPED, no src/domain/ at ${SIBLING}\n` +
+    `check:domain — SKIPPED, no src/domain/ at ${SIBLING}\n` +
       `    Nothing was compared. The ${mine?.length ?? 0} file(s) in this repo's src/domain/ are\n` +
       `    UNGUARDED until arena-player-admin has a copy. Set ARENA_ADMIN_PATH if it\n` +
       `    lives somewhere else.`,
@@ -72,7 +72,7 @@ if (theirs === null) {
 }
 
 if (mine === null) {
-  console.log(`check:shared FAILED — this repo has no ${SHARED}/, but ${SIBLING} does`);
+  console.log(`check:domain FAILED — this repo has no ${SHARED}/, but ${SIBLING} does`);
   process.exit(1);
 }
 
@@ -119,7 +119,7 @@ const sibling = readManifest(SIBLING);
 
 if (!sibling) {
   console.log(
-    `check:shared — files compared, but ${SIBLING}/package.json is unreadable, so the\n` +
+    `check:domain — files compared, but ${SIBLING}/package.json is unreadable, so the\n` +
       `    shared peer dependency ranges (${SHARED_DEPS.join(", ")}) were NOT checked.`,
   );
 } else {
@@ -139,7 +139,7 @@ if (!sibling) {
 
 if (problems.length === 0) {
   console.log(
-    `check:shared — ${mine.length} file(s) identical, ${SHARED_DEPS.length} dep(s) aligned`,
+    `check:domain — ${mine.length} file(s) identical, ${SHARED_DEPS.length} dep(s) aligned`,
   );
   process.exit(0);
 }
@@ -147,7 +147,7 @@ if (problems.length === 0) {
 console.log(`\n✗ src/domain/ has drifted from ${SIBLING}`);
 for (const p of problems) console.log(`    ${p}`);
 console.log(
-  `\ncheck:shared FAILED — ${problems.length} problem(s).\n` +
+  `\ncheck:domain FAILED — ${problems.length} problem(s).\n` +
     `Anti-double-booking depends on these being identical; see the shared-code\n` +
     `contract in docs/architecture.md before "fixing" either side.`,
 );

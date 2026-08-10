@@ -31,7 +31,7 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 | --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1   | Plan the architecture               | Folder structure, routing plan, component boundaries, state strategy — reconciled against [architecture.md](architecture.md). **Also decides the two open library choices**: date handling and the icon library, each checked against the performance budget. Confirm the route-split plan so `/` never loads `react-hook-form`, `zod`, or `axios`                 |
 | 2   | Scaffolding                         | Next.js 16 + TypeScript + Tailwind v4 installed via pnpm, runs at `localhost:3000`                                                                                                                                                                                                                                                                                 |
-| 3   | Developer experience                | Lint/format/typecheck scripts, Vitest wired as the `check:lib` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase                                                                           |
+| 3   | Developer experience                | Lint/format/typecheck scripts, Vitest wired as the `check:unit` harness, **`check:docs` doc-consistency script** (see below), editor config, commit hooks if warranted. **`check:setup` is NOT built here** — it connects to Neon and R2, neither of which exists until the backend phase                                                                          |
 | 4   | Development rules                   | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `src/app/`                                                                                                                                         |
 | 5   | Lock the API contract               | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md)                                                                                                                                                                                                                                              |
 | 6   | Shared primitives                   | **`src/domain/slots.ts`** (canonical `TIME_SLOTS`), **`src/domain/dates.ts`** (Asia/Jakarta helpers, today + 13 days), **`status.ts`**, and **`phone.ts`**, each with a colocated `*.test.ts`. They live in `src/domain/` because the admin repo keeps a byte-identical copy at the same path — see the shared-code contract in [architecture.md](architecture.md) |
@@ -44,7 +44,7 @@ A `SessionStart` hook already injects the `arena-player-gotchas` trap list, so "
 
 Task 5 is what keeps Phase 3 from dead-ending. Without a written contract, the form phase would invent response shapes that the backend phase then has to match or break.
 
-Task 6 sits in 1a rather than Phase 2 because task 7 needs it: a mock that hardcodes its own slot strings is a second source of truth that drifts from `TIME_SLOTS` silently, and the drift only surfaces when the real backend lands. It also gives `check:lib` something real to assert from day one instead of shipping as an empty harness. Phase 2's order section then consumes primitives that are already tested.
+Task 6 sits in 1a rather than Phase 2 because task 7 needs it: a mock that hardcodes its own slot strings is a second source of truth that drifts from `TIME_SLOTS` silently, and the drift only surfaces when the real backend lands. It also gives `check:unit` something real to assert from day one instead of shipping as an empty harness. Phase 2's order section then consumes primitives that are already tested.
 
 - `GET /api/availability` — **firm**. Nothing in the deferred backend discussion changes it.
 - `POST /api/bookings` — **provisional**. Presigned-URL upload (on the backend discussion agenda) turns it from multipart into JSON carrying an already-uploaded object key. Marked as such in architecture.md so nobody treats it as settled.
@@ -53,7 +53,7 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 
 **Skills:** `/plan-eng-review` and `/plan-devex-review` on the plan before building; `/devex-review` on the scaffolded repo after.
 
-**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:lib` passes with real assertions on `src/domain/slots.ts` and `src/domain/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check.
+**Done when:** `pnpm dev` serves the app, lint/typecheck run clean, rules are written, the contract is in architecture.md, `pnpm check:unit` passes with real assertions on `src/domain/slots.ts` and `src/domain/dates.ts`, the mock returns realistic availability data built from those primitives, the performance budget is written with measured install figures, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check.
 
 ## Phase 1b — Design foundation
 
@@ -342,19 +342,19 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 - Date window: today + 13 days, timezone Asia/Jakarta. Today's slots whose start time has passed render disabled (visible, not hidden).
 - Payment proofs: PRIVATE Cloudflare R2 bucket. `proof_key` column stores the object KEY (not a public URL). The admin app renders each proof through a short-lived **presigned GET** it generates itself; the bucket stays private and no public URL is ever created. That work belongs to `arena-player-admin` — this repo only ever writes to R2 and must never mint a read URL.
 - Logo: generated SVG placeholder (AP monogram, navy #011A43) until the client file arrives. Favicon + OG image generated from it. Swap is a `TODO(content)` item.
-- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`src/domain/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:shared`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
+- Repo shape: single flat repo, public site only. The admin app is a separate repo, so no monorepo is planned. Shareable code (slot math, date helpers, validation) lives in **`src/domain/`** and is kept **byte-identical** in both repos, enforced by `pnpm check:domain`. Not a style preference: `uniq_active_slot` compares `time_slot` as text, so a one-character drift disables anti-double-booking in both apps with no error. Full contract in [architecture.md](architecture.md). This repo owns `db/migrations/`; the admin repo reads the schema and never alters it.
 - HTTP client on the frontend: TanStack Query over two transports, split by route. `/` uses native `fetch`; `/booking` uses axios, which is kept off the landing bundle — it costs 17.5KB measured, and `/` makes one GET. `/booking` earns it back with `onUploadProgress` on the 2MB proof upload, which `fetch` cannot report. Both instances and `QueryClientProvider` are **built in Phase 1a task 7**. **No bare `fetch` in a component** — that rule is about the component, not the transport; calls go through each module's `*.service.ts`, reached via its `*.queries.ts`. `src/services/api-client.ts` holds the axios instance and is `/booking`-only.
 
 ## Definition of Done — Phases 1a–3
 
 Phase 1a:
 
-- [ ] Repo scaffolded, `pnpm dev` serves `localhost:3000`
-- [ ] Lint / format / typecheck scripts run clean; Vitest wired and `pnpm check:lib` passes (`check:setup` belongs to Phase 4)
-- [ ] Development rules written down, including the accessibility baseline
+- [x] Repo scaffolded, `pnpm dev` serves `localhost:3000`
+- [x] Lint / format / typecheck scripts run clean; Vitest wired and `pnpm check:unit` passes (`check:setup` belongs to Phase 4)
+- [x] Development rules written down, including the accessibility baseline
 - [ ] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
-- [ ] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
-- [ ] `pnpm check:shared` exists and has been **proven to fail** on a planted one-character change, then reverted
+- [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
+- [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [ ] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
 - [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
@@ -403,7 +403,7 @@ Phase 4 (backend) is **mandatory before launch** — only its design discussion 
 
 **Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its _design_ is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the MSW mock from Phase 1a.
 
-Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the ones colocated under `src/`, kept under a separate glob so `check:lib` never requires credentials.
+Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the ones colocated under `src/`, kept under a separate glob so `check:unit` never requires credentials.
 
 Agenda for the discussion:
 

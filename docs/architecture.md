@@ -300,10 +300,12 @@ The failure this prevents is quiet. Nothing errors when `/` grows 22KB; the page
 
 Every module with non-trivial logic — anything under `src/` that is not a component — gets covered by one of two Vitest runs:
 
-- **`pnpm check:lib`** → `vitest run src` — pure unit assertions on non-component logic (date math, validation, slot logic), in `*.test.ts` files colocated beside the module they cover. The name is kept for continuity; the glob is `src/` because the logic no longer lives in one folder. No DB, no network, no credentials. Runs in CI and on any machine that has only cloned the repo.
+- **`pnpm check:unit`** → `vitest run src` — pure unit assertions on non-component logic (date math, validation, slot logic), in `*.test.ts` files colocated beside the module they cover. No DB, no network, no credentials. Runs in CI and on any machine that has only cloned the repo.
 - **`pnpm check:setup`** → `vitest run scripts` — a preflight that actually connects to Neon and R2 to confirm the migration ran and credentials work, before any feature work starts on top of them. Needs `.env.local`. **Built in Phase 4, not Phase 1a** — there is no Neon project and no R2 bucket before the backend phase, so writing it earlier produces a check that can only fail.
 
-The two are kept as separate globs on purpose: `check:lib` must never need credentials, or it stops being runnable at the moment it is most useful.
+The two are kept as separate globs on purpose: `check:unit` must never need credentials, or it stops being runnable at the moment it is most useful.
+
+**`pnpm check` runs the whole gate** — lint, typecheck, `format:check`, `check:domain`, `check:docs`, `check:unit` — cheapest first, so a syntax error fails in a second rather than after the test run. It exists because the alternative was folding one check inside another to stop it being skipped, which bought the guarantee at the cost of a command that lied about what it did. One command that runs everything is the honest version of the same idea.
 
 This is how "Never claim done without running the command and quoting output" gets enforced mechanically instead of relying on memory.
 
@@ -482,15 +484,15 @@ Everything both repos must agree on lives in **`src/domain/`**, at **the same pa
 
 **Why byte-identical and not merely equivalent.** `uniq_active_slot` compares `time_slot` as **text**. `'06.00 - 08.00'` and `'06.00-08.00'` are two different slots to Postgres, so a one-character drift between the repos means the admin writes rows the site cannot match — and **anti-double-booking silently stops working for both**. Nothing throws. The index is the only race guard there is, and a drifted string disables it without a symptom.
 
-**Mechanism: a plain copy in both repos, guarded by `pnpm check:shared`.** No workspace, no published package, no submodule — the shared surface is ~150 lines and this project is handed to a client at the end. A workspace reverses the separate-repo decision; a package makes the client inherit registry credentials; a submodule turns a plain `git clone` into an empty directory that fails confusingly.
+**Mechanism: a plain copy in both repos, guarded by `pnpm check:domain`.** No workspace, no published package, no submodule — the shared surface is ~150 lines and this project is handed to a client at the end. A workspace reverses the separate-repo decision; a package makes the client inherit registry credentials; a submodule turns a plain `git clone` into an empty directory that fails confusingly.
 
 The copy is only defensible because the check exists:
 
 ```bash
-pnpm check:shared     # diffs src/domain/ against the other repo's copy, exits non-zero on any difference
+pnpm check:domain     # diffs src/domain/ against the other repo's copy, exits non-zero on any difference
 ```
 
-`scripts/check-shared.mjs` reads the sibling repo from `../arena-player-admin`, overridable with `ARENA_ADMIN_PATH`, and diffs each file **in both directions** — a one-way walk cannot see a file present on the far side and absent here. It runs inside `check:lib`, so it cannot be forgotten.
+`scripts/check-domain.mjs` reads the sibling repo from `../arena-player-admin`, overridable with `ARENA_ADMIN_PATH`, and diffs each file **in both directions** — a one-way walk cannot see a file present on the far side and absent here. `pnpm check` runs it, so it is not something to remember.
 
 **Tests are diffed too, not only the four modules.** The admin repo inherits the proof, not just the code: its copy is verified to _behave_ identically rather than merely to look identical. The price is a third obligation — vitest, alongside `date-fns` and `@date-fns/tz`.
 
@@ -500,9 +502,9 @@ pnpm check:shared     # diffs src/domain/ against the other repo's copy, exits n
 
 ### A byte-identical copy carries its dependencies with it
 
-`src/domain/dates.ts` imports `date-fns` and `@date-fns/tz`, so **the admin repo must install both at the same major version** or the copy passes `check:shared` and then fails to build. This is a real cost of choosing a date library over native `Intl`, which would have left `src/domain/` dependency-free — worth naming rather than discovering in the admin repo's first install.
+`src/domain/dates.ts` imports `date-fns` and `@date-fns/tz`, so **the admin repo must install both at the same major version** or the copy passes `check:domain` and then fails to build. This is a real cost of choosing a date library over native `Intl`, which would have left `src/domain/` dependency-free — worth naming rather than discovering in the admin repo's first install.
 
-`check-shared.mjs` therefore diffs two things, not one:
+`check-domain.mjs` therefore diffs two things, not one:
 
 1. Every file under `src/domain/`, byte for byte
 2. The version range of each shared peer dependency in both `package.json` files
