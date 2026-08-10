@@ -248,6 +248,12 @@ const SPECIFIER = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
 
 const moduleOwner = (f) => (f.startsWith("src/modules/") ? f.split("/")[2] : null);
 
+// src/components/ and src/hooks/ sit BELOW modules — modules consume them, not
+// the other way round. A shared hook importing a module is not shared; it is
+// that module's hook in the wrong folder, and it drags whatever the module
+// imports onto every surface that uses it.
+const isSharedLayer = (f) => f.startsWith("src/components/") || f.startsWith("src/hooks/");
+
 for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
   const owner = moduleOwner(f);
   const dir = posix.dirname(f);
@@ -265,6 +271,13 @@ for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
         }
       }
     }
+    if (isSharedLayer(f) && line.includes("@/modules/")) {
+      fail(
+        "shared-layer-inversion",
+        `${f}:${n} — a shared ${f.startsWith("src/hooks/") ? "hook" : "component"} imports a module. ` +
+          `It belongs to that module instead; src/components/ and src/hooks/ sit below modules`,
+      );
+    }
 
     // Relative form — resolve it and check where it lands.
     SPECIFIER.lastIndex = 0;
@@ -280,6 +293,15 @@ for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
           "cross-module-import",
           `${f}:${n} — ${owner} imports ${targetOwner} via "${spec}". ` +
             `The ESLint zone only sees the @/ form; shared vocabulary goes in src/domain/`,
+        );
+      }
+
+      if (isSharedLayer(f) && target.startsWith("src/modules/")) {
+        fail(
+          "shared-layer-inversion",
+          `${f}:${n} — reaches into a module via "${spec}". ` +
+            `src/components/ and src/hooks/ sit below modules; if only one module needs it, ` +
+            `it belongs in that module`,
         );
       }
 
@@ -407,6 +429,7 @@ const CHECKS = [
   "module-barrel",
   "slot-canonical-drift",
   "cross-module-import",
+  "shared-layer-inversion",
   "app-boundary",
   "domain-escape",
   "phase-table-drift",

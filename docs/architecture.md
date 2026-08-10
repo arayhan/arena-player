@@ -386,6 +386,10 @@ arena-player-web/
 │   ├── services/api-client.ts  # axios instance — /booking ONLY
 │   ├── components/             # cross-module UI primitives only. One consumer = it
 │   │                           # belongs in that module's components/ instead
+│   ├── hooks/                  # cross-module React hooks, same one-consumer rule.
+│   │                           # use-<thing>.ts. A module's own hooks stay in the
+│   │                           # module as <module>.queries.ts — data-fetching hooks
+│   │                           # are never promoted here, they belong to a surface
 │   ├── lib/                    # polish for installed libraries, flat, no subfolders
 │   │   ├── cn.ts               # clsx + tailwind-merge
 │   │   ├── motion.ts           # gsap.matchMedia() wrapper, LAZY-imports GSAP
@@ -457,6 +461,7 @@ Three directional rules, all enforced by the ESLint zones in [the route split](#
 
 - **Nothing under `src/` imports from `src/app/`** — the extraction boundary, below.
 - **Feature modules never import each other.** `src/app/` composes them; shared vocabulary lives in `src/domain/`.
+- **`src/components/` and `src/hooks/` never import a module.** They sit below modules, which consume them. A shared hook reaching into `@/modules/home` is not shared — it is a home hook in the wrong folder, and it pulls whatever that module imports onto every surface that uses it.
 - **`src/domain/` imports nothing from the rest of `src/`.** It is the bottom of the graph.
 
 ## Extraction boundary, and the shared-code contract

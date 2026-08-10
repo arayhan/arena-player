@@ -44,7 +44,7 @@ These rules are also the reason the route-split zone rule lands here: same file,
 | `zod`             | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
 | `@/server/*`      | `src/app/api/**` only                                            |
 
-Everything else — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages.
+Everything else — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/hooks/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages.
 
 Two structural rules the zones cannot express, so assert them in `check:docs` instead:
 

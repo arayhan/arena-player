@@ -109,6 +109,18 @@ const eslintConfig = defineConfig([
     },
   },
 
+  // src/components/ and src/hooks/ sit BELOW modules: modules consume them, not
+  // the other way round. A shared hook that imports @/modules/home is not
+  // shared — it is a home hook in the wrong folder, and it drags whatever that
+  // module imports onto every surface using it. Same reason CROSS_MODULE
+  // exists, one layer down.
+  {
+    files: ["src/components/**/*.{ts,tsx}", "src/hooks/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [...DEFAULT_PATTERNS, CROSS_MODULE] }],
+    },
+  },
+
   // The booking form owns the three /booking packages. Still no @/server, and
   // still no reaching sideways. CROSS_MODULE rather than a literal
   // "@/modules/home": with two modules the two are equivalent, but the literal

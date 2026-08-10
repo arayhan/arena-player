@@ -16,14 +16,14 @@ The conventions an agent cannot infer from the code. Getting one wrong here cost
 
 ## Naming
 
-| Kind          | Convention                                                            | Example                                         |
-| ------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
-| Module file   | `<module>.<role>.ts`                                                  | `home.service.ts`, `booking-form.schema.ts`     |
-| Component     | kebab-case file, PascalCase export                                    | `order-section.tsx` → `OrderSection`            |
-| Hook          | `use-<thing>.ts`, or `<module>.queries.ts` for a TanStack Query group | `home.queries.ts` → `useAvailability`           |
-| Test          | colocated `<file>.test.ts`, beside what it covers                     | `slots.ts` → `slots.test.ts`                    |
-| Route handler | `route.ts` under its path segment                                     | `src/app/api/availability/route.ts`             |
-| Domain module | plain noun, no suffix                                                 | `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` |
+| Kind          | Convention                                                             | Example                                         |
+| ------------- | ---------------------------------------------------------------------- | ----------------------------------------------- |
+| Module file   | `<module>.<role>.ts`                                                   | `home.service.ts`, `booking-form.schema.ts`     |
+| Component     | kebab-case file, PascalCase export                                     | `order-section.tsx` → `OrderSection`            |
+| Hook          | `use-<thing>.ts` in `src/hooks/`, or `<module>.queries.ts` in a module | `use-media-query.ts`, `home.queries.ts`         |
+| Test          | colocated `<file>.test.ts`, beside what it covers                      | `slots.ts` → `slots.test.ts`                    |
+| Route handler | `route.ts` under its path segment                                      | `src/app/api/availability/route.ts`             |
+| Domain module | plain noun, no suffix                                                  | `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` |
 
 Roles in use: `service` (transport), `queries` (TanStack Query hooks), `schema` (zod), `types`, `store` (zustand), `proof` (upload constraints).
 
@@ -45,18 +45,22 @@ An `aria-label` is UI copy — it is read aloud to a visitor, so it is Indonesia
 
 ## Where a thing goes
 
-The nine folders under `src/` each have one job. Several pairs are genuinely ambiguous, and the questions below settle them — **but only if you ask them in this order.** An unordered list gives contradicting answers: `slots.ts` has no package dependency (Q2 says `utils/`) and the admin repo needs it (Q1 says `domain/`), and `dates.ts` is worse — it exists because of `date-fns` _and_ the admin needs it, so Q2 alone sends a frozen file to `src/lib/`.
+The ten folders under `src/` each have one job. Several pairs are genuinely ambiguous, and the questions below settle them — **but only if you ask them in this order.** An unordered list gives contradicting answers: `slots.ts` has no package dependency (Q2 says `utils/`) and the admin repo needs it (Q1 says `domain/`), and `dates.ts` is worse — it exists because of `date-fns` _and_ the admin needs it, so Q2 alone sends a frozen file to `src/lib/`.
 
 The admin question comes first because it is the only one whose wrong answer is expensive. Everything else is a move; that one is a contract in two repos.
 
-| Order | Ask                                                                                                                                                                    | Settles                                           |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **1** | **Does `arena-player-admin` need it?** Yes → `src/domain/`, and stop here — it is now byte-identical in both repos, dependencies and all, with everything that implies | `domain/` vs everything else                      |
-| **2** | **Does this file exist because of a package in `package.json`?** Yes → `lib/` (polish over an installed library). No → `utils/` (ours)                                 | `src/lib/` vs `src/utils/`                        |
-| **3** | **Does more than one module render it?** One consumer means it belongs to that module. Promote later, when a second consumer actually appears — not in anticipation    | `src/components/` vs a module's own `components/` |
-| **4** | `services/` holds the configured client (the axios instance). A module's `*.service.ts` holds the calls that use it                                                    | `src/services/` vs `<module>.service.ts`          |
+| Order | Ask                                                                                                                                                                    | Settles                                              |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **1** | **Does `arena-player-admin` need it?** Yes → `src/domain/`, and stop here — it is now byte-identical in both repos, dependencies and all, with everything that implies | `domain/` vs everything else                         |
+| **2** | **Does this file exist because of a package in `package.json`?** Yes → `lib/` (polish over an installed library). No → `utils/` (ours)                                 | `src/lib/` vs `src/utils/`                           |
+| **3** | **Does more than one module use it?** One consumer means it belongs to that module. Promote later, when a second consumer actually appears — not in anticipation       | `src/components/` and `src/hooks/` vs a module's own |
+| **4** | `services/` holds the configured client (the axios instance). A module's `*.service.ts` holds the calls that use it                                                    | `src/services/` vs `<module>.service.ts`             |
 
 Worked through for the four frozen files: all four answer **yes** at question 1 and never reach question 2. `dates.ts` importing `date-fns` does not make it `lib/` — it makes it the one file in `domain/` that carries a dependency, and the reason the admin repo is obliged to install one.
+
+**`src/hooks/` and `src/components/` share question 3 and its exception.** A data-fetching hook is never promoted, however many surfaces call it: `home.queries.ts` belongs to `/` because the query key, the cache lifetime, and the retry policy are decisions about that surface, not reusable machinery. What does belong in `src/hooks/` is behaviour with no surface attached — `use-media-query.ts`, `use-scroll-lock.ts`. If a hook's name would have to mention a route to be honest, it is a module hook.
+
+Both folders are organised by _kind_ in a repo otherwise organised by _feature_, which is a real inconsistency and is tolerated for one reason: the one-consumer rule keeps them small. A `src/hooks/` that grows past a handful of files means the rule stopped being applied, not that the folder needed subfolders.
 
 `src/app/` and `src/mocks/` are not in the table because nothing is ever torn about them: `app/` is routes and composition, `mocks/` is MSW handlers and is retired in Phase 4.
 
@@ -75,6 +79,8 @@ Three import rules:
 1. **Nothing under `src/` imports from `src/app/`.** The extraction boundary. Anything below it can move to another app without dragging routing along, which is what keeps slot and date code shareable with the admin repo.
 2. **Feature modules never import each other.** Shared vocabulary goes in `src/domain/`. One `home` → `booking-form` import is all it takes for a later `import { z }` in that module to ship zod to `/` with nothing failing.
 3. **`src/domain/` imports nothing from the rest of `src/`**, and imports its own siblings **relatively** (`./slots`, never `@/domain/slots`) so the byte-identical copy resolves the same in both repos.
+
+One corollary, enforced the same two ways: **`src/components/` and `src/hooks/` never import a module.** They sit below modules in the graph. A shared hook that reaches into `@/modules/home` is not shared — it is a home hook in the wrong folder, and it drags whatever that module imports onto every surface using it.
 
 **Each rule is enforced twice, and the second half is not redundant.** The ESLint zones in `eslint.config.mjs` match the `@/` alias form; `pnpm check:docs` resolves the **relative** form, which no glob can express — banning `../*` outright would break `src/modules/home/components/x.tsx` importing `../home.service`, which is correct and routine. Before that second half existed, `import { schema } from "../booking-form/booking-form.schema"` inside `src/modules/home/` passed both `pnpm lint` and `pnpm check:docs`, which is precisely the import rule 2 exists to stop.
 

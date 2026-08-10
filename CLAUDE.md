@@ -85,6 +85,8 @@ arena-player-web/
 │   ├── server/      # import "server-only" — db.ts, storage.ts, env.ts
 │   ├── services/    # api-client.ts (axios, /booking only)
 │   ├── components/  # cross-module UI primitives only
+│   ├── hooks/       # cross-module React hooks, use-<thing>.ts. Same one-consumer rule as
+│   │                # components/. Data-fetching hooks stay in their module as *.queries.ts
 │   ├── lib/         # polish for installed libraries, flat — cn, motion (lazy GSAP), query-client
 │   ├── utils/       # web-only helpers — error.ts, formatter.ts
 │   └── mocks/       # MSW handlers implementing the API contract

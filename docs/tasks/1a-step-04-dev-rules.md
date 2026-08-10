@@ -19,7 +19,7 @@ Do not duplicate. If a rule already lives in `CLAUDE.md` or `architecture.md`, p
 **Naming and file layout**
 
 - Component files, hooks, module files, test files, and route handlers — one convention each, with an example. Modules use `<module>.<role>.ts`: `home.service.ts`, `booking-form.schema.ts`
-- Where a thing goes when it could plausibly go in two places. The eight `src/` folders each have one job, and the ambiguous pairs are worth writing down: `src/components/` versus a module's own `components/` (one consumer means it belongs to the module); `src/lib/` versus `src/utils/` (lib polishes an installed library, utils is our own helper); `src/utils/` versus `src/domain/` (does the admin repo need it?); `src/services/` versus a module's `*.service.ts` (the shared axios instance versus the calls that use it)
+- Where a thing goes when it could plausibly go in two places. The `src/` folders each have one job, and the ambiguous pairs are worth writing down: `src/components/` versus a module's own `components/` (one consumer means it belongs to the module); `src/lib/` versus `src/utils/` (lib polishes an installed library, utils is our own helper); `src/utils/` versus `src/domain/` (does the admin repo need it?); `src/services/` versus a module's `*.service.ts` (the shared axios instance versus the calls that use it)
 
 **What never goes in `src/app/`**
 
