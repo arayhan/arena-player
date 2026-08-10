@@ -44,27 +44,33 @@ No bare `fetch` in a component: components call `*.queries.ts`, which calls `*.s
 
 ## Acceptance
 
+**The `curl` acceptance this block used to carry could never pass.** MSW is a
+**service worker** — it intercepts browser fetches and nothing else, so `curl`
+reaches Next's router and 404s no matter how correct the handlers are. The
+paths were pre-`src/` too. Replaced with `msw/node`, which exercises the same
+`handlers` array the browser uses.
+
 ```bash
-pnpm dev
-curl -s "localhost:3000/api/availability?date=$(date +%Y-%m-%d)" | node -e "
-  const d=JSON.parse(require('fs').readFileSync(0));
-  console.log('count:', d.length, '| statuses:', [...new Set(d.map(x=>x.status))].join(','))"
-# expect: count: 9, and more than one distinct status
+# the handlers themselves, through setupServer — 9 slots, 400 out of window,
+# and all four POST codes reachable on demand
+pnpm check:unit
 
 # the mock derives from the primitives rather than restating them
-grep -n "06.00\|08.00" mocks/handlers.ts   # expect: no match — it must import TIME_SLOTS
-grep -n "TIME_SLOTS" mocks/handlers.ts     # expect: a match
+grep -n "06\.00\|08\.00" src/mocks/*.ts    # expect: no match outside comments
+grep -n "TIME_SLOTS" src/mocks/*.ts        # expect: a match
 
-# all four POST codes are reachable
-grep -cE "201|400|409|429" mocks/handlers.ts
+# the service worker is gated, and the gate is a build-time constant
+grep -n "NODE_ENV" src/app/providers.tsx
 
-# out-of-window dates are rejected, not served
-curl -s "localhost:3000/api/availability?date=2030-01-01"   # expect: {"error":"invalid_date"}
-
-# the service worker is gated
-grep -n "NODE_ENV" mocks/*.ts app/**/*.tsx | head
+# THE ONE THAT MATTERS: msw must be absent from a production build
+pnpm build
+grep -rl "mockServiceWorker\|setupWorker\|onUnhandledRequest" .next/static/   # expect: nothing
+grep -rl "TEST409\|availabilityFor" .next/static/                             # expect: nothing
 ```
 
-**Not done until** the first grep returns nothing. A hardcoded slot string in the mock is the same defect class as a drifted copy in the admin repo, just discovered later.
+**Not done until** both `.next/static/` greps return nothing. A hardcoded slot
+string in the mock is the same defect class as a drifted copy in the admin
+repo, just discovered later — and a mock that reaches production is the same
+class again, discovered by a customer.
 
 handoff: `code-reviewer`, then `software-engineer` for step 08

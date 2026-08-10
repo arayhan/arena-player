@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 // TODO(content): hero copy — the Indonesian title and meta description are
 // decided in Phase 1b task 2 alongside the type scale, because a three-word
@@ -19,7 +20,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/*
+        This layout stays a SERVER component. Providers is the client boundary
+        and holds nothing but the QueryClient and the dev mock gate, so the
+        boundary sits as far down as it can while still wrapping every route.
+      */}
+      <body className="min-h-full flex flex-col">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

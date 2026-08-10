@@ -355,7 +355,7 @@ Phase 1a:
 - [ ] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
 - [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
-- [ ] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
+- [x] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
 - [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 

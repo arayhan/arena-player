@@ -27,6 +27,10 @@ Two consequences that shape the code: selecting a slot **holds nothing** — onl
 Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build against MSW handlers implementing exactly these shapes — agents must read this section rather than inventing response bodies.
 
 > **MSW must be retired in Phase 4.** It registers a service worker, so a stray `mockServiceWorker.js` in a production build intercepts real requests and serves fake availability — failing silently, as a working-looking site showing wrong data. Gate registration on `NODE_ENV`, confirm the file is absent from the built output, handle unregistering for browsers that already loaded the dev site, and verify in the network panel that production makes real calls. Full checklist in [PRD.md](PRD.md) Phase 4.
+>
+> **Step 07 built the gate rather than deferring it.** `src/app/providers.tsx` compares `process.env.NODE_ENV`, which the bundler inlines, so in a production build the branch is a literal `false` and the dynamic `import("@/mocks/browser")` is never emitted — msw is not in any page's module graph, not merely unreached. Verified against a real `pnpm build`: `grep -rl "mockServiceWorker\|setupWorker\|TEST409" .next/static/` returns nothing. A runtime flag would have shipped the mock and then trusted a value.
+>
+> **`curl` cannot test this mock and never could.** A service worker intercepts browser fetches only, so `curl localhost:3000/api/availability` reaches Next's router and 404s regardless. The handlers are exercised through `msw/node` in `src/mocks/handlers.test.ts`, against the same `handlers` array the browser loads.
 
 **`GET /api/availability?date=YYYY-MM-DD` — FIRM.** Nothing on the backend agenda changes it.
 
@@ -43,6 +47,17 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 ```
 
 `status` is one of `available` | `pending` | `booked`.
+
+**Forcing an error on demand — the mock's trigger, written down so nobody hunts for it.** Phase 3 has to build the 409, 429 and 400 states, and a mock that only ever answers 201 means three screens get built without being seen. A reserved `teamName` selects the answer:
+
+| `teamName`    | Mock responds                                                          |
+| ------------- | ---------------------------------------------------------------------- |
+| `TEST409`     | `409 slot_taken` — the state that exists because of `uniq_active_slot` |
+| `TEST429`     | `429 rate_limited` — deliberately NOT interchangeable with 409         |
+| `TEST400`     | `400 validation_failed` with a `fields` object                         |
+| anything else | normal validation, then `201`                                          |
+
+Chosen over a URL flag because it needs no special path through `api-client.ts` that would outlive the mock, and because a reviewer can reproduce a 409 during a walkthrough by typing. `src/mocks/handlers.ts` exports `ERROR_TRIGGERS`, and the whole folder is deleted in Phase 4.
 
 **Status mapping — the database has four states, this API has three.** Write it down or it gets guessed:
 
@@ -208,7 +223,7 @@ Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only le
 | Item                                                            | KB gzip on `/`            |
 | --------------------------------------------------------------- | ------------------------- |
 | Next 16 + React 19 framework baseline                           | **126.5**                 |
-| TanStack Query                                                  | 10.0                      |
+| TanStack Query                                                  | 10.7 — see below          |
 | `date-fns` + `@date-fns/tz`                                     | 8.1                       |
 | `clsx` + `tailwind-merge` (`cn()`)                              | 8.2                       |
 | `react-icons`, six icons                                        | 2.2                       |
@@ -216,8 +231,29 @@ Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only le
 | GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6)                    |
 | axios — **`/booking` only**                                     | (17.5)                    |
 | zod, react-hook-form — `/booking` only                          | not yet measured, Phase 3 |
-| **Subtotal on `/` before any component**                        | **155.7**                 |
+| **Projected subtotal on `/` once all of the above is imported** | **156.4**                 |
 | **Headroom for every component on the landing page**            | **~84**                   |
+
+**What `/` costs TODAY, as opposed to projected — measured after step 07.** The
+projection above is what the page will weigh once every listed library is
+actually reached. Only two are so far:
+
+```
+126.5 KB  framework baseline (shared, excluding the 38.7KB noModule polyfill)
+ 10.7 KB  route chunk for / — QueryClientProvider, its defaults, the client boundary
+-------
+137.2 KB  measured on a real `pnpm build`
+```
+
+`date-fns`, `cn()`, `react-icons` and `zustand` are installed and written but
+not yet imported by anything a page renders, so they cost nothing yet. The gap
+between 137.2 and 156.4 is not headroom — it is the bill for code that already
+exists.
+
+TanStack Query's row moved from 10.0 to **10.7** for the same reason it is now
+honest: 10.0 came from an isolated probe route, and 10.7 is what actually ships
+— the library plus `providers.tsx` and the query defaults. The isolated number
+was not wrong; it was measuring a smaller thing.
 
 `cn()` was measured in step 02b over three builds, each probe isolated against a
 control route so the `"use client"` boundary is subtracted rather than blamed on
