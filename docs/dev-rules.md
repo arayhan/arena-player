@@ -150,6 +150,8 @@ Never claim something works without running the check and quoting the decisive l
 | `pnpm check:unit`   | logic gives the right answers — no credentials, ever                     |
 | `pnpm check:domain` | `src/domain/` has not drifted from the admin repo's copy                 |
 | `pnpm check:docs`   | the docs still describe reality, and the relative form of the same rules |
+| `pnpm check:ship`   | the above, plus a build and the per-route budget                         |
+| `pnpm check:budget` | no route breaches the ceiling in architecture.md                         |
 | `pnpm format:check` | formatting is settled, not argued                                        |
 
 A check that has only ever passed is a check nobody has tested. When you add one, plant a violation, watch it fail, then revert — this repo shipped a `Stop` hook that never fired once, and the `check:docs` hook itself returned success on a real failure the first time it was tested.

@@ -205,6 +205,8 @@ Exactly one WebGL effect is allowed, in the hero only. It is permitted because i
 
 ## Performance budget (the single source — reference it, never copy the numbers)
 
+**That instruction is now mechanical, not a request.** `scripts/check-budget.mjs` parses the "Initial JS, first load" row below and enforces whatever it says; editing that number changes what the check allows. If the row stops being parseable the check fails rather than falling back to a default, because a budget check guessing its own budget is worse than no check.
+
 Written during Phase 1a task 8. Its purpose is to make every future "can we add library X?" a question of arithmetic rather than taste.
 
 | Budget line                             | Limit                                                    |
@@ -342,6 +344,10 @@ Every module with non-trivial logic — anything under `src/` that is not a comp
 The two are kept as separate globs on purpose: `check:unit` must never need credentials, or it stops being runnable at the moment it is most useful.
 
 **`pnpm check` runs the whole gate** — lint, typecheck, `format:check`, `check:domain`, `check:docs`, `check:unit` — cheapest first, so a syntax error fails in a second rather than after the test run. It exists because the alternative was folding one check inside another to stop it being skipped, which bought the guarantee at the cost of a command that lied about what it did. One command that runs everything is the honest version of the same idea.
+
+**`pnpm check:ship` is the second, slower one**: `pnpm check && pnpm build && pnpm check:budget`. The budget needs a fresh build, and putting a build inside `pnpm check` would turn a ten-second command into a forty-second one. A fast command that stays fast is a command people keep running — the same reasoning that unbundled `check:domain` from the test run.
+
+- **`pnpm check:budget`** → per-route enforcement of the budget below. Reads the ceiling **out of this file**, so the number in the table is the number enforced and there is no second copy to drift. Details and the two findings behind its implementation are in [tasks/1a-step-08-budget-motion.md](tasks/1a-step-08-budget-motion.md).
 
 This is how "Never claim done without running the command and quoting output" gets enforced mechanically instead of relying on memory.
 

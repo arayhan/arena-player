@@ -356,7 +356,7 @@ Phase 1a:
 - [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
 - [x] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
-- [ ] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
+- [x] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [ ] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
 Phase 1b:

@@ -12,6 +12,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "check": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm check:domain && pnpm check:docs && pnpm check:unit",
+    "check:ship": "pnpm check && pnpm build && pnpm check:budget",
+    "check:budget": "node scripts/check-budget.mjs",
     "check:unit": "vitest run src",
     "check:domain": "node scripts/check-domain.mjs",
     "check:docs": "node scripts/check-docs.mjs"

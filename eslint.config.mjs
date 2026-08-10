@@ -78,6 +78,22 @@ const ZOD = {
     "zod is allowed in src/modules/booking-form/**, src/app/api/**, and src/server/** only. src/domain/ stays zod-free so the admin repo is not obliged to install it.",
 };
 
+// Hard rule 6, made mechanical rather than remembered. GSAP measured 43.6KB
+// gzip with ScrollTrigger, and `/` only fits its budget because that sits
+// behind a dynamic import in src/lib/motion.ts.
+//
+// This works because `no-restricted-imports` matches STATIC imports and does
+// not match `import()` — probed, both directions. So the dynamic form inside
+// motion.ts is the one remaining way to reach GSAP, and check:docs asserts
+// that form appears in that file alone. @gsap/react is banned with it: its
+// source opens `import gsap from "gsap"`, so importing useGSAP anywhere puts
+// the whole 43.6KB back on first load.
+const GSAP = {
+  group: ["gsap", "gsap/*", "@gsap/react"],
+  message:
+    "GSAP is lazy-loaded through src/lib/motion.ts — 43.6KB that / cannot afford on first load. Use useMotion(), which also forces a prefers-reduced-motion branch GSAP does not provide on its own.",
+};
+
 const CROSS_MODULE = {
   group: ["@/modules/*/*", "@/modules/*"],
   message:
@@ -87,7 +103,7 @@ const CROSS_MODULE = {
 // A later config object REPLACES this rule for matching files rather than
 // merging with it, so every override below must restate the patterns it still
 // wants. Turning the rule off in a zone would silently lift the other bans too.
-const DEFAULT_PATTERNS = [SERVER_ONLY, APP, AXIOS, RHF, ZOD];
+const DEFAULT_PATTERNS = [SERVER_ONLY, APP, AXIOS, RHF, ZOD, GSAP];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -129,7 +145,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/modules/booking-form/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, CROSS_MODULE] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, GSAP, CROSS_MODULE] }],
     },
   },
 
@@ -137,7 +153,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/services/api-client.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, RHF, ZOD] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, RHF, ZOD, GSAP] }],
     },
   },
 
@@ -147,7 +163,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/app/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, AXIOS, RHF, ZOD] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, AXIOS, RHF, ZOD, GSAP] }],
     },
   },
 
@@ -158,7 +174,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/app/api/**/*.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [AXIOS, RHF] }],
+      "no-restricted-imports": ["error", { patterns: [AXIOS, RHF, GSAP] }],
     },
   },
 
@@ -167,7 +183,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/server/**/*.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [APP, AXIOS, RHF] }],
+      "no-restricted-imports": ["error", { patterns: [APP, AXIOS, RHF, GSAP] }],
     },
   },
 
@@ -185,6 +201,7 @@ const eslintConfig = defineConfig([
             AXIOS,
             RHF,
             ZOD,
+            GSAP,
             {
               group: ["@/*"],
               message:

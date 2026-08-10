@@ -220,6 +220,32 @@ for (const f of ALL) {
   }
 }
 
+// --- 4c. GSAP is reachable from exactly one file -----------------------------
+//
+// eslint bans `gsap`, `gsap/*` and `@gsap/react` repo-wide, and that ban does
+// NOT match `import("gsap")` — probed both directions. The dynamic form is
+// therefore the one remaining way to reach GSAP, and it belongs in
+// src/lib/motion.ts alone: motion.ts is what adds the prefers-reduced-motion
+// branch GSAP has none of, so a dynamic import anywhere else is an animation
+// that runs for someone who asked the OS for stillness. It also re-splits the
+// 43.6KB across a second chunk.
+{
+  const MOTION = "src/lib/motion.ts";
+  const DYNAMIC_GSAP = /import\s*\(\s*["']gsap(?:\/[^"']*)?["']\s*\)/;
+  for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f) && f !== MOTION)) {
+    for (const [n, line] of scannable(f)) {
+      if (DYNAMIC_GSAP.test(line)) {
+        fail(
+          "gsap-outside-motion",
+          `${f}:${n} — dynamic import of GSAP outside ${MOTION}. ` +
+            `Use useMotion(): it is what supplies the reduced-motion branch, and a ` +
+            `second dynamic import splits the 43.6KB across another chunk`,
+        );
+      }
+    }
+  }
+}
+
 // --- 5. Import boundaries, including the relative form ESLint cannot glob ----
 //
 // The ESLint zones catch the alias form (`@/modules/booking-form/…`). They
@@ -428,6 +454,7 @@ const CHECKS = [
   "bare-phase-1",
   "module-barrel",
   "slot-canonical-drift",
+  "gsap-outside-motion",
   "cross-module-import",
   "shared-layer-inversion",
   "app-boundary",
