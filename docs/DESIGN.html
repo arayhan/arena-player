@@ -787,7 +787,8 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <p class="note stack-6">
         <strong>These are the product's faces, not this document's.</strong> The manual you are
         reading is set in Archivo; the specimens above show Orbitron and Inter because that is
-        what the product uses. Whether the product keeps them is Phase 1b task 1, still open.
+        what the product uses. Both are <strong>settled</strong> — Phase 1b task 1 kept them
+        deliberately, and the reasoning is in <code>docs/DESIGN.md</code>.
       </p>
     </div>
   </div>
@@ -842,7 +843,9 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         <span lang="id">“Terisi”</span> labels that make the day read as sold out.
       </p>
       <p class="note stack-4">
-        <strong>So <code>elapsed</code> is a fourth state, not a shade of booked.</strong> It
+        <strong>So <code>elapsed</code> is a state of its own, not a shade of booked.</strong>
+        Four states come from the data — available, pending, booked, elapsed — and the badge
+        above counts six because selection and hover are states the cell renders too. It
         was rendering in the danger triple while carrying the label
         <span lang="id">“Sudah lewat”</span> — which contradicts the paragraph directly above
         and overstates how busy the day was. It is now neutral and recessed — the
