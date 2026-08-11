@@ -226,19 +226,46 @@ Every figure below came from `node scripts/check-budget.mjs --report` against a 
 
 Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only legacy browsers fetch it, and the target device does not.
 
-| Item                                                            | KB gzip on `/`            |
-| --------------------------------------------------------------- | ------------------------- |
-| Next 16 + React 19 framework baseline                           | **126.5**                 |
-| TanStack Query                                                  | 10.7 — see below          |
-| `date-fns` + `@date-fns/tz`                                     | 8.1                       |
-| `clsx` + `tailwind-merge` (`cn()`)                              | 8.2                       |
-| `react-icons`, six icons                                        | 2.2                       |
-| zustand                                                         | 0.7                       |
-| GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6)                    |
-| axios — **`/booking` only**                                     | (17.5)                    |
-| zod, react-hook-form — `/booking` only                          | not yet measured, Phase 3 |
-| **Projected subtotal on `/` once all of the above is imported** | **156.4**                 |
-| **Headroom for every component on the landing page**            | **~84**                   |
+| Item                                                            | KB gzip on `/`                 |
+| --------------------------------------------------------------- | ------------------------------ |
+| Next 16 + React 19 framework baseline                           | **126.5**                      |
+| TanStack Query                                                  | 10.7 — see below               |
+| `date-fns` + `@date-fns/tz`                                     | 8.1                            |
+| `clsx` + `tailwind-merge` (`cn()`)                              | 8.2                            |
+| `react-icons`, six icons                                        | 2.2                            |
+| zustand                                                         | 0.7                            |
+| GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6)                         |
+| axios — **`/booking` only**                                     | (17.5)                         |
+| zod — **`/booking` only**                                       | **63.2** — measured, see below |
+| react-hook-form — `/booking` only                               | not yet measured, Phase 3      |
+| **Projected subtotal on `/` once all of the above is imported** | **156.4**                      |
+| **Headroom for every component on the landing page**            | **~84**                        |
+
+#### zod costs 63.2KB on `/`, and that number is why the route split exists
+
+Measured during the Phase 1a engineering review, not estimated: a probe client
+component doing `z.array(z.object({ … }))` and one `safeParse`, rendered from
+`src/app/page.tsx`, built for real.
+
+```
+/  without zod   137.0 KB      headroom 103.0
+/  with zod      200.2 KB      headroom  39.8
+                  ────────
+zod               +63.2 KB     26% of the entire 240 ceiling
+```
+
+Nothing fails at 200.2 — it is under the ceiling. That is exactly what makes it
+dangerous: adding zod to `/` would quietly consume 61% of the headroom that five
+landing sections have to share, and `check:budget` would report green while it
+happened.
+
+**This is what `src/modules/home/home.service.ts` buys by hand-writing
+`assertContract`.** Twenty lines of explicit validation instead of three lines of
+zod, in exchange for a quarter of the page's budget. Anyone who looks at that
+function and reaches for zod to "clean it up" should read this number first.
+
+`react-hook-form` remains unmeasured; it is `/booking`-only for the same reason
+and gets its number in Phase 3.
 
 **What `/` costs TODAY, as opposed to projected — measured after step 07.** The
 projection above is what the page will weigh once every listed library is

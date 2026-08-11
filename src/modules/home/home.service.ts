@@ -30,6 +30,17 @@ export class AvailabilityRequestError extends Error {
  * not: the Phase 4 route handler replaces the mock underneath this function
  * without touching it, and a nine-entry contract that quietly becomes eight is
  * the failure a renderer shows as a missing row and nothing else.
+ *
+ * WRITTEN BY HAND ON PURPOSE. zod would express this in three lines, and it is
+ * banned here for a measured reason: it costs 63.2KB gzip on `/`, which is 26%
+ * of the entire performance budget and 61% of the headroom five landing
+ * sections have to share. Measured with a real probe build during the Phase 1a
+ * engineering review — 137.0KB without it, 200.2KB with it. See the budget
+ * section in docs/architecture.md.
+ *
+ * So these twenty lines are not a shortcut around a validation library. They
+ * are what buys a quarter of this page's budget back. If you are about to
+ * "clean this up" with zod, read that number first.
  */
 function assertContract(body: unknown): asserts body is SlotAvailability[] {
   if (!Array.isArray(body) || body.length !== TIME_SLOTS.length) {

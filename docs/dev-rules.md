@@ -27,6 +27,10 @@ The conventions an agent cannot infer from the code. Getting one wrong here cost
 
 Roles in use: `service` (transport), `queries` (TanStack Query hooks), `schema` (zod), `types`, `store` (zustand), `proof` (upload constraints).
 
+**`schema` is the one role that is NOT available to every module.** zod measures **63.2KB gzip** on `/` — 26% of the entire budget, measured during the Phase 1a engineering review by building a probe against the real page. ESLint therefore allows it in `src/modules/booking-form/**`, `src/app/api/**` and `src/server/**` only, and a `home.schema.ts` is a lint error rather than an oversight.
+
+`/booking` earns that 63.2KB: six fields, a 2MB upload, four response codes, and a `fields` object keyed by field name. `/` does not — it makes one GET and validates nine entries, which `src/modules/home/home.service.ts` does by hand in twenty lines. That hand-written validator is not a shortcut; it is what buys a quarter of the landing page's budget back.
+
 **Indonesian in UI strings, English everywhere else.** Inside one component the seam falls between the identifier and the literal:
 
 ```tsx
