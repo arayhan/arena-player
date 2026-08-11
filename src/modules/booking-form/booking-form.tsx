@@ -418,7 +418,11 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             aria-disabled={mutation.isPending}
             className="flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
           >
-            {mutation.isPending ? "Mengirim..." : "Kirim Pemesanan"}
+            {/* A real ellipsis, not three periods. Three periods set in Inter
+                are three separate glyphs with word-spacing between them, so the
+                label visibly jitters wider than the resting one on the single
+                button that carries the whole conversion. */}
+            {mutation.isPending ? "Mengirim…" : "Kirim Pemesanan"}
           </button>
         </form>
       ) : (
