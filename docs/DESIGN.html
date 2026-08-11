@@ -139,9 +139,19 @@
      step 04's own rule that elapsed hours are not booked hours — and telling
      the visitor the day was busier than it was. Neutral and recessed, with a
      neutral family rather than the danger one, so it reads as "gone" instead
-     of as "taken". navy-400 on grey-50 computes 6.64:1. */
-  --slot-elapsed-bg:var(--color-bg-subtle);
-  --slot-elapsed-border:var(--color-border);
+     of as "taken".
+     GREY-200 FILL, NOT GREY-50, AND THE BORDER MATCHES IT. Measured on the
+     rendered page, grey-50 against an available cell's white computed
+     1.05:1 -- no surface difference at all, leaving border HUE as the only
+     non-text signal, which is exactly what DESIGN.md's own Shapes rule
+     forbids. Every other state carries a visible fill: amber, red, blue.
+     grey-200 gives elapsed one too, and matching the border makes it the
+     only BORDERLESS cell in the system -- a structural difference, not an
+     accent tab. Same grey-200 the disabled button already uses, so this is
+     the system's existing vocabulary rather than a new token.
+     navy-400 on grey-200 computes 5.61:1, over the 4.5:1 AA bar. */
+  --slot-elapsed-bg:var(--color-disabled-bg);
+  --slot-elapsed-border:var(--color-disabled-bg);
   --slot-elapsed-fg:var(--color-fg-muted);
   --slot-min-height:56px;
 
@@ -807,6 +817,16 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         instead of as “taken”. Both are unavailable, but only one of them is somebody else's
         booking, and the label carries that distinction non-visually so nothing here depends
         on colour alone.
+      </p>
+      <p class="note stack-4">
+        <strong>It is also the only cell with no visible border</strong>, because its border
+        matches its fill. That is deliberate: every other state announces itself with a fill —
+        amber, red, blue — and elapsed shipped with <code>grey-50</code>, which measured
+        <strong>1.05:1</strong> against an available cell's white. No surface difference at
+        all, leaving border <em>hue</em> as the only non-text signal, which is what step 07's
+        own rule forbids. <code>grey-200</code> is the value the disabled button already uses,
+        so the fix reaches for existing vocabulary rather than a new token — and borderlessness
+        is a structural difference rather than an accent stripe.
       </p>
     </div>
   </div>

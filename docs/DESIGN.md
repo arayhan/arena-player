@@ -84,7 +84,7 @@ components:
     backgroundColor: "{colors.red-100}"
     textColor: "{colors.red-800}"
   slot-elapsed:
-    backgroundColor: "{colors.grey-50}"
+    backgroundColor: "{colors.grey-200}"
     textColor: "{colors.navy-400}"
   pill:
     backgroundColor: "{colors.white}"
@@ -428,7 +428,7 @@ This is the same rule the slot cell and the date pill already follow, and the su
 - **Selected:** `blue-600` fill, white text, label "Dipilih".
 - **Pending:** the amber triple, label "Menunggu Konfirmasi", `aria-disabled="true"`, `not-allowed`.
 - **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
-- **Elapsed:** `grey-50` fill, `grey-200` border, `navy-400` text, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
+- **Elapsed:** `grey-200` fill with a matching `grey-200` border — the only borderless cell in the system — `navy-400` text, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
 
 **The Visible-Unavailable Rule.** Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Hiding an unavailable slot is never the answer.
 
@@ -440,9 +440,11 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 
 **And elapsed is therefore its own state, not a shade of booked.** Having established the distinction, the artifact went on rendering elapsed rows in the red triple while labelling them "Sudah lewat" — the collapse fixed the count but not the colour, so the page contradicted the rule printed directly above it and still overstated how busy the day had been. Fixed in Phase 1b task 3.
 
-**The separation is by colour _family_, not by accent.** Elapsed and booked are both unavailable, but only one of them is somebody else's booking and the visitor is entitled to see which. Three signals carry it: the **neutral** family (`grey-50` / `grey-200` / `navy-400`) against the **danger** family (`red-100` / `red-300` / `red-800`); the resting border; and the label itself, "Sudah lewat" against "Terisi", which is what satisfies WCAG 1.4.1 — colour is never the only means. `navy-400` on `grey-50` computes **6.64:1**.
+**The separation is by colour _family_, not by accent.** Elapsed and booked are both unavailable, but only one of them is somebody else's booking and the visitor is entitled to see which. The **neutral** family (`grey-200` / `navy-400`) against the **danger** family (`red-100` / `red-300` / `red-800`), plus the label itself — "Sudah lewat" against "Terisi" — which is what satisfies WCAG 1.4.1, since colour is never the only means. `navy-400` on `grey-200` computes **5.61:1**.
 
-**No left accent rule, and this is the second time.** A draft added a 3px `navy-400` left border and argued it was structural rather than chromatic. It is also the single most recognisable tell of AI-generated UI, the design detector flags it on sight, and **this project already added one and removed it once for exactly this reason** — the WhatsApp-bubble fix during the checkpoint build. Three signals are enough. A fourth that costs the page its credibility is not a trade worth making, on an artifact whose whole argument is that it is checkable.
+**Elapsed is the only borderless cell, and that is the structural signal.** Its border matches its fill. Every other state carries a visible fill — amber, red, blue — so elapsed needed one too: measured on the rendered page, a `grey-50` fill against an available cell's white computed **1.05:1**, no surface difference at all, which left border _hue_ as the only non-text signal and broke this system's own rule that no state depends on colour alone. `grey-200` is the same value the disabled button already uses, so this is existing vocabulary rather than a new token.
+
+**No left accent rule, and this is the second time.** A draft added a 3px `navy-400` left border and argued it was structural rather than chromatic. It is also the single most recognisable tell of AI-generated UI, the design detector flags it on sight, and **this project already added one and removed it once for exactly this reason** — the WhatsApp-bubble fix during the checkpoint build. The fix for a weak state is a heavier fill, not an accent tab.
 
 ### Date Pill
 
