@@ -94,6 +94,27 @@ const GSAP = {
     "GSAP is lazy-loaded through src/lib/motion.ts — 43.6KB that / cannot afford on first load. Use useMotion(), which also forces a prefers-reduced-motion branch GSAP does not provide on its own.",
 };
 
+// THE MOCK IS THE MOST DANGEROUS IMPORT IN THIS REPO, and until the Phase 1a
+// engineering review it was the only unguarded one — nine zones protected axios
+// (17.5KB) and zod (63.2KB) while nothing protected this.
+//
+// A component importing `@/mocks/availability` as a convenient "fixture" ships
+// deterministic fake availability to production. The page renders perfectly.
+// Every check passes. PRD.md calls this "the single most likely way this project
+// ships a broken deploy", and the bundle guards cannot see it: the mock is small,
+// so check:budget stays green while the site serves invented data.
+//
+// Exempt: src/mocks/ itself, and test files. NOT providers.tsx — it reaches the
+// mock through a DYNAMIC import, which this rule does not match (the same
+// property the GSAP ban relies on). So the one file in application code allowed
+// to touch the mock needs no exemption, and any STATIC import there would still
+// be caught. That is the right way round.
+const MOCKS = {
+  group: ["msw", "msw/*", "@/mocks", "@/mocks/*"],
+  message:
+    "The mock is dev-only and must never be reachable from application code. Importing it ships fake availability to production, rendering correctly, with every check green. Availability comes from src/modules/home/home.service.ts; test fixtures belong in the test file.",
+};
+
 const CROSS_MODULE = {
   group: ["@/modules/*/*", "@/modules/*"],
   message:
@@ -103,7 +124,7 @@ const CROSS_MODULE = {
 // A later config object REPLACES this rule for matching files rather than
 // merging with it, so every override below must restate the patterns it still
 // wants. Turning the rule off in a zone would silently lift the other bans too.
-const DEFAULT_PATTERNS = [SERVER_ONLY, APP, AXIOS, RHF, ZOD, GSAP];
+const DEFAULT_PATTERNS = [SERVER_ONLY, APP, AXIOS, RHF, ZOD, GSAP, MOCKS];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -145,7 +166,10 @@ const eslintConfig = defineConfig([
   {
     files: ["src/modules/booking-form/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, GSAP, CROSS_MODULE] }],
+      "no-restricted-imports": [
+        "error",
+        { patterns: [SERVER_ONLY, APP, GSAP, MOCKS, CROSS_MODULE] },
+      ],
     },
   },
 
@@ -153,7 +177,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/services/api-client.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, RHF, ZOD, GSAP] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, RHF, ZOD, GSAP, MOCKS] }],
     },
   },
 
@@ -163,7 +187,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/app/**/*.{ts,tsx}"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, AXIOS, RHF, ZOD, GSAP] }],
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, AXIOS, RHF, ZOD, GSAP, MOCKS] }],
     },
   },
 
@@ -174,7 +198,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/app/api/**/*.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [AXIOS, RHF, GSAP] }],
+      "no-restricted-imports": ["error", { patterns: [AXIOS, RHF, GSAP, MOCKS] }],
     },
   },
 
@@ -183,7 +207,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/server/**/*.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [APP, AXIOS, RHF, GSAP] }],
+      "no-restricted-imports": ["error", { patterns: [APP, AXIOS, RHF, GSAP, MOCKS] }],
     },
   },
 
@@ -202,6 +226,7 @@ const eslintConfig = defineConfig([
             RHF,
             ZOD,
             GSAP,
+            MOCKS,
             {
               group: ["@/*"],
               message:
@@ -222,6 +247,24 @@ const eslintConfig = defineConfig([
           ],
         },
       ],
+    },
+  },
+
+  // MUST COME AFTER EVERY ZONE ABOVE. Flat config replaces this rule per file
+  // rather than merging, so an exemption placed earlier is undone by any later
+  // block that matches the same file — which is exactly what happened when this
+  // sat above src/modules/**: a test file there kept inheriting the mock ban.
+  // Third time this trap has bitten in this repo. It is why `zone()` exists as
+  // a task.
+  //
+  // Both of these legitimately import msw: the handlers build responses with it,
+  // and tests drive it through msw/node. Neither ships — src/mocks/ is excluded
+  // from production by the NODE_ENV gate in providers.tsx, and *.test.ts is
+  // never bundled at all.
+  {
+    files: ["src/mocks/**/*.ts", "src/**/*.test.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [SERVER_ONLY, APP, AXIOS, RHF, ZOD, GSAP] }],
     },
   },
 

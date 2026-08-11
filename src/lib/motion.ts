@@ -64,6 +64,18 @@ export function loadMotion(): Promise<MotionApi> {
   return pending;
 }
 
+/**
+ * Forget a failed load so a later mount can retry.
+ *
+ * `pending ??=` memoises the PROMISE, not the result — which means it memoises
+ * a rejection too. Without this, one chunk 404 (routine across a deploy, or on
+ * a flaky mobile connection) permanently disables animation for the rest of the
+ * page's life, silently.
+ */
+function resetMotion(): void {
+  pending = null;
+}
+
 export interface MotionSpec {
   /**
    * The full animation. Runs only under
@@ -72,13 +84,18 @@ export interface MotionSpec {
   animate: (api: MotionApi) => void;
 
   /**
-   * What a reduced-motion visitor gets. REQUIRED, and it is not "nothing":
+   * What a visitor gets WITHOUT motion. REQUIRED, and it is not "nothing":
    * an entrance animation typically starts at `opacity: 0`, so skipping the
-   * tween leaves the element invisible forever. Apply the END STATE here —
-   * usually one `gsap.set()` — or, if the animation only decorates something
-   * already at rest, an empty body written on purpose.
+   * tween leaves the element invisible forever. Apply the END STATE here — or,
+   * if the animation only decorates something already at rest, an empty body
+   * written on purpose.
+   *
+   * TAKES NO GSAP. That is deliberate and it is the whole fix: this runs BEFORE
+   * the library is fetched, and it runs even if the fetch never succeeds. A
+   * fallback that depends on the thing it is a fallback for is not a fallback.
+   * Use plain DOM or a CSS class here.
    */
-  settle: (api: MotionApi) => void;
+  settle: () => void;
 }
 
 export interface MotionOptions {
@@ -98,6 +115,30 @@ export interface MotionOptions {
 
 /**
  * Declare an animation. The only supported way to animate in this repo.
+ *
+ * ```
+ *  mount / pathname change / deps change
+ *    │
+ *    ├─▶ settle()                    ALWAYS. no library. no await.
+ *    │                               content is visible from here on.
+ *    │
+ *    ├─▶ prefers-reduced-motion? ──yes──▶ done. 0 KB fetched.
+ *    │        no
+ *    ▼
+ *  loadMotion()  ──fail──▶ resetMotion() + console.error
+ *    │                     content already settled. next mount retries.
+ *    │ ok
+ *    ▼
+ *  gsap.context( matchMedia → animate() )
+ *    │
+ *    ├─▶ ScrollTrigger.refresh()     positions measured after layout
+ *    │
+ *    └─▶ unmount ──▶ context.revert()
+ * ```
+ *
+ * The shape that matters: NOTHING the visitor sees depends on the download
+ * succeeding. Before the fix, `settle` lived inside `loadMotion().then()`, so a
+ * failed fetch left entrance content at `opacity: 0` permanently, with no error.
  *
  * Rebuilds on pathname change as well as on `deps`, because App Router client
  * transitions do not recalculate ScrollTrigger positions: navigating from `/`
@@ -130,19 +171,49 @@ export function useMotion(spec: MotionSpec, options: MotionOptions = {}): void {
     let cancelled = false;
     let context: ReturnType<Gsap["context"]> | undefined;
 
-    void loadMotion().then((api) => {
-      if (cancelled) return;
+    // 1. SETTLE FIRST, ALWAYS, WITH NO LIBRARY.
+    //
+    // The end state is applied before GSAP is even requested. That makes it
+    // survive every path that used to swallow it: a reduced-motion preference,
+    // a chunk 404 across a deploy, a flaky connection on the mid-range Android
+    // this project targets. Previously `settle` lived inside the load's
+    // `.then()`, so a failed download left entrance content at opacity 0 with
+    // no error anywhere — the exact silent failure this repo keeps hunting.
+    //
+    // Animating on top of a settled element is fine: GSAP writes the same
+    // properties, and a from-tween sets its own start values.
+    specRef.current.settle();
 
-      context = api.gsap.context(() => {
-        const media = api.gsap.matchMedia();
-        media.add("(prefers-reduced-motion: no-preference)", () => specRef.current.animate(api));
-        media.add("(prefers-reduced-motion: reduce)", () => specRef.current.settle(api));
-      }, scope?.current ?? undefined);
+    // 2. Honour the preference without downloading anything to check it.
+    //    43.6KB is not worth fetching to discover the visitor declined motion.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      // Positions are measured at creation. Anything laid out after this tick
-      // — a web font landing, an image resolving — moves the trigger points.
-      api.ScrollTrigger.refresh();
-    });
+    // 3. Only now upgrade to real motion.
+    void loadMotion()
+      .then((api) => {
+        if (cancelled) return;
+
+        context = api.gsap.context(() => {
+          // matchMedia still guards the animate branch, so a visitor who
+          // changes the OS preference mid-session gets it reverted live.
+          const media = api.gsap.matchMedia();
+          media.add("(prefers-reduced-motion: no-preference)", () => specRef.current.animate(api));
+        }, scope?.current ?? undefined);
+
+        // Positions are measured at creation. Anything laid out after this tick
+        // — a web font landing, an image resolving — moves the trigger points.
+        api.ScrollTrigger.refresh();
+      })
+      .catch((error: unknown) => {
+        // Clear the memo so a later mount can retry. Without this, ONE failed
+        // fetch poisons `pending` for the rest of the page's life and every
+        // subsequent useMotion silently does nothing.
+        resetMotion();
+        console.error(
+          "[motion] GSAP failed to load — content is settled, animation skipped.",
+          error,
+        );
+      });
 
     return () => {
       cancelled = true;

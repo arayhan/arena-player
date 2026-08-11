@@ -31,11 +31,28 @@ export function isActiveStatus(status: BookingStatus): status is ActiveStatus {
 /**
  * Row state to API state.
  *
- * `rejected` and `expired` map to AVAILABLE — the half that gets guessed
- * wrong. Guessing `booked` there blocks slots that are genuinely open, and
- * nothing errors: the client just renders a full day that is actually empty.
- * Every status outside ACTIVE_STATUSES is free again by definition, which is
- * the same rule uniq_active_slot enforces.
+ * ```
+ *   bookings.status          GET /api/availability
+ *   ---------------          ---------------------
+ *   pending      ──────────▶ pending
+ *   confirmed    ──────────▶ booked
+ *   rejected  ─┐
+ *   expired   ─┴──────────▶ available    ◀── THE HALF THAT GETS GUESSED WRONG
+ *   (no row)     ──────────▶ available
+ *
+ *   ACTIVE_STATUSES = pending, confirmed
+ *      └── mirrors uniq_active_slot's WHERE clause.
+ *          Anything NOT active is free to rebook, by definition.
+ * ```
+ *
+ * `rejected` and `expired` map to AVAILABLE. Guessing `booked` there blocks
+ * slots that are genuinely open, and nothing errors: the client just renders a
+ * full day that is actually empty.
+ *
+ * This file is copied byte-identical into arena-player-admin, where a reader
+ * arrives with none of this context — which is why the diagram lives here and
+ * not only in architecture.md. A picture travels with the copy; a paragraph in
+ * another repo's docs does not.
  */
 export function toSlotStatus(rowStatus: BookingStatus): SlotStatus {
   switch (rowStatus) {

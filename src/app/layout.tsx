@@ -17,7 +17,16 @@ export const metadata: Metadata = {
 // No web font is loaded yet, deliberately. DESIGN.md names Orbitron and Inter,
 // but the art direction that confirms them is Phase 1b task 1 — wiring faces
 // here would mean choosing twice.
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// Props typed explicitly rather than with Next's generated `LayoutProps<"/">`.
+// That global lives in .next/dev/types/, which only exists after `next dev` or
+// `next build` has run — so using it made `pnpm typecheck`, and therefore
+// `pnpm check`, FAIL on a fresh clone with "Cannot find name 'LayoutProps'".
+// That is CI's exact order: install, then check. Verified on a real clone.
+//
+// LayoutProps buys typed route params; the root route has none, so this costs
+// nothing and removes a build artifact from the dependency graph of the one
+// command every doc tells you to run first.
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className="h-full antialiased">
       {/*
