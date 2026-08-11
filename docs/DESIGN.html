@@ -427,8 +427,15 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 
 /* --- Alur: the finished model ---------------------------------- */
 .frames{display:grid;gap:var(--space-8);margin-top:var(--space-6)}
+/* justify-content:START, not space-between. With two 375px frames in a 1068px
+   column, space-between pushed them to opposite edges and opened a ~320px dead
+   gutter between step 1 and step 2 -- on a section whose entire job is showing
+   that the three screens happen IN ORDER. Frame 3 wraps under frame 1, so the
+   eye already has to travel 1 -> 2 -> back-left-and-down -> 3; widening that
+   first hop makes the sequence harder to read, not easier. This band covers
+   900-1299px, which includes 1280 -- the most common laptop viewport there is. */
 @media(min-width:900px){.frames{grid-template-columns:repeat(2,375px);align-items:start;
-  justify-content:space-between}}
+  justify-content:start}}
 /* Three 375px frames need 1173px of content; the page column is 1068. Rather
    than shrink the frames -- their real width is the point -- the journey
    section widens, and only above 1300px where that fits without scrolling. */
@@ -771,7 +778,12 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">04</div>
       <div class="step__title">
         <h2>The slot cell</h2>
-        <p class="new-tag">+ 5 states</p>
+        <!-- SIX: available, hover, selected, pending, booked, elapsed. This read
+             "+ 5 states" before elapsed was split out of booked, and every other
+             badge on this page is an exact count (15 raw parts, 20 names, 40
+             assignments). A count that is off by one on the page whose argument
+             is that its numbers are checkable is worse than no count. -->
+        <p class="new-tag">+ 6 states</p>
         <p class="step__lede">
           One column, full-width rows, for one measurable reason: <strong>“Menunggu Konfirmasi”
           is 20 characters.</strong> A 3-column grid at 375px gives ~110px per cell and the
