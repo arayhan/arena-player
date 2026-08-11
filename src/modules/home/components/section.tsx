@@ -73,7 +73,28 @@ export function Section({
             // the 20-character state labels pushed the page 41px wide and
             // clipped every line on the right, and adding `min-w-0` to the item
             // changed nothing, because the item was never the constraint.
-            step ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-1",
+            // A FIXED NUMERAL TRACK, NOT `auto`. `auto` sizes the column to the
+            // ordinal's intrinsic width, and Orbitron ships no `tnum` feature —
+            // so `tabular-nums` below is a silent no-op and "1" measures far
+            // narrower than "0", "2" or "3". Measured at 1280px: the heading of
+            // step 01 started at x=141 and steps 02 and 03 at x=179, a 38px jog
+            // in the one column the whole art direction asks the visitor to
+            // read down. The spine of the page has to be a straight line.
+            //
+            // 1.7em of the numeral's OWN font-size covers two digits at
+            // Orbitron's widest (a "0" measures ~0.83em), and it is expressed
+            // against `--text-step` so the track scales with the clamp instead
+            // of being pinned to one viewport.
+            //
+            // AT EVERY WIDTH, INCLUDING 375px, AND THE PHONE IS THE CHEAP CASE
+            // RATHER THAN THE EXPENSIVE ONE. Measured at 375px before the fix:
+            // headings sat at x=91, 112, 112 — so TWO OF THREE were already
+            // where the fixed track puts all three (x=114), and only step 01
+            // moves, by 23px. All three still set on one line and the page
+            // still does not scroll sideways.
+            step
+              ? "grid-cols-[calc(var(--text-step)*1.7)_minmax(0,1fr)]"
+              : "grid-cols-1",
             // BLEEDS LEFT ONLY WHERE THERE IS GUTTER TO BLEED INTO. At 375px
             // the content column is the whole screen, so a negative margin
             // would push the numeral off-screen and steal width from the
