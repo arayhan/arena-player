@@ -312,6 +312,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   font-family:var(--font-body);font-size:var(--text-body);text-align:left;
   cursor:pointer;transition:background var(--dur-base) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),color var(--dur-base) var(--ease-out)}
+/* NO tabular-nums HERE, AND THAT IS A MEASURED DECISION, NOT AN OVERSIGHT.
+   Slot times ARE a number column, and DESIGN.md's typography checklist does ask
+   for tabular figures on those -- so this was tried. It changed nothing:
+   "18.00 - 20.00" measured 127px and "10.00 - 12.00" measured 120px both before
+   and after, because ORBITRON DOES NOT SHIP A tnum FEATURE and the property
+   silently does nothing on this face. Leaving a no-op property in place with a
+   comment claiming it solved the width variance would be worse than the
+   variance. If the display face is ever changed, revisit this line first.
+   Consequence to know: row width varies ~7px with the digits, so a row can wrap
+   at narrow widths. In the PRODUCT this is moot -- a 343px row leaves 26px of
+   slack -- and it only shows inside the Alur frames, which are narrower. */
 .slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em;white-space:nowrap}
 .slot__state{font-size:var(--text-sm);white-space:nowrap}
 .slot:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--slot-hover-bg)}
@@ -448,8 +459,18 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
   font-variant-numeric:tabular-nums}
 /* 375px is the design target, so the frame is that width and does not stretch.
    The client sees real proportions, not a desktop approximation. */
+/* PADDING IS space-3, NOT space-4, AND THE 8px MATTERS. At a 375px viewport the
+   page column gives 343px; this frame then spends 2px of border and its own
+   padding on each side, so at space-4 the slot rows got 307px of content. The
+   PRODUCT gets the full 343 -- it has no frame chrome around it. That 36px gap
+   made "Menunggu Konfirmasi" wrap to a second line and pushed the row to 75px
+   against the system's 56px, a defect the real page will not have. Showing a
+   client a wrap that cannot happen invites a change request for a non-problem.
+   space-3 brings the row to 315px, matching step 04's demo, and the label fits
+   on one line in both. The frame is still narrower than the device; see the
+   note under the frames, which now says so rather than claiming otherwise. */
 .frame__screen{width:100%;max-width:375px;border:var(--keyline) solid var(--plate-keyline);
-  border-radius:var(--radius-card);background:var(--color-bg);padding:var(--space-4)}
+  border-radius:var(--radius-card);background:var(--color-bg);padding:var(--space-3)}
 .frame__note{font-size:var(--text-xs);color:var(--color-fg-muted);
   margin:var(--space-3) 0 0;max-width:375px}
 .scarcity{font-size:var(--text-sm);font-weight:600;color:var(--color-interactive);
@@ -1066,9 +1087,23 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__title">
         <h2>Finished model — <span lang="id">Alur</span></h2>
         <p class="step__lede">
-          Everything above is parts. This is the assembled product: three screens at the real
-          device width, in the real order. Tap a slot in the first frame — it behaves as it
-          will on the phone.
+          Everything above is parts. This is the assembled product: three screens at the
+          phone's 375px width, in the real order. Tap a slot in the first frame — it behaves
+          as it will on the phone.
+        </p>
+        <!-- IT USED TO SAY "at the real device width", WHICH WAS FALSE BY 36px.
+             Each frame draws its own border and padding inside the page column,
+             so at a 375px viewport the slot rows got 307px where the product
+             gets 343 — the frame is a picture OF a phone, not a phone. The
+             padding fix above recovers 8px of that; the rest is chrome and
+             cannot be removed without dropping the frame entirely. Claiming
+             "the real device width" on a page whose credibility rests on
+             printing checkable numbers is exactly the P0 this document already
+             took once, for two overstated contrast ratios. -->
+        <p class="note stack-3">
+          Each frame is 375px including its own border and padding, so the rows inside it sit
+          about 30px narrower than they will on a real phone — the product has no frame around
+          it. Proportions are honest; treat the exact row width as indicative.
         </p>
       </div>
     </div>
