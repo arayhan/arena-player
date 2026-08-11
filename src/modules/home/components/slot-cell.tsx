@@ -59,7 +59,15 @@ export function SlotCell({
         "md:flex-col md:items-start",
         "transition-colors duration-200",
         selectable
-          ? "cursor-pointer border-[var(--color-interactive)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:bg-[var(--color-wash)]"
+          ? // THE HOVER FILL IS THE PAGE GROUND, SO IT NEEDS THE SECOND SIGNAL.
+            // `--color-wash` and `--color-page` are both blue-50: measured, an
+            // available cell hovers from white to rgb(239,246,255) on a body of
+            // rgb(239,246,255), so the surface does not lift, it disappears into
+            // the band and leaves the blue keyline floating. The fill stays
+            // because DESIGN.md specifies it; `shadow-md` is what makes the
+            // state perceptible, and it is the system's own vocabulary for it —
+            // "shadow-md: raised or hovered surfaces", navy-tinted, no new token.
+            "cursor-pointer border-[var(--color-interactive)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:bg-[var(--color-wash)] hover:shadow-[var(--shadow-md)]"
           : "cursor-not-allowed",
         !selectable &&
           status === "pending" &&
