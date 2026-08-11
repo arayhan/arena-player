@@ -12,8 +12,17 @@
  */
 import axios from "axios";
 
+/**
+ * Same constant name and same rule as `BASE_URL` in
+ * src/modules/home/home.service.ts — every transport in this repo resolves its
+ * origin the same way. Empty in the browser (same-origin), absolute wherever
+ * there is no document to resolve against: Node tests, and any server-side
+ * call Phase 4 adds.
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
 export const apiClient = axios.create({
-  baseURL: "/api",
+  baseURL: `${BASE_URL}/api`,
 
   // The proof upload is the slow request here, and 2MB over mobile data is
   // routinely more than ten seconds. Failing at the default would abort

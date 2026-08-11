@@ -27,6 +27,13 @@ export default defineConfig({
     //     with    { in: … }  ->  2026-08-10   correct
     //     without            ->  2026-08-09   a full day wrong
     // Pinning UTC is what makes that difference visible in CI and here alike.
-    env: { TZ: "UTC" },
+    env: {
+      TZ: "UTC",
+      // Node's fetch cannot resolve a relative URL — there is no document to
+      // resolve against. src/modules/home/home.service.ts reads this as
+      // BASE_URL, which is empty in the browser (same-origin, unchanged) and
+      // absolute here so the service is testable at all.
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+    },
   },
 });

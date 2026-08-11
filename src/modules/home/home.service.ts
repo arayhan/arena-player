@@ -14,6 +14,20 @@ import { TIME_SLOTS } from "@/domain/slots";
 
 import type { SlotAvailability } from "./home.types";
 
+/**
+ * Origin the availability request is sent to.
+ *
+ * Empty in the browser, which keeps the request same-origin and identical to a
+ * bare relative path. It exists because a relative URL is unresolvable anywhere
+ * without a document: Node's fetch throws "Failed to parse URL" outright, so
+ * this function could not be tested at all, and Phase 4 could not prefetch
+ * availability on the server either. One constant removes both limits.
+ *
+ * NEXT_PUBLIC_ is correct here and is not a hard-rule-4 violation: the site's
+ * own origin is not a secret. DATABASE_URL and the R2 keys stay server-only.
+ */
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
 export class AvailabilityRequestError extends Error {
   constructor(
     readonly status: number,
@@ -60,7 +74,9 @@ export async function fetchAvailability(
   date: string,
   signal?: AbortSignal,
 ): Promise<SlotAvailability[]> {
-  const response = await fetch(`/api/availability?date=${encodeURIComponent(date)}`, { signal });
+  const response = await fetch(`${BASE_URL}/api/availability?date=${encodeURIComponent(date)}`, {
+    signal,
+  });
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({ error: "unknown" }));

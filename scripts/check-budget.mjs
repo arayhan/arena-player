@@ -42,6 +42,7 @@ import { gzipSync } from "node:zlib";
 const ROOT = process.cwd();
 const APP_DIR = ".next/server/app";
 const MANIFEST = ".next/build-manifest.json";
+const APP_PATHS = ".next/server/app-paths-manifest.json";
 const BUDGET_DOC = "docs/architecture.md";
 
 const REPORT_ONLY = process.argv.includes("--report");
@@ -131,6 +132,33 @@ if (pages.length === 0) {
 const legacy = legacyChunks();
 if (legacy === null) die(`cannot read ${MANIFEST}, so the legacy-polyfill set is unknown`);
 
+// EVERY DECLARED ROUTE MUST BE MEASURED, or this reports green on a repo it did
+// not fully examine.
+//
+// walkHtml only finds PRERENDERED routes. A route that reads searchParams or
+// cookies on the server is dynamic, emits no HTML, and simply disappears from
+// the report — which prints "All N route(s) within budget" and exits 0. The
+// route most likely to go dynamic is /booking, since Phase 3 reads
+// `?date=&time=` from the pasted WhatsApp link. That is the exact route the
+// nine-zone import split and the whole zod/rhf/axios confinement exist to
+// police, so it vanishing silently is the worst possible blind spot.
+//
+// Reconciling against app-paths-manifest.json turns a silent omission into a
+// loud failure that names the route and says what to do about it.
+function declaredRoutes() {
+  try {
+    const manifest = JSON.parse(readFileSync(join(ROOT, APP_PATHS), "utf8"));
+    return Object.keys(manifest)
+      .filter((k) => k.endsWith("/page"))
+      .map((k) => (k === "/page" ? "/" : k.replace(/\/page$/, "")));
+  } catch {
+    return null;
+  }
+}
+
+const declared = declaredRoutes();
+if (declared === null) die(`cannot read ${APP_PATHS}, so the route list is unknown`);
+
 const rows = pages.sort().map((html) => {
   const body = readFileSync(html, "utf8");
   const chunks = [...new Set(body.match(/static\/chunks\/[a-zA-Z0-9_.-]+\.js/g) ?? [])];
@@ -164,6 +192,22 @@ if (REPORT_ONLY) {
 }
 
 // --- enforce -----------------------------------------------------------------
+const measured = new Set(rows.map((r) => r.route));
+const unmeasured = declared.filter((route) => !measured.has(route));
+
+if (unmeasured.length > 0) {
+  die(
+    `${unmeasured.length} declared route(s) produced no measurement:\n` +
+      unmeasured.map((r) => `        ${r}`).join("\n") +
+      `\n\n    A route with no prerendered HTML is DYNAMIC — it reads searchParams,\n` +
+      `    cookies, or headers on the server. This check cannot size it, and\n` +
+      `    silently skipping it would report every remaining route as green while\n` +
+      `    the unmeasured one carries whatever it likes.\n\n` +
+      `    Fix it, do not suppress it: either keep the route static, or measure\n` +
+      `    it another way and add it here deliberately.`,
+  );
+}
+
 const { kb: CEILING, source } = ceilingFromDoc();
 const breaches = rows.filter((r) => r.shipped > CEILING);
 
