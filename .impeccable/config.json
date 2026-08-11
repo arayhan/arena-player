@@ -21,6 +21,12 @@
         "value": "cascadia code",
         "createdAt": "2026-08-08T10:47:02.800Z",
         "reason": "Monospace fallback for code samples inside DESIGN.html itself. The product renders no code, so DESIGN.md declares no mono token and none should be added."
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-08-11T06:08:19.575Z",
+        "reason": "Settled in Phase 1b task 1 and recorded in DESIGN.md. Inter is a stated client commitment in PRODUCT.md; 'invisible' is the correct brief for body type a captain reads at speed on a 375px Android; and every printed number in the system (60-68ch measure, 14px/12px fixed sizes, state-label ratios) was computed against Inter's metrics, so a swap invalidates them all at once. The finding is correct and stands recorded in DESIGN.md - the decision is deliberate, not inherited."
       }
     ]
   }

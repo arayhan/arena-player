@@ -138,13 +138,11 @@
      rendered in the danger triple while labelled "Sudah lewat", contradicting
      step 04's own rule that elapsed hours are not booked hours — and telling
      the visitor the day was busier than it was. Neutral and recessed, with a
-     structural left rule rather than a hue, so it separates from booked
-     without competing with it. navy-400 on grey-50 computes 6.64:1, over the
-     3:1 WCAG 1.4.11 bar for a UI boundary. */
+     neutral family rather than the danger one, so it reads as "gone" instead
+     of as "taken". navy-400 on grey-50 computes 6.64:1. */
   --slot-elapsed-bg:var(--color-bg-subtle);
   --slot-elapsed-border:var(--color-border);
   --slot-elapsed-fg:var(--color-fg-muted);
-  --slot-elapsed-rule:var(--color-fg-muted);
   --slot-min-height:56px;
 
   --pill-bg:var(--color-bg);
@@ -313,12 +311,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   color:var(--slot-pending-fg);cursor:not-allowed}
 .slot[data-state=booked]{background:var(--slot-booked-bg);border-color:var(--slot-booked-border);
   color:var(--slot-booked-fg);cursor:not-allowed}
-/* The left rule is the whole point: elapsed and booked are both unavailable,
-   but only one of them is somebody else's booking. A hue alone would put
-   them in the same family. */
+/* Elapsed and booked are both unavailable, but only one of them is somebody
+   else's booking, and three signals already carry that apart:
+     1. a NEUTRAL family (grey-50 / navy-400) against a DANGER one
+        (red-100 / red-800) — not two hues, two families
+     2. a grey-200 resting border against red-300
+     3. the label itself, "Sudah lewat" against "Terisi", which is what
+        satisfies WCAG 1.4.1 — colour is never the only means here
+   NO LEFT ACCENT RULE. A draft of this added a 3px navy-400 left border and
+   argued it was structural rather than chromatic. It is also the single most
+   recognizable tell of AI-generated UI, the detector flags it, and this
+   project already added one and removed it once for the same reason. Three
+   signals is enough; a fourth that costs the page its credibility is not a
+   trade worth making. */
 .slot[data-state=elapsed]{background:var(--slot-elapsed-bg);border-color:var(--slot-elapsed-border);
-  color:var(--slot-elapsed-fg);cursor:not-allowed;
-  border-left:3px solid var(--slot-elapsed-rule);padding-left:calc(var(--space-4) - 2px)}
+  color:var(--slot-elapsed-fg);cursor:not-allowed}
 
 /* --- date pill ---------------------------------------------------- */
 .pills{display:flex;gap:var(--space-2);overflow-x:auto;overscroll-behavior-x:contain;
@@ -780,10 +787,11 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         <strong>So <code>elapsed</code> is a fourth state, not a shade of booked.</strong> It
         was rendering in the danger triple while carrying the label
         <span lang="id">“Sudah lewat”</span> — which contradicts the paragraph directly above
-        and overstates how busy the day was. It is now neutral and recessed, separated from
-        <span lang="id">“Terisi”</span> by a 3px left rule rather than by hue: both are
-        unavailable, but only one of them is somebody else's booking, and a colour difference
-        alone would leave them reading as the same family.
+        and overstates how busy the day was. It is now neutral and recessed — the
+        <em>neutral</em> family rather than the <em>danger</em> one, so it reads as “gone”
+        instead of as “taken”. Both are unavailable, but only one of them is somebody else's
+        booking, and the label carries that distinction non-visually so nothing here depends
+        on colour alone.
       </p>
     </div>
   </div>

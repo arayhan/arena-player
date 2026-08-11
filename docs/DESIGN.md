@@ -428,7 +428,7 @@ This is the same rule the slot cell and the date pill already follow, and the su
 - **Selected:** `blue-600` fill, white text, label "Dipilih".
 - **Pending:** the amber triple, label "Menunggu Konfirmasi", `aria-disabled="true"`, `not-allowed`.
 - **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
-- **Elapsed:** `grey-50` fill, `navy-400` text and a **3px `navy-400` left rule**, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
+- **Elapsed:** `grey-50` fill, `grey-200` border, `navy-400` text, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
 
 **The Visible-Unavailable Rule.** Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Hiding an unavailable slot is never the answer.
 
@@ -440,7 +440,9 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 
 **And elapsed is therefore its own state, not a shade of booked.** Having established the distinction, the artifact went on rendering elapsed rows in the red triple while labelling them "Sudah lewat" — the collapse fixed the count but not the colour, so the page contradicted the rule printed directly above it and still overstated how busy the day had been. Fixed in Phase 1b task 3.
 
-**The separation is structural, not chromatic.** Elapsed and booked are both unavailable, and a hue swap alone would leave them reading as the same family. The 3px left rule is what distinguishes them: only one of the two is somebody else's booking, and the visitor is entitled to see which. `navy-400` on `grey-50` computes **6.64:1**, well clear of the 3:1 boundary requirement.
+**The separation is by colour _family_, not by accent.** Elapsed and booked are both unavailable, but only one of them is somebody else's booking and the visitor is entitled to see which. Three signals carry it: the **neutral** family (`grey-50` / `grey-200` / `navy-400`) against the **danger** family (`red-100` / `red-300` / `red-800`); the resting border; and the label itself, "Sudah lewat" against "Terisi", which is what satisfies WCAG 1.4.1 — colour is never the only means. `navy-400` on `grey-50` computes **6.64:1**.
+
+**No left accent rule, and this is the second time.** A draft added a 3px `navy-400` left border and argued it was structural rather than chromatic. It is also the single most recognisable tell of AI-generated UI, the design detector flags it on sight, and **this project already added one and removed it once for exactly this reason** — the WhatsApp-bubble fix during the checkpoint build. Three signals are enough. A fourth that costs the page its credibility is not a trade worth making, on an artifact whose whole argument is that it is checkable.
 
 ### Date Pill
 
