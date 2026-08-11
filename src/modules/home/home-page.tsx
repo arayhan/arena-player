@@ -1,3 +1,4 @@
+import { Hero } from "./components/hero";
 import { OrderSection } from "./components/order-section";
 import { Section } from "./components/section";
 
@@ -22,20 +23,7 @@ import { Section } from "./components/section";
 export function HomePage() {
   return (
     <main className="flex-1">
-      {/* Hero — Phase 2 task 3. Capped at 100svh, never 100vh: in-app browsers
-          report vh incorrectly and a hero sized in vh overshoots on exactly
-          the device this site is designed for. */}
-      <section className="flex min-h-[100svh] items-center border-b border-[var(--color-border)]">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
-          <h1>Pilih Jam. Kirim. Main.</h1>
-          <p className="mt-6 max-w-[52ch] text-[color:var(--color-fg-muted)]">
-            Jadwal Arena Player tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp.
-          </p>
-          <p className="mt-8 text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-            Hero layout, CTA, and its one WebGL moment are Phase 2 task 3.
-          </p>
-        </div>
-      </section>
+      <Hero />
 
       {/* THE ANCHOR IS #order, NOT #booking. /booking is a route, and an anchor
           sharing its name would shadow it. Both CTAs link here. */}
