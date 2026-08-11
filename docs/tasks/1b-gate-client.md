@@ -115,7 +115,10 @@ gets the form link back through WhatsApp — typed by the admin now, sent by a b
 Confirm it matches how they actually want to work. Specifically: is someone available to reply
 with the link during opening hours?
 
-- Answer: _____
+- **Answer (2026-08-11): CONFIRMED.** The form link comes back through WhatsApp, typed by the
+  admin. Someone is on standby during opening hours, and the client raised a WhatsApp bot as
+  the eventual replacement for that person — which is already the post-Phase-4 item in the PRD,
+  now with the client's own backing rather than as our assumption. **Phase 2 is unblocked.**
 
 ### 2. Pricing on the booking form — **BLOCKS PHASE 3**
 
@@ -125,7 +128,13 @@ dikonfirmasi admin via WhatsApp."
 Should a real rupiah amount appear instead? If yes, we need the rate card — flat rate, or does
 it change by hour, day, or weekend?
 
-- Answer: _____
+- **Answer (2026-08-11): `/booking` IS the exception. A real rupiah amount appears there, and
+  nowhere on `/`.** This closes the OPEN DECISION that `CLAUDE.md` hard rule 2 has been holding
+  shut since the PRD was written. The landing page still renders no number of any kind.
+- **STILL OUTSTANDING: the rate card itself.** The client answered _where_ a price goes, not
+  _what_ it is. Flat rate, or varying by hour / day / weekend, is unanswered — and `/booking`
+  cannot render a number nobody has supplied. Tracked as a **seventh** `TODO(content)`
+  category, which is a change to hard rule 3 and to `scripts/check-docs.mjs`.
 
 ### 3. The six things we do not have
 
@@ -195,11 +204,33 @@ would change the database, the API, and the booking screen. Worth confirming out
 ### Sign-off
 
 - [ ] **Approved** — direction confirmed, Phase 2 may start
-- [ ] **Approved with changes** — changes listed above are folded in first
+- [x] **Approved with changes** — changes listed above are folded in first
 - [ ] **Redirect** — direction rejected, return to Phase 1b task 1 (art direction)
 
-**Signed off by:** _____
-**Date:** _____
+**Date:** 2026-08-11
+
+**Six changes requested.** The world stands — light, blue-and-white, the build-instruction
+book — so this is not a Redirect. But three of the six collide with rules this project wrote
+down deliberately, and one names a library the performance budget excludes by name. Recorded
+in full below rather than summarised, because "make it more creative" is the kind of note that
+loses its specifics on the way to the code.
+
+| #   | Change                                                               | Status                                      |
+| --- | -------------------------------------------------------------------- | ------------------------------------------- |
+| 1   | Slot list becomes a **grid**, not a vertical column                  | **Conflicts with a measured constraint**    |
+| 2   | Real responsive design, not just "does not break"                    | Compatible                                  |
+| 3   | Creative button micro-interactions, e.g. a scramble effect on hover  | Compatible via GSAP                         |
+| 4   | Header animation using **three.js or anime.js**                      | **Both excluded by hard rules 6 and 9**     |
+| 5   | Scroll-triggered animation                                           | Compatible, costs budget                    |
+| 6   | Round the corners — inputs, buttons, layout — instead of near-square | **Conflicts with the One-Round-Shape Rule** |
+
+Plus: re-execute through `/impeccable` with no AI slop, and send image/video generation
+prompts to the client rather than generating assets here.
+
+**The three conflicts are not refusals.** Each is a decision the client is entitled to make;
+each also costs something specific that was measured rather than assumed, and the point of
+writing them down was so nobody trades them away without seeing the price. They are put to the
+user with the numbers attached before any code moves.
 
 ---
 

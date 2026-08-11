@@ -119,9 +119,16 @@ for (const f of markerScannable) {
 }
 
 // --- 2. Every TODO(content) belongs to a declared category ------------------
-// CLAUDE.md hard rule 3 declares six. Five of them mark content that has no
+// CLAUDE.md hard rule 3 declares SEVEN. Most of them mark content that has no
 // code yet (they land in Phase 2+), so this asserts NO ORPHANS rather than
-// all-six-present — the latter cannot pass until the landing page exists.
+// all-seven-present — the latter cannot pass until the landing page exists.
+//
+// THE SEVENTH ARRIVED WITH A CLIENT ANSWER, NOT WITH A REFACTOR. On 2026-08-11
+// the client settled the pricing open decision: no number on `/`, a real rupiah
+// amount on `/booking`. That closes hard rule 2's exception clause and opens a
+// content gap that did not exist before — the rate card itself, which nobody
+// has supplied. A price is exactly the kind of value that must never be
+// invented, so it joins the same marker family as the bank account.
 const CATEGORIES = [
   "wa number",
   "whatsapp",
@@ -131,6 +138,9 @@ const CATEGORIES = [
   "photo",
   "logo",
   "hero copy",
+  "rate card",
+  "price",
+  "harga",
 ];
 for (const f of markerScannable) {
   for (const [n, line] of scannable(f)) {
@@ -141,7 +151,8 @@ for (const f of markerScannable) {
       fail(
         "todo-content-category",
         `${f}:${n} — TODO(content) names no declared category. ` +
-          `Hard rule 3 lists: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy`,
+          `Hard rule 3 lists: WA number, bank account + holder, address + maps coords, ` +
+          `photos, logo file, hero copy, rate card`,
       );
     }
   }

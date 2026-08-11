@@ -214,7 +214,9 @@ Full token table, typography, and animation budget: [DESIGN.md](DESIGN.md).
 - Reads `date` and `time` from query params, shown as a locked summary card (user can go back to change them, not edit inline)
 - Fields: Nama Tim (required), Nomor WhatsApp (required, accepts `08xx` / `62xx` / `+62xx`, **normalised to `628xxxxxxxxx` before storage**), notes (optional, **max 500 characters**)
 - Payment info card: bank account number + account holder name (placeholders), instruction text "Transfer DP 50% dari harga sewa. Nominal dikonfirmasi admin via WhatsApp."
-  - **OPEN DECISION** — pricing on this page. The current wording shows no number at all; the admin quotes it over WhatsApp. If an actual rupiah amount should render here instead, the client must supply the rate card (flat rate vs peak/off-peak vs weekend), and the "no prices in the UI" hard rule in CLAUDE.md narrows to "no prices on `/`". Unresolved — do not render a number until it is.
+  - **RESOLVED 2026-08-11 — a real rupiah amount renders here.** The client's answer: no price on `/`, the price appears in the form once the visitor has arrived through the WhatsApp link. `CLAUDE.md` hard rule 2 has narrowed accordingly, from "no prices anywhere" to "no prices on `/`".
+  - **The rate card itself is still missing**, so the figure is `TODO(content)` — the seventh category. The client answered _where_ a price goes without answering _what_ it is: flat rate, or varying by hour, day, or weekend. **No placeholder number may be invented here.** Every other placeholder is inert if it ships by accident; an invented price is the one a visitor would act on, and it would be the developer's number attached to the client's business.
+  - Until the rate card arrives the existing wording stands: "Transfer DP 50% dari harga sewa. Nominal dikonfirmasi admin via WhatsApp." That sentence is the fallback, not the destination.
 - Payment proof upload: required, image only (jpg/png/webp), max 2MB, uploaded to the private R2 bucket
 - Honeypot hidden field for spam protection
 - On submit: POST to the API. Success screen: "Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp." Failure for a taken slot: friendly message "Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain." with a button back to `/#order`.
@@ -335,6 +337,7 @@ Complete list — `rg "TODO\(content\)"` must find every one of these and nothin
 - Real photos/gallery assets if the client provides any
 - Logo file — SVG monogram placeholder until the client supplies theirs; favicon + OG image derive from it
 - Hero copy — ships drafted and user-approved; only a swap if the client wants their own wording
+- **Rate card** — the rupiah figures `/booking` renders. Added 2026-08-11 when the client settled _where_ a price appears without supplying _what_ it is: flat rate, or varying by hour, day, or weekend. **This is the one placeholder that must never get a stand-in number.** The other six are inert if they ship by accident — an unswapped WhatsApp link fails visibly, a monogram logo looks like a monogram. An invented price looks exactly like a real one, a visitor transfers against it, and it is the developer's number attached to the client's business. Until the card arrives, `/booking` keeps the wording it has: "Nominal dikonfirmasi admin via WhatsApp."
 
 ## Binding clarifications
 

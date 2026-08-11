@@ -491,7 +491,8 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 ### Don't:
 
 - **Don't** go dark, neon, or saturated. The anti-reference is binding, and this is the one direction the client has ruled out by name.
-- **Don't** render a price anywhere. Pricing is an unresolved client decision; until the rate card arrives, no number appears on either page.
+- **Don't** render a price on `/`. That half of the rule is permanent. `/booking` is the exception the client settled on 2026-08-11 — a real rupiah amount appears there, once the visitor has arrived through the WhatsApp link.
+- **Don't** invent a placeholder price on `/booking` either. The rate card has not been supplied, so the figure is `TODO(content)`. Every other placeholder in this project is inert if it ships by accident; a price is the one a visitor would act on.
 - **Don't** turn the slot grid into 2 or 3 columns. The 20-character state label does not fit, and truncating it destroys the information the cell exists to carry.
 - **Don't** hide unavailable slots.
 - **Don't** add a third typeface, or apply body leading to Orbitron.
