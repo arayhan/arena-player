@@ -92,9 +92,7 @@ export function Section({
             // where the fixed track puts all three (x=114), and only step 01
             // moves, by 23px. All three still set on one line and the page
             // still does not scroll sideways.
-            step
-              ? "grid-cols-[calc(var(--text-step)*1.7)_minmax(0,1fr)]"
-              : "grid-cols-1",
+            step ? "grid-cols-[calc(var(--text-step)*1.7)_minmax(0,1fr)]" : "grid-cols-1",
             // BLEEDS LEFT ONLY WHERE THERE IS GUTTER TO BLEED INTO. At 375px
             // the content column is the whole screen, so a negative margin
             // would push the numeral off-screen and steal width from the
