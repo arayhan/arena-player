@@ -66,7 +66,14 @@ export function Section({
         <div
           className={cn(
             "grid gap-x-4 md:gap-x-6",
-            step ? "grid-cols-[auto_1fr]" : "grid-cols-1",
+            // minmax(0,1fr), NOT 1fr. `1fr` expands to `minmax(auto, 1fr)`, and
+            // that auto minimum sits on the TRACK — so the column refuses to
+            // shrink below its content's intrinsic width no matter what
+            // min-width the item carries. Measured at 375px: the date row and
+            // the 20-character state labels pushed the page 41px wide and
+            // clipped every line on the right, and adding `min-w-0` to the item
+            // changed nothing, because the item was never the constraint.
+            step ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-1",
             // BLEEDS LEFT ONLY WHERE THERE IS GUTTER TO BLEED INTO. At 375px
             // the content column is the whole screen, so a negative margin
             // would push the numeral off-screen and steal width from the
@@ -98,7 +105,29 @@ export function Section({
           </div>
 
           {children ? (
-            <div className={cn("mt-8 md:mt-12", step ? "col-start-2" : undefined)}>{children}</div>
+            // FULL WIDTH ON A PHONE, INDENTED FROM md UP — and this one is a
+            // product requirement beating an aesthetic preference, not a
+            // compromise.
+            //
+            // Indenting the content to align with the heading looks better, and
+            // it is what this component did first. But the numeral is 59px plus
+            // a 16px gap, so at 375px it left the content column 268px — and
+            // DESIGN.md's slot-cell measurement is explicit that the row needs
+            // 343px, because "Menunggu Konfirmasi" is 20 characters and cannot
+            // truncate. Measured: the cell needed 323px and had 268, and the
+            // page scrolled sideways by 41px.
+            //
+            // The 343px is a measured constraint on the product; the indent is
+            // taste. When the two disagree, clarity wins — the same rule that
+            // put Signal Blue where the source world wanted brick red.
+            <div
+              className={cn(
+                "mt-8 min-w-0 md:mt-12",
+                step ? "col-span-2 md:col-span-1 md:col-start-2" : undefined,
+              )}
+            >
+              {children}
+            </div>
           ) : null}
         </div>
       </div>

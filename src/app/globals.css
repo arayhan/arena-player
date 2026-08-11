@@ -145,6 +145,25 @@ h3 {
   outline-offset: 2px;
 }
 
+/* The decorative half of a slot tap. The FILL lands at 0ms because it is the
+ * answer to "is this slot mine now"; this ring is the flourish and runs after,
+ * so the answer never waits on the decoration.
+ *
+ * CSS rather than GSAP on purpose: it costs no JavaScript, and the
+ * reduced-motion block below already neutralises it. The ban on a direct
+ * `gsap.to()` in a component exists because GSAP has no built-in
+ * reduced-motion handling — CSS does, right here. */
+@keyframes slot-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
 /* GSAP has no built-in reduced-motion handling, so this is the CSS half of the
  * guarantee and src/lib/motion.ts is the JS half. Neither is sufficient alone. */
 @media (prefers-reduced-motion: reduce) {

@@ -1,3 +1,4 @@
+import { OrderSection } from "./components/order-section";
 import { Section } from "./components/section";
 
 /**
@@ -44,11 +45,7 @@ export function HomePage() {
         title="Pesan Lapangan"
         lede="Pilih tanggal, lalu pilih jam yang masih kosong."
       >
-        <p className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-          Date pills and the slot grid land in Phase 2 task 2, against the MSW mock. This section is
-          built before the hero on purpose: it carries the state and the data fetching, so it gets
-          the most iteration time rather than the least.
-        </p>
+        <OrderSection />
       </Section>
 
       <Section
