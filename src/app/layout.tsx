@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 
-// TODO(content): hero copy — the Indonesian title and meta description are
-// decided in Phase 1b task 2 alongside the type scale, because a three-word
-// headline and a twelve-word one need different sizes. Do not invent them.
+// TODO(content): hero copy — chosen by the user in Phase 1b task 2 and
+// recorded in docs/DESIGN.md. Still a placeholder in the sense that matters:
+// it is drafted in-house, so if the client supplies their own wording it
+// swaps here, in the hero, and in DESIGN.md together. Unlike the Ketentuan,
+// which is verbatim client content and must never be rewritten.
 export const metadata: Metadata = {
-  title: "Arena Player",
-  description: "Booking lapangan mini soccer Arena Player.",
+  title: "Arena Player — Booking Lapangan Mini Soccer",
+  description:
+    "Cek jadwal lapangan mini soccer Arena Player. Jam kosong hari ini tampil langsung, pesan lewat WhatsApp.",
 };
 
 // lang is "id": every string a visitor reads on this site is Indonesian.

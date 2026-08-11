@@ -242,6 +242,23 @@ The order section is exempt for a stated reason, not by oversight. It is where t
 - **Everything still routes through `src/lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
 - **No CLS, and the performance budget is untouched.** GSAP is already the largest single item in a tight budget, so added effects reuse the existing instance. On a mid-range Android in an in-app webview the binding cost is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the Lighthouse gate.
 
+### Hero copy — chosen in task 2
+
+| Slot             | Copy                                                                                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| Headline         | **Pilih Jam. Kirim. Main.**                                                                              |
+| Subheadline      | Jadwal Arena Player tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp.                            |
+| Meta description | Cek jadwal lapangan mini soccer Arena Player. Jam kosong hari ini tampil langsung, pesan lewat WhatsApp. |
+| CTA              | **Pesan Lapangan** → `#order` (fixed by the PRD, not a copy decision)                                    |
+
+Drafted in three registers and chosen by the user, as the PRD requires. Decided _after_ the type scale, for the reason the PRD gives: a three-word headline and a twelve-word one need different sizes.
+
+**Why this one.** The headline is the assembly — three steps, three beats — so it says the same thing the art direction says, in the visitor's own words. It is also the shortest of the three drafts, and length is a hard constraint here rather than a stylistic one: at Orbitron 900 and 375px the longest word is what breaks the layout, and this headline's longest word is five characters. The rejected alternatives peaked at nine, which fits but is not comfortable.
+
+**What it deliberately does not do:** it names no price, promises no availability, and does not say "malam ini" — a hero cannot know what time of day it is being read without client JS, and a page that says "tonight" to someone arriving at 9am is wrong on its face.
+
+**This is still `TODO(content)`.** It is drafted in-house and user-approved, unlike the Ketentuan, which is verbatim client content. If the client supplies their own wording it swaps like the WhatsApp number and the bank details.
+
 ### Hero-video gate — DECIDED, and it failed
 
 Settled in Phase 1b as the PRD requires, **before** anything was produced. The hero is **text and logo**, and there is no hero video.

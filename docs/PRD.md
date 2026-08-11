@@ -62,7 +62,7 @@ Task 7 mocks at the network level rather than stubbing functions, so Phases 2–
 | 1   | **Establish the art direction** | A written direction: type scale, spacing rhythm, section-transition language, and what "surpass the benchmark, inverted to light blue-white" means concretely. Driven by `/impeccable` plus any benchmark/moodboard references                  |
 | 2   | **Draft the hero copy**         | Indonesian headline, subheadline, and meta description — drafted as options, chosen by the user via `AskUserQuestion`. Decided here because copy and type scale are decided together: a 3-word headline and a 12-word one need different scales |
 | 3   | Analyze design system           | Audit [DESIGN.md](DESIGN.md) against the direction and the brand tokens; resolve gaps before any pixel is drawn. Task 1's chosen direction becomes its Overview north star, which is deliberately left unset until then                         |
-| 4   | Design system HTML              | One page rendering every token, type scale, and component state — including all three slot states and the date pill                                                                                                                             |
+| 4   | Design system HTML              | One page rendering every token, type scale, and component state — including all four slot states and the date pill                                                                                                                              |
 | 5   | Make it walkable                | Click handlers on that same page proving the landing → order → form journey                                                                                                                                                                     |
 
 **Task 1 is the one that keeps Phase 2 coherent.** The tokens are already decided (navy, accent, white); what is not decided anywhere is the art direction. Without it, Phase 2 runs `/impeccable` section by section and each section improvises its own visual idea — five sections, five directions, no through-line. That is exactly how a site reads as templated despite every section being individually fine. The direction is written once here and Phase 2 executes it.
@@ -75,7 +75,7 @@ Hero copy (task 2) is drafted in-house and user-approved — unlike the Ketentua
 
 ### Client checkpoint — the cheapest rework you will ever buy
 
-**The client sees the design system HTML before Phase 2 starts.** Art direction, type scale, colour application, all three slot states, the date pill, the hero copy.
+**The client sees the design system HTML before Phase 2 starts.** Art direction, type scale, colour application, all four slot states, the date pill, the hero copy.
 
 This is the highest-leverage checkpoint in the project. Rejecting a direction here costs **one HTML page**. The same rejection during Phase 2 costs five rebuilt sections; after Phase 2 it costs the landing page. Moving that conversation left is the entire point.
 
@@ -361,13 +361,13 @@ Phase 1a:
 
 Phase 1b:
 
-- [ ] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
-- [ ] Hero copy chosen — Indonesian headline, subheadline, meta description
+- [x] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
+- [x] Hero copy chosen — Indonesian headline, subheadline, meta description
 - [ ] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts
-- [ ] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted
-- [ ] Design system HTML renders every token, type scale, and component state — all three slot states plus the date pill
-- [ ] The same page is clickable through the landing → order → form journey
-- [ ] Hero-video gate decided either way
+- [ ] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted — **read and captured; deletion is the outstanding half.** [`docs/references/README.md`](references/README.md) says a reference stays while the sections it informs are being built, which is Phase 2, and this line says delete in 1b. Deleting is safe the moment the findings outlive the file, which they now do, so this closes at the end of 1b rather than at the start of Phase 2
+- [x] Design system HTML renders every token, type scale, and component state — **all four** slot states plus the date pill. Four, not three: `elapsed` was split out of `booked` in task 3, because rendering an hour that merely passed in the danger triple contradicts the system's own rule and overstates how busy the day was
+- [x] The same page is clickable through the landing → order → form journey
+- [x] Hero-video gate decided either way — **failed**, hero stays text and logo. Reasoning in [DESIGN.md](DESIGN.md)
 - [ ] `/design-review` passed
 
 Phase 2:
