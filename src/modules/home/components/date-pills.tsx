@@ -46,7 +46,16 @@ export function DatePills({
               "shrink-0 rounded-full border px-4 py-2 text-center transition-colors duration-150",
               isSelected
                 ? "border-[var(--color-interactive)] bg-[var(--color-interactive)] text-[var(--color-fg-inverse)]"
-                : "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:bg-[var(--color-wash)]",
+                : // HOVER HAS TO CHANGE THE BORDER, NOT ONLY THE FILL.
+                  // `--color-wash` and `--color-page` are both blue-50, so the
+                  // fill this pill hovers to is EXACTLY the band it sits on —
+                  // measured, white to rgb(239,246,255) against a body of
+                  // rgb(239,246,255). The pill did not light up, it dissolved,
+                  // and with the border left at the hairline there was no
+                  // hover feedback at all. DESIGN.md's Date Pill spec already
+                  // called for both halves: "Hover: blue-50 fill, blue-600
+                  // border". Only the fill had been implemented.
+                  "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:border-[var(--color-interactive)] hover:bg-[var(--color-wash)]",
             )}
           >
             <span
