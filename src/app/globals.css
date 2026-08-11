@@ -145,6 +145,22 @@ h3 {
   outline-offset: 2px;
 }
 
+/* Tailwind v4 dropped `button { cursor: pointer }` from Preflight, and the
+ * consequence is not uniform — it is a disagreement. `slot-cell.tsx` opts back
+ * in by hand, so the slot grid shows the hand while the date pill, the "Sudah
+ * lewat" disclosure, both "Coba lagi" buttons and the /booking submit show the
+ * arrow. Anchors keep the hand from the user agent, which is why the CTAs feel
+ * right and the buttons do not, and why the inconsistency reads as breakage
+ * rather than as a style.
+ *
+ * Restored once here rather than as a sixth hand-copied utility. `aria-disabled`
+ * is excluded so `cursor-not-allowed` still wins on a refused control — this
+ * rule is unlayered and would otherwise outrank the utility that sets it. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 /* The decorative half of a slot tap. The FILL lands at 0ms because it is the
  * answer to "is this slot mine now"; this ring is the flourish and runs after,
  * so the answer never waits on the decoration.
