@@ -107,7 +107,17 @@
  * blue-and-white booking interface for a mini soccer field — the deliberate
  * inverse of the dark-neon local benchmark." A dark mode would undo the single
  * strongest decision in the design, and the client named the dark original as
- * the thing to be the opposite of. */
+ * the thing to be the opposite of.
+ *
+ * Which is exactly why `color-scheme` has to be DECLARED rather than left at
+ * `normal`. Omitting it does not mean "light" — it means "no opinion", and a
+ * visitor whose phone is in dark mode gets user-agent widgets rendered dark on
+ * top of a page that is committed to light: the /booking file picker and text
+ * fields, the date row's scrollbar, form autofill. The one-world decision is a
+ * claim about what the visitor sees, so the browser has to be told. */
+:root {
+  color-scheme: light;
+}
 
 body {
   background: var(--color-page);
