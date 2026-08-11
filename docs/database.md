@@ -128,7 +128,7 @@ Upload the proof to R2 **before** the database insert. If the insert then return
 
 ## `src/domain/dates.ts` contract
 
-- Asia/Jakarta only. `toISOString()` is banned anywhere touching `booking_date` — it shifts to UTC and can move the date across midnight, which is the same class of bug as the Neon parser issue above, just in application code instead of the driver.
+- Asia/Makassar (WITA) only — the field is in Lombok, one hour ahead of Jakarta. `toISOString()` is banned anywhere touching `booking_date` — it shifts to UTC and can move the date across midnight, which is the same class of bug as the Neon parser issue above, just in application code instead of the driver.
 - `isPastSlot()` must treat any date **strictly before today** as past, not just check whether today's slot start hour has already passed. This was a real bug, already found and fixed once: without the date check, yesterday's slots were incorrectly bookable. Don't let it regress.
 
 ## `src/modules/booking-form/booking-form.proof.ts` contract

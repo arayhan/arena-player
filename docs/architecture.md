@@ -331,7 +331,7 @@ The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) 
 
 ### The two library choices, settled — dates and icons
 
-**Dates: `date-fns` v4 + `@date-fns/tz`.** Tree-shaken per function, so only the handful this project uses is paid for. v4's timezone support is the `{ in: tz('Asia/Jakarta') }` option — **newer than reliable recall, so verify it against Context7 at install rather than writing it from memory.** The rules in [database.md](database.md) still bind whatever library is used: `toISOString()` never appears in a date path, and `isPastSlot` treats any date strictly before today as past.
+**Dates: `date-fns` v4 + `@date-fns/tz`.** Tree-shaken per function, so only the handful this project uses is paid for. v4's timezone support is the `{ in: tz('Asia/Makassar') }` option — **newer than reliable recall, so verify it against Context7 at install rather than writing it from memory.** The rules in [database.md](database.md) still bind whatever library is used: `toISOString()` never appears in a date path, and `isPastSlot` treats any date strictly before today as past.
 
 **Icons: `react-icons`.** Six are needed — calendar, clock, upload, check, map pin, and WhatsApp. The last one decided it: no mainstream icon set still ships a WhatsApp brand mark, and `react-icons` carries all six.
 
@@ -450,7 +450,7 @@ arena-player-web/
 │   │       └── booking-form.types.ts
 │   ├── domain/                 # BYTE-IDENTICAL with arena-player-admin — see the contract below
 │   │   ├── slots.ts            # 0 deps — TIME_SLOTS, canonicalisation, slotStartHour()
-│   │   ├── dates.ts            # date-fns — Asia/Jakarta helpers, booking window, isPastSlot
+│   │   ├── dates.ts            # date-fns — field-local WITA (Asia/Makassar) helpers, booking window, isPastSlot
 │   │   ├── status.ts           # 0 deps — the two status vocabularies and the 4→3 mapping
 │   │   ├── phone.ts            # 0 deps — normalisation, Indonesian mobile check
 │   │   └── *.test.ts           # one beside each
@@ -550,7 +550,7 @@ Everything both repos must agree on lives in **`src/domain/`**, at **the same pa
 | Module      | Dependencies               | Why both repos need it                                                                                                                                 |
 | ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `slots.ts`  | none                       | `TIME_SLOTS` and slot canonicalisation                                                                                                                 |
-| `dates.ts`  | `date-fns`, `@date-fns/tz` | Asia/Jakarta helpers, the booking window, `isPastSlot`                                                                                                 |
+| `dates.ts`  | `date-fns`, `@date-fns/tz` | Field-local WITA (Asia/Makassar) helpers, the booking window, `isPastSlot`                                                                             |
 | `status.ts` | none                       | The two status vocabularies, `ACTIVE_STATUSES` mirroring `uniq_active_slot`'s `WHERE` clause, and the 4→3 mapping the admin mutates and the site reads |
 | `phone.ts`  | none                       | Normalisation to `628xxxxxxxxx`, so a number the site stores and a number the admin searches for are the same string                                   |
 

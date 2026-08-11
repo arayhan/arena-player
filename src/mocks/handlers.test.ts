@@ -9,7 +9,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { TIME_SLOTS } from "@/domain/slots";
-import { bookingWindow, todayInJakarta } from "@/domain/dates";
+import { bookingWindow, todayAtField } from "@/domain/dates";
 
 import { server } from "./server";
 
@@ -18,7 +18,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 const BASE = "http://localhost:3000";
-const TODAY = todayInJakarta();
+const TODAY = todayAtField();
 
 function bookingForm(overrides: Record<string, string | Blob> = {}): FormData {
   const form = new FormData();

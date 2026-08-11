@@ -16,6 +16,8 @@ Both former open choices are now closed: dates use `date-fns` v4 + `@date-fns/tz
 
 ## Users
 
+**Market: Lombok, Nusa Tenggara Barat — and only Lombok.** Narrowed by the client 2026-08-11. This is one physical field serving local players; nothing about the product, its copy, or its metadata should read as a national platform. Location language, SEO description, and OG copy are written for someone searching "lapangan mini soccer Lombok / Mataram", not for a generic Indonesian audience.
+
 **Primary: the team captain / group organiser.** One person books on behalf of a group of roughly 8–12 players. They are usually mid-conversation in another chat while deciding, coordinating people who are not looking at the site. What they need from the product is a fast, unambiguous read of what is actually free, and then something concrete they can take back to the group.
 
 That situation drives two things already in the build: the order section sits within 1–2 scrolls of the top, and unavailable slots stay visible rather than hidden — an organiser needs to see that 18.00 is gone, not wonder why the list skips it.
@@ -42,8 +44,9 @@ The mechanism is the anti-double-booking guarantee: a partial unique index is th
 
 ## Operating Context
 
-- **Single field.** Confirmed. The `bookings` schema keys on `(booking_date, time_slot)` with no field identifier, and `uniq_active_slot` is correct as written. A second field would change the schema, the API contract, the mock, and the order section — it is not a small later addition.
-- Nine 2-hour slots per day, 06.00–24.00. Booking window is today + 13 days, Asia/Jakarta.
+- **Single field, in Lombok (NTB).** Confirmed. The `bookings` schema keys on `(booking_date, time_slot)` with no field identifier, and `uniq_active_slot` is correct as written. A second field would change the schema, the API contract, the mock, and the order section — it is not a small later addition.
+- Nine 2-hour slots per day, 06.00–24.00. Booking window is today + 13 days.
+- **Settled 2026-08-11 — timezone is Asia/Makassar (WITA).** The Lombok narrowing exposed a one-hour drift: every date helper pinned Asia/Jakarta (WIB, UTC+7) while the field runs on WITA (UTC+8). Fixed the same day on the user's go: `src/domain/dates.ts` now pins Asia/Makassar and its helpers are renamed field-neutral (`todayAtField`), and this repo's current-truth docs were swept. The decisive test instant (16:30Z) now distinguishes WITA from both UTC and the old WIB pin. **The admin re-copy is still owed**: it was attempted and reverted by a concurrent session in that worktree (hard rule 10 in action) — its `check:domain` will fail on `dates.ts` until its next owning session re-copies, which is that guard working as designed. The debt is recorded in admin's PROGRESS.md.
 - **Demand is same-day and next-day.** The 14-day window exists in the spec, but days 3–14 are rarely the reason someone opens the page. At 375px the date row is the first thing in the order section, so fourteen equal-weight pills spend the scarcest horizontal space on the least-used dates.
 - The booking journey deliberately breaks in the middle: the site hands off to WhatsApp, and the `/booking` link comes back through WhatsApp — typed by the admin today, sent by a bot later. `/booking` is therefore only ever reached by a pasted link.
 - Confirmation is manual and human. A slot becomes pending on form submit and only a person moves it to confirmed.

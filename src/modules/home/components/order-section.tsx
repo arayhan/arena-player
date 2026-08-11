@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 
-import { bookingWindow, todayInJakarta } from "@/domain/dates";
+import { bookingWindow, todayAtField } from "@/domain/dates";
 import type { TimeSlot } from "@/domain/slots";
 import { useMotion } from "@/lib/motion";
 
@@ -19,7 +19,7 @@ import { SlotCell } from "./slot-cell";
  * fetching, so building it first gives it the most iteration time instead of
  * the least.
  *
- * `bookingWindow()` and `todayInJakarta()` are computed once per mount rather
+ * `bookingWindow()` and `todayAtField()` are computed once per mount rather
  * than per render. They read the clock, so recomputing them mid-session would
  * let the window slide under a visitor who left the tab open — and a date that
  * silently stops being "today" is the kind of bug that only reproduces at
@@ -27,7 +27,7 @@ import { SlotCell } from "./slot-cell";
  */
 export function OrderSection() {
   const [window] = useState(() => bookingWindow());
-  const [today] = useState(() => todayInJakarta());
+  const [today] = useState(() => todayAtField());
   const [date, setDate] = useState(today);
   const [selected, setSelected] = useState<TimeSlot | null>(null);
 

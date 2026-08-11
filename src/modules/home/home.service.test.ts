@@ -12,7 +12,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { HttpResponse, http } from "msw";
 
 import { TIME_SLOTS } from "@/domain/slots";
-import { todayInJakarta } from "@/domain/dates";
+import { todayAtField } from "@/domain/dates";
 import { server } from "@/mocks/server";
 
 import { AvailabilityRequestError, fetchAvailability } from "./home.service";
@@ -21,7 +21,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const TODAY = todayInJakarta();
+const TODAY = todayAtField();
 
 /**
  * Replace the availability handler for one test.

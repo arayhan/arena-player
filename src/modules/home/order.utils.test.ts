@@ -23,31 +23,31 @@ const allAvailable: SlotAvailability[] = TIME_SLOTS.map((slot) => ({
   status: "available" as const,
 }));
 
-/** 2026-08-11 is a Tuesday. Jakarta is UTC+7, so 12:00Z is 19:00 local. */
+/** 2026-08-11 is a Tuesday. The field (Lombok) is WITA UTC+8, so 11:00Z is 19:00 local. */
 const at = (utcHour: number) => new Date(Date.UTC(2026, 7, 11, utcHour, 0, 0));
 
 describe("partitionSlots — the split that stops today reading as sold out", () => {
   it("returns every slot as live when the day has not started", () => {
-    // 22:00Z on the 10th is 05:00 Jakarta on the 11th — before slot one.
+    // 21:00Z on the 10th is 05:00 WITA on the 11th — before slot one.
     const { elapsed, live } = partitionSlots(
       allAvailable,
       "2026-08-11",
-      new Date(Date.UTC(2026, 7, 10, 22, 0, 0)),
+      new Date(Date.UTC(2026, 7, 10, 21, 0, 0)),
     );
     expect(elapsed).toHaveLength(0);
     expect(live).toHaveLength(9);
   });
 
-  it("splits six elapsed and three live at 17.00 Jakarta — the motivating case", () => {
-    // 10:00Z = 17:00 Jakarta. The last elapsed slot starts at 16.00.
-    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(10));
+  it("splits six elapsed and three live at 17.00 WITA — the motivating case", () => {
+    // 09:00Z = 17:00 WITA. The last elapsed slot starts at 16.00.
+    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(9));
     expect(elapsed).toHaveLength(6);
     expect(live).toHaveLength(3);
     expect(live.map((s) => s.slot)).toEqual(["18.00 - 20.00", "20.00 - 22.00", "22.00 - 24.00"]);
   });
 
   it("counts a slot that has ALREADY STARTED as elapsed, not live", () => {
-    // 12:00Z = 19:00 Jakarta, which is one hour INTO the 18.00-20.00 slot.
+    // 11:00Z = 19:00 WITA, which is one hour INTO the 18.00-20.00 slot.
     // isPastSlot compares `currentHour >= slotStartHour`, so a running hour is
     // past — and that is right: nobody can book an hour already underway.
     //
@@ -55,7 +55,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
     // reasoning from the mock in DESIGN.html rather than from the rule. The
     // code was correct and the expectation was not, which is the third time a
     // boundary assumption has been wrong in this repo before the code was.
-    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(12));
+    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(11));
     expect(elapsed).toHaveLength(7);
     expect(live.map((s) => s.slot)).toEqual(["20.00 - 22.00", "22.00 - 24.00"]);
   });
@@ -74,7 +74,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
       slot,
       status: "booked" as const,
     }));
-    const { elapsed } = partitionSlots(rows, "2026-08-11", at(10));
+    const { elapsed } = partitionSlots(rows, "2026-08-11", at(9));
     expect(elapsed).toHaveLength(6);
     expect(elapsed.every((s) => s.status === "elapsed")).toBe(true);
   });
@@ -84,7 +84,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
       slot,
       status: "booked" as const,
     }));
-    const { live } = partitionSlots(rows, "2026-08-11", at(12));
+    const { live } = partitionSlots(rows, "2026-08-11", at(11));
     expect(live.every((s) => s.status === "booked")).toBe(true);
   });
 
@@ -104,7 +104,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
   });
 
   it("preserves canonical slot order within each partition", () => {
-    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(10));
+    const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(9));
     expect(elapsed.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(0, 6));
     expect(live.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(6));
   });
@@ -123,7 +123,7 @@ describe("countAvailable — feeds the scarcity line", () => {
         { slot: "22.00 - 24.00", status: "booked" },
       ],
       "2026-08-11",
-      at(12),
+      at(11),
     );
     expect(countAvailable(live)).toBe(1);
   });
