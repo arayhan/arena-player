@@ -106,13 +106,49 @@ export function HomePage() {
         </div>
       </Section>
 
-      {/* Footer — Phase 2 task 5. Not a Section: it closes the page rather than
-          continuing the assembly, so it takes no ordinal and no keyline. */}
-      <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg)] py-12">
-        <div className="mx-auto w-full max-w-[1100px] px-4">
-          <p className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-            Closing CTA back to <code>#order</code> plus the footer — Phase 2 task 5.
+      {/* Not a Section: the footer closes the page rather than continuing the
+          assembly, so it takes no ordinal. Numbering it would be counting for
+          its own sake — the same reason the hero has no ordinal either. */}
+      <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg)]">
+        {/* The closing CTA returns to #order, NOT to /booking. The site has one
+            destination and the visitor has not chosen a slot yet — sending them
+            to a form they cannot fill would be the second destination this
+            whole flow was designed to avoid. */}
+        <div className="mx-auto w-full max-w-[1100px] px-4 py-16 md:py-24">
+          <h2 lang="id" className="max-w-[18ch]">
+            Lapangan kosong hari ini?
+          </h2>
+          <p lang="id" className="mt-4 max-w-[46ch] text-[color:var(--color-fg-muted)]">
+            Cek jadwalnya sekarang, pilih jamnya, sisanya lewat WhatsApp.
           </p>
+          <a
+            href="#order"
+            lang="id"
+            className="mt-8 inline-flex h-12 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]"
+          >
+            Lihat Jadwal
+          </a>
+        </div>
+
+        <div className="border-t border-[var(--color-border)]">
+          <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 py-8 md:flex-row md:items-center md:justify-between">
+            <span
+              aria-label="Arena Player"
+              role="img"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] font-[family-name:var(--font-display)] text-sm font-black text-[var(--color-fg-inverse)]"
+            >
+              AP
+            </span>
+            {/* No prices, no invented address, no social links nobody gave us.
+                A footer padded with plausible-looking filler is the same defect
+                as an invented address, just quieter. */}
+            <p
+              lang="id"
+              className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
+            >
+              Arena Player · Lapangan mini soccer
+            </p>
+          </div>
         </div>
       </footer>
     </main>

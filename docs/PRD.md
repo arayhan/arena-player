@@ -375,11 +375,11 @@ Phase 1b:
 
 Phase 2:
 
-- [ ] All 5 landing sections render, responsive 375px → 1440px
-- [ ] Order section reachable within 1–2 scrolls at 375px, anchor `#order` works from both CTAs
-- [ ] Slot grid reads the mock; all three states render correctly
-- [ ] Slot select → `wa.me` opens with the correct number and message template, and the page does **not** also navigate — WhatsApp is the single destination
-- [ ] No pricing anywhere on `/`
+- [x] All 5 landing sections render, responsive 375px → 1440px — **zero horizontal overflow measured at 375 / 768 / 1024 / 1280 / 1440**
+- [x] Order section reachable within 1–2 scrolls at 375px, anchor `#order` works from both CTAs — measured **exactly 1.00 viewport** (order top 812px, viewport 812px); both CTAs present
+- [x] Slot grid reads the mock; **all four** states render correctly — `elapsed` was split from `booked` in Phase 1b
+- [x] Slot select → `wa.me` opens with the correct number and message template, and the page does **not** also navigate — verified in-browser: a plain anchor, no handler, no `target="_blank"`
+- [x] No pricing anywhere on `/` — asserted against the rendered text: no `Rp`, no `IDR`, no thousand-separated digits. The single "harga" is inside Ketentuan rule 1 and names no number
 - [ ] Every section executes the 1b art direction — one visual language across all five, not five improvisations
 - [ ] Per-section gate passed as each merged: `prefers-reduced-motion` respected, Lighthouse mobile ≥ 85, keyboard navigation working, no CLS
 - [ ] OG meta tags + title/description + favicon generated from the logo
