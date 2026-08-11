@@ -6,7 +6,12 @@ import { bookingWindow } from "@/domain/dates";
 
 import { availabilityFor } from "./availability";
 
-const NOON = new Date("2026-08-09T05:00:00Z"); // 12:00 in Jakarta
+// 04:00Z is 12:00 at the field. It was 05:00Z with a comment reading "12:00 in
+// Jakarta", which stopped being true the moment the zone moved to WITA — that
+// instant is 13:00 there, so both the constant's name and its comment were
+// describing the old pin. Corrected rather than deleted, because a fixed
+// mid-day instant is what these tests want and `NOON` should mean noon.
+const NOON = new Date("2026-08-09T04:00:00Z");
 
 describe("availabilityFor", () => {
   it("returns all nine slots in canonical order, every time", () => {
