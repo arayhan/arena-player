@@ -431,7 +431,12 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             PANEL_CLASS,
             "border-2 outline-none",
             outcome?.kind === "created"
-              ? "border-[var(--color-interactive)]"
+              ? // NOT the interactive blue. DESIGN.md reserves blue-600 for
+                // "you can act on this", and a confirmed booking is precisely
+                // the state with nothing left to act on — a blue-ringed panel
+                // invites a click that does not exist. `--color-success-fg` is
+                // the token the system defines for exactly this.
+                "border-[var(--color-success-fg)]"
               : "border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)]",
           )}
         >

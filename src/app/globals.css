@@ -94,6 +94,13 @@
   --color-danger-surface: var(--color-red-100);
   --color-danger-line: var(--color-red-300);
   --color-danger-strong: var(--color-red-800);
+  /* Success is the one state with no hue of its own, and that is the point:
+   * DESIGN.md's semantic table says it "carries on weight and copy, never on
+   * the interactive blue", because blue-600 means "you can act on this" and a
+   * confirmed booking is the one thing there is nothing left to do about. The
+   * row was the only one of the table's twenty-one missing from this file, and
+   * the success panel had reached for `--color-interactive` in its absence. */
+  --color-success-fg: var(--color-navy-900);
 }
 
 /* No prefers-color-scheme block. DESIGN.md commits to one world: "Light,
