@@ -95,7 +95,19 @@
   --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
   --space-24:96px; --space-32:128px;
 
-  --radius-sharp:2px; --radius-card:4px; --radius-pill:999px;
+  /* RENAMED AND REVALUED at the client checkpoint, 2026-08-11. These were
+     --radius-sharp:2px and --radius-card:4px, and the client asked for
+     noticeably rounder geometry across inputs, buttons and layout.
+     The names changed with the values on purpose: a token called "sharp"
+     holding 10px is the stale-name trap this project keeps catching, and
+     "control" / "panel" say what the token is FOR rather than what it used
+     to look like.
+     THE PILL IS UNTOUCHED AT 999px, AND THAT IS THE WHOLE POINT. It stays the
+     only fully-round shape in the system, so a row of date pills still reads
+     as horizontally scrollable without an arrow, a fade, or a hint label. Round
+     everything and that signal is spent; 10px and 14px are unmistakably rounded
+     while leaving 999px meaning something. */
+  --radius-control:10px; --radius-panel:14px; --radius-pill:999px;
   --keyline:2px;
 
   --shadow-sm:0 1px 2px rgb(1 26 67 / .06);
@@ -213,7 +225,7 @@ h2{font-size:var(--text-h2);font-weight:700}
 h3{font-family:var(--font-manual);margin:0;font-size:var(--text-h3);font-weight:600;
   line-height:1.2;letter-spacing:-.01em}
 code{font-family:ui-monospace,'Cascadia Code',Menlo,monospace;font-size:var(--text-xs);
-  background:var(--color-bg-subtle);padding:2px 6px;border-radius:var(--radius-sharp)}
+  background:var(--color-bg-subtle);padding:2px 6px;border-radius:var(--radius-control)}
 a{color:var(--color-interactive)}
 a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
 
@@ -236,13 +248,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .new-tag{display:inline-flex;align-items:center;gap:var(--space-1);
   font-family:var(--font-manual);font-size:var(--text-xs);font-weight:700;
   text-transform:uppercase;letter-spacing:.06em;color:var(--new-part);
-  border:2px solid var(--new-part);border-radius:var(--radius-sharp);
+  border:2px solid var(--new-part);border-radius:var(--radius-control);
   padding:1px var(--space-2);margin-top:var(--space-2);white-space:nowrap}
 
 /* The plate. Every content block is a white panel with a navy keyline,
    the way a manual boxes what you are meant to look at. */
 .plate{background:var(--plate-bg);border:var(--keyline) solid var(--plate-keyline);
-  border-radius:var(--radius-card);padding:var(--space-3)}
+  border-radius:var(--radius-panel);padding:var(--space-3)}
 @media(min-width:420px){.plate{padding:var(--space-4)}}
 @media(min-width:560px){.plate{padding:var(--space-6)}}
 .plate--tight{padding:var(--space-4)}
@@ -276,20 +288,37 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .stack-4{margin-top:var(--space-4)}.stack-6{margin-top:var(--space-6)}
 .stack-8{margin-top:var(--space-8)}
 @media(min-width:560px){.cols-2{grid-template-columns:1fr 1fr}}
+
+/* THE SLOT GRID GOES MULTI-COLUMN, BUT ONLY WHERE THE LABEL STILL FITS.
+   Requested by the client on 2026-08-11: "slot list perlu dibuat jadi grid,
+   bukan list ke bawah." The measured constraint that made it one column is
+   real and unchanged -- "Menunggu Konfirmasi" is 20 characters and needs
+   146px, and a 3-column grid at 375px gives about 110px per cell -- but it
+   only BINDS at phone width. Tablet and desktop have the room, so columns
+   there cost nothing and give the client the grid they asked for.
+   The label moves under the time inside each cell rather than beside it, so
+   all 20 characters survive at any column count. Below 768px this rule does
+   not apply at all and the single column stands. */
+.slot-grid{display:grid;gap:var(--space-3)}
+@media(min-width:768px){
+  .slot-grid{grid-template-columns:repeat(2,1fr)}
+  .slot-grid .slot{flex-direction:column;align-items:flex-start;gap:var(--space-1)}
+}
+@media(min-width:1024px){.slot-grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:900px){.cols-3{grid-template-columns:repeat(3,1fr)}}
 
 /* --- parts inventory ------------------------------------------- */
 .inv{display:grid;gap:var(--stud);grid-template-columns:repeat(2,1fr)}
 @media(min-width:560px){.inv{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:900px){.inv{grid-template-columns:repeat(5,1fr)}}
-.part{border:var(--keyline) solid var(--plate-keyline);border-radius:var(--radius-card);
+.part{border:var(--keyline) solid var(--plate-keyline);border-radius:var(--radius-panel);
   overflow:hidden;background:var(--plate-bg);position:relative}
 .part__no{position:absolute;top:0;left:0;background:var(--inventory-tag);
   color:var(--inventory-tag-fg);font-family:var(--font-manual);font-weight:700;
   font-size:var(--text-xs);padding:2px var(--space-2);
   border-right:var(--keyline) solid var(--plate-keyline);
   border-bottom:var(--keyline) solid var(--plate-keyline);
-  border-bottom-right-radius:var(--radius-card);font-variant-numeric:tabular-nums}
+  border-bottom-right-radius:var(--radius-panel);font-variant-numeric:tabular-nums}
 .part__chip{height:56px}
 .part__meta{padding:var(--space-2) var(--space-3);font-size:var(--text-xs);line-height:1.45;
   border-top:var(--keyline) solid var(--plate-keyline)}
@@ -307,7 +336,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .slot{display:flex;align-items:center;justify-content:space-between;
   flex-wrap:wrap;gap:var(--space-1) var(--space-3);
   width:100%;min-height:var(--slot-min-height);padding:var(--space-4);
-  border-radius:var(--radius-sharp);background:var(--slot-bg);
+  border-radius:var(--radius-control);background:var(--slot-bg);
   border:1px solid var(--slot-border);color:var(--slot-fg);
   font-family:var(--font-body);font-size:var(--text-body);text-align:left;
   cursor:pointer;transition:background var(--dur-base) var(--ease-out),
@@ -368,7 +397,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   cursor:not-allowed}
 
 /* --- buttons ------------------------------------------------------ */
-.btn{height:var(--button-height);padding:0 var(--space-6);border-radius:var(--radius-sharp);
+.btn{height:var(--button-height);padding:0 var(--space-6);border-radius:var(--radius-control);
   font-family:var(--font-body);font-size:var(--text-body);font-weight:600;cursor:pointer;
   border:1px solid transparent;transition:background var(--dur-fast) var(--ease-out)}
 .btn--primary{background:var(--button-primary-bg);color:var(--button-primary-fg)}
@@ -394,7 +423,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 /* --- inputs -------------------------------------------------------- */
 .field{display:flex;flex-direction:column;gap:var(--space-2)}
 .label{font-size:var(--text-sm);font-weight:500}
-.input{height:var(--input-height);padding:0 var(--space-3);border-radius:var(--radius-sharp);
+.input{height:var(--input-height);padding:0 var(--space-3);border-radius:var(--radius-control);
   border:1px solid var(--input-border);font-family:var(--font-body);font-size:var(--text-body);
   background:var(--input-bg);color:var(--input-fg)}
 .input:focus{outline:2px solid var(--color-focus);outline-offset:2px;border-color:var(--color-focus)}
@@ -408,7 +437,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .input:disabled{background:var(--input-disabled-bg);color:var(--input-disabled-fg)}
 .err{font-size:var(--text-sm);color:var(--input-error-fg)}
 
-.status-card{border:1px solid;border-radius:var(--radius-card);padding:var(--space-4)}
+.status-card{border:1px solid;border-radius:var(--radius-panel);padding:var(--space-4)}
 .status-card--pending{background:var(--slot-pending-bg);border-color:var(--slot-pending-border);
   color:var(--slot-pending-fg)}
 .status-card--booked{background:var(--slot-booked-bg);border-color:var(--slot-booked-border);
@@ -431,7 +460,7 @@ th,td{text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px so
 th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
   font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
 
-.skeleton{height:var(--slot-min-height);border-radius:var(--radius-sharp);
+.skeleton{height:var(--slot-min-height);border-radius:var(--radius-control);
   background:var(--color-bg-subtle);border:1px solid var(--color-border)}
 .decisions{margin:var(--space-4) 0 0;padding-left:var(--space-6)}
 .decisions li{margin-bottom:var(--space-3);max-width:66ch}
@@ -470,7 +499,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
    on one line in both. The frame is still narrower than the device; see the
    note under the frames, which now says so rather than claiming otherwise. */
 .frame__screen{width:100%;max-width:375px;border:var(--keyline) solid var(--plate-keyline);
-  border-radius:var(--radius-card);background:var(--color-bg);padding:var(--space-3)}
+  border-radius:var(--radius-panel);background:var(--color-bg);padding:var(--space-3)}
 .frame__note{font-size:var(--text-xs);color:var(--color-fg-muted);
   margin:var(--space-3) 0 0;max-width:375px}
 .scarcity{font-size:var(--text-sm);font-weight:600;color:var(--color-interactive);
@@ -478,7 +507,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 .elapsed{width:100%;display:flex;align-items:center;gap:var(--space-2);
   padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);
   background:var(--color-bg-subtle);border:1px solid var(--color-border);
-  border-radius:var(--radius-sharp);color:var(--color-fg-muted);
+  border-radius:var(--radius-control);color:var(--color-fg-muted);
   font-family:var(--font-body);font-size:var(--text-sm);cursor:pointer;text-align:left}
 .elapsed__caret{transition:transform var(--dur-fast) var(--ease-out)}
 .elapsed[aria-expanded=true] .elapsed__caret{transform:rotate(90deg)}
@@ -487,9 +516,9 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
 /* Deliberately NOT WhatsApp green. Another brand's colour has no place in this
    palette, and this page is the artifact that must model the system, not bend it. */
 .wa{background:var(--color-bg-subtle);border:1px solid var(--color-border);
-  border-radius:var(--radius-card);padding:var(--space-3);font-size:var(--text-sm);line-height:1.5}
+  border-radius:var(--radius-panel);padding:var(--space-3);font-size:var(--text-sm);line-height:1.5}
 .wa__meta{font-size:var(--text-xs);color:var(--color-fg-muted);margin:var(--space-2) 0 0}
-.summary{border:1px solid var(--color-border);border-radius:var(--radius-sharp);
+.summary{border:1px solid var(--color-border);border-radius:var(--radius-control);
   padding:var(--space-3);margin-bottom:var(--space-3);font-size:var(--text-sm)}
 .result__mark{font-family:var(--font-manual);font-weight:700;margin:0 0 var(--space-1)}
 .result__mark--ok{color:var(--result-ok-fg)}
@@ -582,8 +611,8 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__title">
         <h2 lang="id">Butuh keputusan Anda</h2>
         <p class="step__lede" lang="id">
-          Tiga hal belum bisa kami putuskan sendiri. Dua di antaranya menghentikan pekerjaan
-          sampai dijawab, jadi kami taruh di depan — sebelum langkah 00 — bukan di akhir.
+          Dua hal tersisa, dan keduanya bukan keputusan — cuma data yang belum kami terima.
+          Pertanyaan yang menghentikan pekerjaan sudah dijawab.
         </p>
         <!-- IN INDONESIAN, DELIBERATELY. The rest of this page is English because
              its reader is a developer; this block's reader is the client, and it
@@ -597,21 +626,26 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
     </div>
     <div class="plate">
       <ol class="decisions" lang="id">
-        <li><strong>Setelah pilih jam, pelanggan diarahkan ke WhatsApp — dan berhenti di
-          situ.</strong> Website tidak membuka formulir sendiri; link formulir dikirim balik
-          oleh admin lewat chat. Apakah ini sesuai cara Anda bekerja, dan apakah ada yang
-          standby membalas selama jam buka? <em>Ini menentukan halaman utama.</em></li>
-        <li><strong>Harga sewa — ditampilkan atau tidak?</strong> Sekarang tidak ada angka
-          sama sekali. Formulir hanya menyebut “DP 50%, nominal dikonfirmasi admin”. Kalau
-          harga mau ditampilkan, kami butuh daftar tarifnya: satu harga untuk semua jam, atau
-          beda per jam, per hari, atau akhir pekan? <em>Ini menentukan formulir booking.</em></li>
-        <li><strong>Enam hal yang belum ada dan tidak bisa kami karang</strong> — nomor
+        <li><strong>Daftar tarif sewa.</strong> Sudah diputuskan: harga <em>tidak</em> muncul di
+          halaman utama, tapi <em>muncul</em> di formulir booking. Yang belum ada angkanya —
+          satu harga untuk semua jam, atau beda per jam, per hari, atau akhir pekan? Sampai
+          daftarnya masuk, formulir tetap menulis “nominal dikonfirmasi admin”, dan
+          <strong>kami tidak akan mengarang angka sementara</strong>: dari semua data yang
+          belum ada, harga satu-satunya yang bisa membuat orang benar-benar mentransfer
+          uang.</li>
+        <li><strong>Enam hal lain yang belum ada dan tidak bisa kami karang</strong> — nomor
           WhatsApp, rekening dan nama pemilik rekening, alamat dan titik Google Maps, foto
           lapangan, file logo, dan persetujuan atas tulisan headline. Website tetap jalan
           dengan tempat kosong sampai semuanya masuk. Khusus foto: kami tidak akan membuat
           foto lapangan palsu — pelanggan berhak melihat lapangan yang benar-benar mereka
           pesan.</li>
       </ol>
+      <p class="note stack-4" lang="id">
+        <strong>Sudah dijawab 11 Agu 2026:</strong> alur WhatsApp-saja dikonfirmasi — admin
+        standby membalas dengan link formulir, dan nanti bisa diganti bot. Harga: tidak
+        ditampilkan di halaman utama, ditampilkan di formulir booking. Dua jawaban itu
+        membuka Phase 2 dan Phase 3.
+      </p>
     </div>
   </div>
 </section>
@@ -807,10 +841,13 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
              is that its numbers are checkable is worse than no count. -->
         <p class="new-tag">+ 6 states</p>
         <p class="step__lede">
-          One column, full-width rows, for one measurable reason: <strong>“Menunggu Konfirmasi”
-          is 20 characters.</strong> A 3-column grid at 375px gives ~110px per cell and the
-          label cannot fit; 2-column truncates it. Full-width fits it at 146px inside a 343px
-          row. <strong>Click an available slot, then click it again to deselect.</strong>
+          <strong>One column on a phone, a grid above 768px.</strong> The constraint is one
+          number: <strong>“Menunggu Konfirmasi” is 20 characters</strong> and needs 146px. At
+          375px a 3-column grid gives about 110px per cell and the label cannot fit, so the
+          phone keeps a single full-width column where it fits at 146px inside a 343px row.
+          Tablet and desktop have the room, so they get columns — and the label sits under the
+          time rather than beside it, which is what keeps all 20 characters at any column count.
+          <strong>Click an available slot, then click it again to deselect.</strong>
         </p>
       </div>
     </div>
@@ -819,7 +856,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <polygon points="214,24 228,30 214,36"/>
     </svg>
     <div class="plate settle">
-      <div class="grid" role="group" aria-label="Slot waktu" lang="id" style="max-width:520px">
+      <div class="slot-grid" role="group" aria-label="Slot waktu" lang="id">
         <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span></button>
         <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Tersedia</span></button>
         <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
@@ -984,8 +1021,8 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
           <h3 class="sub-h">Radius — mixed on purpose</h3>
           <p class="note">Near-sharp geometry carries the Orbitron feel; only date pills go fully round.</p>
           <div class="radii">
-            <div style="border-radius:var(--radius-sharp)">2px</div>
-            <div style="border-radius:var(--radius-card)">4px</div>
+            <div style="border-radius:var(--radius-control)">2px</div>
+            <div style="border-radius:var(--radius-panel)">4px</div>
             <div style="width:88px;border-radius:var(--radius-pill)">pill</div>
           </div>
         </div>
@@ -994,9 +1031,9 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <h3 class="sub-h stack-8">Elevation — two shadows, both navy-tinted</h3>
       <p class="note">Depth comes from keylines and tonal plates. Black shadows on a blue-white page read as dirt.</p>
       <div class="grid cols-2 stack-4">
-        <div style="border:1px solid var(--card-border);border-radius:var(--radius-card);padding:var(--space-4);box-shadow:var(--shadow-sm)">
+        <div style="border:1px solid var(--card-border);border-radius:var(--radius-panel);padding:var(--space-4);box-shadow:var(--shadow-sm)">
           <strong>--shadow-sm</strong><p class="note" style="margin:var(--space-2) 0 0">0 1px 2px · resting</p></div>
-        <div style="border:1px solid var(--card-border);border-radius:var(--radius-card);padding:var(--space-4);box-shadow:var(--shadow-md)">
+        <div style="border:1px solid var(--card-border);border-radius:var(--radius-panel);padding:var(--space-4);box-shadow:var(--shadow-md)">
           <strong>--shadow-md</strong><p class="note" style="margin:var(--space-2) 0 0">0 4px 12px · raised</p></div>
       </div>
 

@@ -51,8 +51,8 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
 rounded:
-  sharp: 2px
-  card: 4px
+  control: 10px
+  panel: 14px
   full: 9999px
 spacing:
   1: 4px
@@ -69,7 +69,7 @@ components:
   slot-available:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: 16px
     height: 56px
   slot-available-hover:
@@ -103,7 +103,7 @@ components:
   button-primary:
     backgroundColor: "{colors.navy-900}"
     textColor: "{colors.white}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: 0 24px
     height: 48px
   button-primary-hover:
@@ -113,7 +113,7 @@ components:
   button-secondary:
     backgroundColor: transparent
     textColor: "{colors.navy-900}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: 0 24px
     height: 48px
   button-disabled:
@@ -122,7 +122,7 @@ components:
   input:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
-    rounded: "{rounded.sharp}"
+    rounded: "{rounded.control}"
     padding: 0 12px
     height: 48px
   input-error:
@@ -203,7 +203,7 @@ Read once from `docs/references/benchmark-bataskotapoint.png`, a full-page deskt
 - **The rules are three near-identical dark cards** with keywords highlighted inline in green, red and yellow. Dense, low-contrast, and unscannable — and Arena Player's Ketentuan is ten verbatim rules, which is more content in the same trap.
 - **The map is a dead grey rectangle** in the capture, i.e. an unloaded embed shipped as the final state. Location has to survive its own loading state here.
 
-The system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on near-sharp geometry and generous white space. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added. The one fully-round shape in the entire system is the date pill, and its roundness is functional.
+The system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on rounded geometry and generous white space. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added. The one **fully**-round shape in the entire system is still the date pill, and its roundness is functional — 10px and 14px are unmistakably rounded while leaving 999px meaning something.
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
@@ -242,6 +242,23 @@ The order section is exempt for a stated reason, not by oversight. It is where t
 - **Everything still routes through `src/lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
 - **No CLS, and the performance budget is untouched.** GSAP is already the largest single item in a tight budget, so added effects reuse the existing instance. On a mid-range Android in an in-app webview the binding cost is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the Lighthouse gate.
 
+### Motion, settled at the 2026-08-11 checkpoint — what Phase 2 builds
+
+The client asked for four things: creative button micro-interactions ("misal scramble effect ketika hover"), a header animation "menggunakan three.js, atau anime.js", scroll-triggered animation, and genuinely designed responsive behaviour. All four are in. **Neither named library is.**
+
+| Asked for                   | Ships as                                                                                      | Why                                                                                                                                                                                                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `three.js` header animation | **A hand-written GLSL fragment shader on a fullscreen quad**, or OGL if the shader needs help | three.js is ~150 KB gzip. `/` measures 137.0 KB against a 240 KB ceiling, so it is **larger than the entire remaining budget**, and 3.75× the 40 KB lazy-chunk cap the WebGL exception is granted under. A shader is ~3–5 KB with no library; OGL is ~10 KB |
+| `anime.js`                  | **GSAP**, already installed and already lazy-loaded                                           | A second animation runtime costs kilobytes for no capability GSAP lacks. [architecture.md](architecture.md) settled this: _"Reach for the shader, not the engine."_                                                                                         |
+| Scramble-on-hover buttons   | GSAP, through `src/lib/motion.ts`                                                             | Text scramble is a per-frame character swap; GSAP drives it                                                                                                                                                                                                 |
+| Scroll-triggered reveals    | GSAP ScrollTrigger, through `src/lib/motion.ts`                                               | Measure the plugin against the budget before it merges                                                                                                                                                                                                      |
+
+**None of this is a refusal, and none of it costs the client the effect they asked for.** The header still gets a moving, generative WebGL moment; the buttons still scramble; the page still animates on scroll. What changed is the vehicle, and the reason is arithmetic that was written down before the request arrived rather than invented to deflect it.
+
+**The order section stays exempt.** Expressive motion belongs to the hero, the content sections and the transitions between them. The slot grid gets functional feedback only — state change, selection, the elapsed collapse. That split predates this checkpoint and survives it: the organiser is deciding fast with eight to twelve people waiting, and motion that delays that decision works against the outcome the client is paying for.
+
+**Every effect still goes through `src/lib/motion.ts`, and every one is still chosen by the user before code is written.** This checkpoint raised the ceiling; it pre-approved no specific animation.
+
 ### Hero copy — chosen in task 2
 
 | Slot             | Copy                                                                                                     |
@@ -277,7 +294,7 @@ Consequences, all of them deliberate:
 - Light and blue-white, never dark — the anti-reference is binding
 - **The build-instruction book: every part shown before it is used, every step numbered**
 - Oversized Orbitron display against Inter body; no third face
-- Near-sharp corners throughout; exactly one round shape, and it means something
+- Rounded throughout — 10px controls, 14px panels; exactly one **fully** round shape, and it means something
 - Status is a colour _triple_, never a single hue
 - Navy-tinted shadows only; black shadows read as dirt on a blue-white page
 - Whitespace is the layout device, not a shortage of content
@@ -396,11 +413,15 @@ Layout is answerable to a hard budget, not to taste: LCP under 2.5s, Lighthouse 
 
 ## Shapes
 
-**Architectural sharpness, with one deliberate exception.** Interactive surfaces take a 2px radius; cards and panels take 4px. That near-sharp geometry is what carries the athletic Orbitron feel — softer corners would make the same type read as generic SaaS.
+**Rounded, with one shape reserved.** Interactive surfaces take a **10px** radius (`rounded.control`); cards and panels take **14px** (`rounded.panel`).
+
+**Changed at the client checkpoint, 2026-08-11.** These were 2px and 4px, and the section argued that near-sharp geometry was what carried the athletic Orbitron feel. The client asked for noticeably rounder geometry across inputs, buttons and layout, and that is their call to make about their own product — the checkpoint exists precisely so a preference like this surfaces while it costs one HTML page rather than five rebuilt sections. The token **names** changed with the values: a token called `sharp` holding 10px is the stale-name trap this project keeps catching, and `control` / `panel` say what the token is for rather than what it used to look like.
 
 The exception is the **date pill**, the only fully round shape in the system (`9999px`). Its roundness is functional signalling, not decoration: a row of pills reads as horizontally scrollable without needing an arrow, a gradient fade, or a hint label.
 
-**The One-Round-Shape Rule.** Nothing else in the system is fully round. The moment a second element takes the pill radius, the date row stops meaning "this scrolls" and becomes just another style.
+**The One-Round-Shape Rule.** Nothing else in the system is **fully** round. The moment a second element takes the pill radius, the date row stops meaning "this scrolls" and becomes just another style.
+
+**This rule survived the 2026-08-11 rounding, and that was the point of how it was applied.** The client asked for rounder geometry everywhere; everything moved to 10px and 14px, and the pill stayed at `9999px`. The gap between "clearly rounded" and "fully round" is what still carries the signal. Had the whole system gone to 24px the pill would have become just the roundest thing rather than the only round thing, and the date row would have needed an arrow or a fade to say what its shape says for free.
 
 Borders are 1px hairlines at rest and 2px only to signal focus or error — weight change carries the state, so no state depends on colour alone.
 
@@ -408,7 +429,7 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 ### Buttons
 
-- **Shape:** near-sharp (2px), 48px tall, comfortably above the 44px tap minimum.
+- **Shape:** 10px radius (`rounded.control`), 48px tall, comfortably above the 44px tap minimum.
 - **Primary:** navy fill, white text, 24px horizontal padding.
 - **Hover / Active:** hover deepens to `navy-700`; active shifts to `blue-700`, so the press reads as the interactive colour rather than as more navy.
 - **Secondary:** transparent fill, 1px navy border, navy text. Hover fills `grey-50`.
@@ -418,11 +439,16 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 This is the same rule the slot cell and the date pill already follow, and the submit button was the one place breaking it. Worth stating separately because the pull toward native `disabled` is strong: it is shorter, it is what the platform suggests, and it produces a control that looks correct while being unreachable.
 
-**One column, full-width rows.** This is not a stylistic preference and must not be "improved" into a grid.
+**One column on a phone. A grid above 768px.** The single-column rule was never about taste, and the grid does not overturn it — it applies it where the measurement actually binds.
 
-"Menunggu Konfirmasi" is 20 characters. A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. Full-width fits it at full size and yields a tap target far above minimum.
+"Menunggu Konfirmasi" is 20 characters and needs 146px. A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. So **below 768px the list stays one full-width column**, where it fits at 146px inside a 343px row and the tap target lands far above minimum.
 
-- **Layout:** time left, state right, 16px padding, 56px minimum height, 2px radius.
+**Above 768px the constraint stops binding**, so the list becomes 2 columns, and 3 above 1024px. The state label moves **under** the time inside each cell rather than beside it, which is what keeps all 20 characters at any column count.
+
+**Requested by the client at the 2026-08-11 checkpoint** — _"slot list perlu dibuat jadi grid, bukan list ke bawah"_. The earlier wording here said a grid "must not" be built, which was true of the phone and overstated everywhere else. What must not happen is a grid **at 375px**, or a label truncated to fit one.
+
+- **Layout, phone:** time left, state right, 16px padding, 56px minimum height, 10px radius.
+- **Layout, ≥768px:** time above, state below, same padding and radius; the cell grows rather than the label shrinking.
 - **Available:** white fill, 1px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
 - **Hover:** fills `blue-50`. Available cells only.
 - **Selected:** `blue-600` fill, white text, label "Dipilih".
@@ -456,7 +482,7 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 
 ### Inputs / Fields
 
-- **Style:** 48px tall, 2px radius, 1px `grey-200` border, 12px padding, white fill.
+- **Style:** 48px tall, 10px radius, 1px `grey-200` border, 12px padding, white fill.
 - **Focus:** 2px `blue-600` outline at 2px offset. Never `outline: none` without a replacement.
 - **Error:** 2px `red-800` border **and** `red-100` field fill, with `red-800` message text tied to the field via `aria-describedby`.
 - **Disabled:** `grey-50` fill, muted text.
@@ -472,7 +498,7 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 
 ### Cards / Containers
 
-4px radius, 1px `grey-200` border, white fill, 16px internal padding, `shadow-sm` at rest.
+14px radius, 1px `grey-200` border, white fill, 16px internal padding, `shadow-sm` at rest.
 
 **Callouts are tonal, not tabbed.** A callout card drops its shadow and fills `grey-50` instead. It does **not** take a thick coloured left border — that side-tab treatment is one of the most recognisable tells of generated UI, and it contradicts the tonal-layering approach the rest of the system uses for depth.
 
@@ -493,7 +519,7 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 - **Don't** go dark, neon, or saturated. The anti-reference is binding, and this is the one direction the client has ruled out by name.
 - **Don't** render a price on `/`. That half of the rule is permanent. `/booking` is the exception the client settled on 2026-08-11 — a real rupiah amount appears there, once the visitor has arrived through the WhatsApp link.
 - **Don't** invent a placeholder price on `/booking` either. The rate card has not been supplied, so the figure is `TODO(content)`. Every other placeholder in this project is inert if it ships by accident; a price is the one a visitor would act on.
-- **Don't** turn the slot grid into 2 or 3 columns. The 20-character state label does not fit, and truncating it destroys the information the cell exists to carry.
+- **Don't** turn the slot list into 2 or 3 columns **below 768px**, and don't truncate the state label to make columns fit at any width. The 20-character label is the information the cell exists to carry. Columns above 768px are correct and expected — see the Slot Cell section.
 - **Don't** hide unavailable slots.
 - **Don't** add a third typeface, or apply body leading to Orbitron.
 - **Don't** load fonts from a CDN `<link>` in production — `next/font` is load-bearing for the no-CLS guarantee.
