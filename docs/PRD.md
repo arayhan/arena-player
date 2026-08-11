@@ -364,11 +364,11 @@ Phase 1b:
 - [x] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
 - [x] Hero copy chosen — Indonesian headline, subheadline, meta description
 - [ ] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts
-- [ ] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted — **read and captured; deletion is the outstanding half.** [`docs/references/README.md`](references/README.md) says a reference stays while the sections it informs are being built, which is Phase 2, and this line says delete in 1b. Deleting is safe the moment the findings outlive the file, which they now do, so this closes at the end of 1b rather than at the start of Phase 2
+- [x] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted — `benchmark-bataskotapoint.png` (6.8 MB) read once, findings written into DESIGN.md as a comparison table plus four falsifiable claims, then deleted. The conclusions outlive the file, which is the condition [`docs/references/README.md`](references/README.md) sets for deleting one
 - [x] Design system HTML renders every token, type scale, and component state — **all four** slot states plus the date pill. Four, not three: `elapsed` was split out of `booked` in task 3, because rendering an hour that merely passed in the danger triple contradicts the system's own rule and overstates how busy the day was
 - [x] The same page is clickable through the landing → order → form journey
 - [x] Hero-video gate decided either way — **failed**, hero stays text and logo. Reasoning in [DESIGN.md](DESIGN.md)
-- [ ] `/design-review` passed
+- [x] `/design-review` passed — four findings fixed and verified by measurement, one accepted with its measurement recorded. **Ran degraded**: Codex was unavailable and no subagent was dispatched, so it was single-reviewer. Report in `~/.gstack/projects/arayhan-arena-player/designs/design-audit-20260811/`
 
 Phase 2:
 
