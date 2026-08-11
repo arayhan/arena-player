@@ -38,8 +38,20 @@ function useMockServiceWorker(): boolean {
     let cancelled = false;
 
     void import("@/mocks/browser")
-      .then(({ worker }) => worker.start({ onUnhandledRequest: "bypass" }))
+      .then(({ startWorker }) => startWorker())
       .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch((error: unknown) => {
+        // Render anyway. A dev whose mock did not start should see the app and
+        // a loud reason, not a blank page — requests will visibly 404, which is
+        // a far better signal than nothing at all. (eng-review task T5.)
+        console.error(
+          "[mocks] worker.start() failed — rendering without the mock. " +
+            "API requests will 404.\n" +
+            "Check that public/mockServiceWorker.js exists (pnpm exec msw init public --save).",
+          error,
+        );
         if (!cancelled) setReady(true);
       });
 
