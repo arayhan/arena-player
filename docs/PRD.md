@@ -38,7 +38,7 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 | 7   | Mock layer + data plumbing          | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance                                                                                                                                                                                                                                               |
 | 8   | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `src/lib/motion.ts` wrapping `gsap.matchMedia()`                                                                                                                                                                                                                                            |
 
-**`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of _new_ defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, `rg "TODO\(content\)"` finds exactly the six declared categories, no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
+**`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of _new_ defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, every `TODO(content)` names one of the **seven** declared categories — an allowlist rather than a headcount, since a supplied item loses its marker — no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
 
 A `SessionStart` hook already injects the `arena-player-gotchas` trap list, so "every agent must load this once per session" is guaranteed rather than honor-system.
 
@@ -331,7 +331,7 @@ Swapped in the **Real content + WhatsApp bot** phase, which comes **after Phase 
 
 Complete list — `rg "TODO\(content\)"` must find every one of these and nothing else:
 
-- WhatsApp number (wa.me link)
+- ~~WhatsApp number (wa.me link)~~ — **SUPPLIED 2026-08-11.** Lives in `src/modules/home/home.constants.ts` in wa.me form (`628…`, no `+`), verified against `normalisePhone` before being written down
 - Bank account number + holder name
 - Arena address + Google Maps coordinates
 - Real photos/gallery assets if the client provides any

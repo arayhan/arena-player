@@ -60,12 +60,14 @@ export function HomePage() {
       </Section>
 
       <Section step="03" title="Lokasi & Kontak" lede="Mudah dijangkau, parkir luas.">
-        {/* TODO(content): address + maps coords, and the WA number for the contact
-            link. None of the three has been supplied and none may be invented —
-            an address nobody checked sends a customer to the wrong field. */}
+        {/* TODO(content): address + maps coords. Still outstanding and still
+            un-inventable — an address nobody checked sends a customer to the
+            wrong field. The WhatsApp number is no longer here: the client
+            supplied it on 2026-08-11 and it lives in home.constants.ts. */}
         <p className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-          Phase 2 task 4. Address, map coordinates and the WhatsApp number are all still outstanding
-          from the client, and none of the three may be invented.
+          Phase 2 task 4. The address and map coordinates are still outstanding from the client and
+          may not be invented. The WhatsApp number has arrived and is already wired into the order
+          CTA.
         </p>
       </Section>
 

@@ -108,6 +108,31 @@ const MONTH_NAMES = [
  * already the Jakarta calendar date the rest of the system agreed on; splitting
  * it keeps it that way.
  */
+/** `2026-08-11` -> `11 Agu 2026`. The form the WhatsApp message uses. */
+export function formatFullDate(date: string): string {
+  const [year, month, dayOfMonth] = date.split("-").map(Number);
+  return `${dayOfMonth} ${MONTH_NAMES[month - 1]} ${year}`;
+}
+
+/**
+ * The `wa.me` deep link for a chosen slot.
+ *
+ * ONE DESTINATION, NOT TWO. On mobile `wa.me` deep-links into the WhatsApp app
+ * rather than opening a tab, so pairing it with a same-tab navigation is
+ * exactly the combination in-app webviews and popup blockers handle
+ * inconsistently — and the Instagram in-app browser is the primary traffic.
+ * One user action, one destination, no race between them. That is why this
+ * returns a plain href for an anchor rather than something a click handler
+ * calls alongside a route change.
+ *
+ * The message is prefilled so the admin receives the date and slot without the
+ * visitor retyping them, and so the eventual bot can parse one known shape.
+ */
+export function whatsappLink(numberInWaForm: string, date: string, slot: TimeSlot): string {
+  const text = `Halo, saya mau booking lapangan Arena Player tanggal ${formatFullDate(date)} jam ${slot}`;
+  return `https://wa.me/${numberInWaForm}?text=${encodeURIComponent(text)}`;
+}
+
 export function formatPill(date: string): { day: string; label: string } {
   const [year, month, dayOfMonth] = date.split("-").map(Number);
 

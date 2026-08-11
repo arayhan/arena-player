@@ -6,8 +6,9 @@ import { bookingWindow, todayInJakarta } from "@/domain/dates";
 import type { TimeSlot } from "@/domain/slots";
 import { useMotion } from "@/lib/motion";
 
+import { WHATSAPP_NUMBER } from "../home.constants";
 import { useAvailability } from "../home.queries";
-import { countAvailable, partitionSlots } from "../order.utils";
+import { countAvailable, partitionSlots, whatsappLink } from "../order.utils";
 import { DatePills } from "./date-pills";
 import { SlotCell } from "./slot-cell";
 
@@ -205,17 +206,37 @@ export function OrderSection() {
             ))}
           </div>
 
-          {/* TODO(content): WA number. The wa.me link and its prefilled message
-              are Phase 2 task 2's remaining half and need the client's real
-              number — a link to a wrong number is worse than no link. */}
-          <button
-            type="button"
-            lang="id"
-            aria-disabled={selected === null}
-            className="h-12 w-full rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] disabled:cursor-not-allowed aria-disabled:bg-[var(--color-disabled-bg)] aria-disabled:text-[var(--color-fg-muted)]"
-          >
-            {selected ? `Pesan ${selected} lewat WhatsApp` : "Pilih jam dulu"}
-          </button>
+          {/* AN ANCHOR, NOT A BUTTON WITH A HANDLER. On mobile `wa.me`
+              deep-links into the WhatsApp app rather than opening a tab, so
+              pairing it with any same-tab navigation is the exact combination
+              in-app webviews and popup blockers handle inconsistently — and the
+              Instagram in-app browser is the primary traffic here. One user
+              action, one destination, nothing racing it.
+
+              No `target="_blank"`: on a phone the app takeover IS the
+              navigation, and a forced new tab leaves an empty one behind. */}
+          {selected ? (
+            <a
+              href={whatsappLink(WHATSAPP_NUMBER, date, selected)}
+              lang="id"
+              className="flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] hover:bg-[var(--color-accent-strong-hover)]"
+            >
+              Pesan {selected} lewat WhatsApp
+            </a>
+          ) : (
+            // aria-disabled, never the native attribute: the control keeps its
+            // place in the tab order, so a keyboard visitor reaches it and
+            // hears why it is not ready instead of finding nothing there.
+            <span
+              role="button"
+              aria-disabled="true"
+              tabIndex={0}
+              lang="id"
+              className="flex h-12 w-full cursor-not-allowed items-center justify-center rounded-[10px] bg-[var(--color-disabled-bg)] px-6 font-semibold text-[var(--color-fg-muted)]"
+            >
+              Pilih jam dulu
+            </span>
+          )}
         </>
       )}
     </div>
