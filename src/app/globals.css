@@ -1,31 +1,158 @@
 @import "tailwindcss";
 
-/* Phase 1a holds no design tokens on purpose.
+/* THE TOKENS, WRITTEN IN PHASE 2 TASK 1 — the block globals.css has been
+ * holding open since Phase 1a.
  *
- * docs/DESIGN.md's frontmatter is the normative token source, and Tailwind v4's
- * CSS-first @theme takes those custom properties almost directly. Copying them
- * here now would create a second source before the first one is final — the art
- * direction is Phase 1b task 1, and this repo's recurring defect is a value
- * copied with nothing checking the copy.
+ * docs/DESIGN.md's frontmatter is the normative source and this is its
+ * implementation. The values below are transcribed from it, not invented here,
+ * and `pnpm check:docs` asserts the two agree. Phase 1a deliberately left this
+ * empty: copying tokens before the art direction was decided would have made a
+ * second source of truth for values that were still moving.
  *
- * Phase 1b writes the @theme block. */
+ * THREE LAYERS, AND THE MIDDLE ONE IS THE POINT. DESIGN.md's own step 02 says a
+ * component must never reach past its layer to a raw primitive: it breaks
+ * silently on a re-theme, looking identical the day it is written. Primitives
+ * name what a value IS. Semantics name what it is FOR. Components name where it
+ * is USED. */
 
-:root {
-  --background: #ffffff;
-  --foreground: #011a43;
+@theme {
+  /* --- Layer 1: primitives. Raw values, named for what they are. --------- */
+  --color-navy-900: #011a43; /* sampled from the client's logo */
+  --color-navy-700: #0a2e6b;
+  --color-navy-400: #4a5a78; /* 6.94:1 on white, 6.38:1 on blue-50 */
+  --color-blue-600: #2563eb; /* 5.17:1 on white */
+  --color-blue-700: #1d4ed8;
+  --color-blue-50: #eff6ff;
+  --color-white: #ffffff;
+  --color-grey-50: #f9fafb;
+  --color-grey-200: #e5e7eb;
+  --color-amber-100: #fef3c7;
+  --color-amber-300: #fcd34d;
+  --color-amber-800: #92400e; /* 6.37:1 on amber-100 */
+  --color-red-100: #fee2e2;
+  --color-red-300: #fca5a5;
+  --color-red-800: #991b1b; /* 6.80:1 on red-100, 8.31:1 on white */
+
+  /* --- Type. Fluid 1.25 at 375px growing to 1.5 at 1440px, no steps. ----- */
+  --text-display: clamp(2rem, 1.12rem + 3.76vw, 4.5rem);
+  --text-h2: clamp(1.625rem, 1.14rem + 2.07vw, 3rem);
+  --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem);
+  --text-body: clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
+  /* sm and xs are FIXED. Shrinking a caption below 14px on a phone is an
+   * accessibility failure; growing it on desktop stops it reading as
+   * secondary. */
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+  /* The section numeral. The art direction's load-bearing device: an oversized
+   * ordinal so a visitor always knows where they are on the page. */
+  --text-step: clamp(3rem, 2rem + 4.3vw, 6rem);
+
+  /* --- Radius. Rounded at the client's request, 2026-08-11. -------------- */
+  /* The pill stays the ONLY fully-round shape, which is what still makes a row
+   * of date pills read as horizontally scrollable without an arrow or a fade.
+   * 10px and 14px are unmistakably rounded while leaving 999px meaning
+   * something. */
+  --radius-control: 10px;
+  --radius-panel: 14px;
+  --radius-pill: 9999px;
+
+  /* --- Depth. Navy-tinted only; black shadows read as dirt on blue-white. */
+  --shadow-sm: 0 1px 2px rgb(1 26 67 / 0.06);
+  --shadow-md: 0 4px 12px rgb(1 26 67 / 0.08);
+
+  /* --- Motion. Every effect routes through src/lib/motion.ts. ------------ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+/* --- Layer 2: semantics. What each part is FOR. --------------------------
+ * This is the layer a re-theme edits. Outside @theme because these are plain
+ * custom properties that reference the primitives above; Tailwind utilities
+ * read the primitives, component CSS reads these. */
+:root {
+  --color-page: var(--color-blue-50);
+  --color-bg: var(--color-white);
+  --color-bg-subtle: var(--color-grey-50);
+  --color-fg: var(--color-navy-900);
+  --color-fg-muted: var(--color-navy-400);
+  --color-fg-inverse: var(--color-white);
+  --color-interactive: var(--color-blue-600);
+  --color-interactive-pressed: var(--color-blue-700);
+  --color-wash: var(--color-blue-50);
+  --color-border: var(--color-grey-200);
+  --color-keyline: var(--color-navy-900);
+  --color-focus: var(--color-blue-600);
+  --color-accent-strong: var(--color-navy-900);
+  --color-accent-strong-hover: var(--color-navy-700);
+  --color-disabled-bg: var(--color-grey-200);
+
+  /* State needs its own semantic tier or every component showing a state
+   * reaches for a raw hue and a re-theme misses all of them. */
+  --color-warning-surface: var(--color-amber-100);
+  --color-warning-line: var(--color-amber-300);
+  --color-warning-strong: var(--color-amber-800);
+  --color-danger-surface: var(--color-red-100);
+  --color-danger-line: var(--color-red-300);
+  --color-danger-strong: var(--color-red-800);
 }
 
 /* No prefers-color-scheme block. DESIGN.md commits to one world: "Light,
  * blue-and-white booking interface for a mini soccer field — the deliberate
- * inverse of the dark-neon local benchmark." A dark mode would undo the
- * single strongest decision in the design. */
+ * inverse of the dark-neon local benchmark." A dark mode would undo the single
+ * strongest decision in the design, and the client named the dark original as
+ * the thing to be the opposite of. */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-page);
+  color: var(--color-fg);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Orbitron takes tighter leading than Inter or it reads as loose: 1.1 for
+ * display, 1.25 for headings, 1.6 for body. Never apply body leading to
+ * Orbitron. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  margin: 0;
+  text-wrap: balance;
+}
+h1 {
+  font-size: var(--text-display);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-size: var(--text-h2);
+  font-weight: 700;
+  line-height: 1.25;
+}
+h3 {
+  font-size: var(--text-h3);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+/* Focus is restyled, never removed. Keyboard operability is a Definition-of-Done
+ * item, not a styling preference. */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* GSAP has no built-in reduced-motion handling, so this is the CSS half of the
+ * guarantee and src/lib/motion.ts is the JS half. Neither is sufficient alone. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

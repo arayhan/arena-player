@@ -1,6 +1,30 @@
 import type { Metadata } from "next";
+import { Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+
+// SELF-HOSTED THROUGH next/font, NEVER A CDN <link>. architecture.md records
+// next/font as load-bearing for the no-CLS and LCP guarantees, which makes it
+// non-swappable rather than a preference: it inlines the font-face, preloads
+// the file from our own origin, and sizes the fallback so nothing shifts when
+// the real face lands. A CDN <link> gives up all three.
+//
+// Both faces are settled — Phase 1b task 1 kept them deliberately. Orbitron
+// carries the identity; Inter is chosen to be invisible, which is the right
+// brief for body type a captain reads at speed on a 375px Android.
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["500", "700", "900"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 // TODO(content): hero copy — chosen by the user in Phase 1b task 2 and
 // recorded in docs/DESIGN.md. Still a placeholder in the sense that matters:
@@ -17,9 +41,6 @@ export const metadata: Metadata = {
 // Leaving it "en" makes a screen reader pronounce Indonesian copy with English
 // phonemes, which is the same defect the DESIGN.html critique already flagged.
 //
-// No web font is loaded yet, deliberately. DESIGN.md names Orbitron and Inter,
-// but the art direction that confirms them is Phase 1b task 1 — wiring faces
-// here would mean choosing twice.
 // Props typed explicitly rather than with Next's generated `LayoutProps<"/">`.
 // That global lives in .next/dev/types/, which only exists after `next dev` or
 // `next build` has run — so using it made `pnpm typecheck`, and therefore
@@ -31,7 +52,7 @@ export const metadata: Metadata = {
 // command every doc tells you to run first.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className="h-full antialiased">
+    <html lang="id" className={`${orbitron.variable} ${inter.variable} h-full antialiased`}>
       {/*
         This layout stays a SERVER component. Providers is the client boundary
         and holds nothing but the QueryClient and the dev mock gate, so the

@@ -366,7 +366,7 @@ Phase 1b:
 
 - [x] **Art direction written down** — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely
 - [x] Hero copy chosen — Indonesian headline, subheadline, meta description
-- [ ] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts
+- [x] **Client has seen the design system HTML and approved the direction**, or their changes are folded in before Phase 2 starts — **approved with changes on 2026-08-11.** The world stands; six changes were requested. The four in 1b's scope are folded in (slot grid, rounded geometry, pricing, WhatsApp flow). The two remaining — the shader header and scroll/hover motion — are Phase 2 execution by construction, since the hero they attach to does not exist yet; both are specified in [DESIGN.md](DESIGN.md) so Phase 2 executes rather than re-decides. Full record in [tasks/1b-gate-client.md](tasks/1b-gate-client.md)
 - [x] Any benchmark reference files read, findings captured in DESIGN.md, source files deleted — `benchmark-bataskotapoint.png` (6.8 MB) read once, findings written into DESIGN.md as a comparison table plus four falsifiable claims, then deleted. The conclusions outlive the file, which is the condition [`docs/references/README.md`](references/README.md) sets for deleting one
 - [x] Design system HTML renders every token, type scale, and component state — **all four** slot states plus the date pill. Four, not three: `elapsed` was split out of `booked` in task 3, because rendering an hour that merely passed in the danger triple contradicts the system's own rule and overstates how busy the day was
 - [x] The same page is clickable through the landing → order → form journey
