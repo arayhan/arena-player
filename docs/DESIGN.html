@@ -543,21 +543,36 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
       <div class="step__n" aria-hidden="true">!</div>
       <div class="step__title">
         <h2 lang="id">Butuh keputusan Anda</h2>
-        <p class="step__lede">
-          Three pieces are not in the box yet. Each blocks work that cannot start until it is
-          answered, so they sit before step 1 rather than at the end.
+        <p class="step__lede" lang="id">
+          Tiga hal belum bisa kami putuskan sendiri. Dua di antaranya menghentikan pekerjaan
+          sampai dijawab, jadi kami taruh di depan — sebelum langkah 00 — bukan di akhir.
         </p>
+        <!-- IN INDONESIAN, DELIBERATELY. The rest of this page is English because
+             its reader is a developer; this block's reader is the client, and it
+             is the one section they must act on. The critique's second-lowest
+             heuristic score was exactly this: English, jargon-dense chrome on an
+             artifact whose checkpoint audience is an Indonesian field owner.
+             Art direction and hero copy used to sit in this list. Both are decided
+             now, so they are gone — and the WhatsApp-only question, which BLOCKS
+             PHASE 2 and had never been asked, was missing from it entirely. -->
       </div>
     </div>
     <div class="plate">
-      <ol class="decisions">
-        <li><strong>Art direction</strong> — section-transition language, and what “surpass the
-          benchmark” means concretely. <em>Phase 1b task 1.</em></li>
-        <li><strong>Hero copy</strong> — the Indonesian headline, subheadline, and meta
-          description. Decided with the type scale, because a three-word headline and a
-          twelve-word one need different sizes. <em>Phase 1b task 2.</em></li>
-        <li><strong>Pricing on <code>/booking</code></strong> — needs your rate card: flat, or
-          peak and off-peak, or weekend. Until answered no number renders on either page.</li>
+      <ol class="decisions" lang="id">
+        <li><strong>Setelah pilih jam, pelanggan diarahkan ke WhatsApp — dan berhenti di
+          situ.</strong> Website tidak membuka formulir sendiri; link formulir dikirim balik
+          oleh admin lewat chat. Apakah ini sesuai cara Anda bekerja, dan apakah ada yang
+          standby membalas selama jam buka? <em>Ini menentukan halaman utama.</em></li>
+        <li><strong>Harga sewa — ditampilkan atau tidak?</strong> Sekarang tidak ada angka
+          sama sekali. Formulir hanya menyebut “DP 50%, nominal dikonfirmasi admin”. Kalau
+          harga mau ditampilkan, kami butuh daftar tarifnya: satu harga untuk semua jam, atau
+          beda per jam, per hari, atau akhir pekan? <em>Ini menentukan formulir booking.</em></li>
+        <li><strong>Enam hal yang belum ada dan tidak bisa kami karang</strong> — nomor
+          WhatsApp, rekening dan nama pemilik rekening, alamat dan titik Google Maps, foto
+          lapangan, file logo, dan persetujuan atas tulisan headline. Website tetap jalan
+          dengan tempat kosong sampai semuanya masuk. Khusus foto: kami tidak akan membuat
+          foto lapangan palsu — pelanggan berhak melihat lapangan yang benar-benar mereka
+          pesan.</li>
       </ol>
     </div>
   </div>
