@@ -134,6 +134,17 @@
   --slot-booked-bg:var(--color-danger-surface);
   --slot-booked-border:var(--color-danger-line);
   --slot-booked-fg:var(--color-danger-strong);
+  /* ELAPSED IS A FOURTH STATE, NOT A VARIANT OF BOOKED. These rows previously
+     rendered in the danger triple while labelled "Sudah lewat", contradicting
+     step 04's own rule that elapsed hours are not booked hours — and telling
+     the visitor the day was busier than it was. Neutral and recessed, with a
+     structural left rule rather than a hue, so it separates from booked
+     without competing with it. navy-400 on grey-50 computes 6.64:1, over the
+     3:1 WCAG 1.4.11 bar for a UI boundary. */
+  --slot-elapsed-bg:var(--color-bg-subtle);
+  --slot-elapsed-border:var(--color-border);
+  --slot-elapsed-fg:var(--color-fg-muted);
+  --slot-elapsed-rule:var(--color-fg-muted);
   --slot-min-height:56px;
 
   --pill-bg:var(--color-bg);
@@ -171,6 +182,7 @@
   --input-error-fg:var(--color-danger-strong);
   --input-disabled-bg:var(--color-bg-subtle);
   --input-disabled-fg:var(--color-fg-muted);
+  --input-placeholder-fg:var(--color-fg-muted);
 
   --swatch-demo-bg:var(--color-page);
   --result-error-surface:var(--color-danger-surface);
@@ -301,6 +313,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   color:var(--slot-pending-fg);cursor:not-allowed}
 .slot[data-state=booked]{background:var(--slot-booked-bg);border-color:var(--slot-booked-border);
   color:var(--slot-booked-fg);cursor:not-allowed}
+/* The left rule is the whole point: elapsed and booked are both unavailable,
+   but only one of them is somebody else's booking. A hue alone would put
+   them in the same family. */
+.slot[data-state=elapsed]{background:var(--slot-elapsed-bg);border-color:var(--slot-elapsed-border);
+  color:var(--slot-elapsed-fg);cursor:not-allowed;
+  border-left:3px solid var(--slot-elapsed-rule);padding-left:calc(var(--space-4) - 2px)}
 
 /* --- date pill ---------------------------------------------------- */
 .pills{display:flex;gap:var(--space-2);overflow-x:auto;overscroll-behavior-x:contain;
@@ -333,8 +351,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
 .btn--secondary:hover:not(:disabled){background:var(--button-secondary-hover-bg)}
 .btn:disabled,.btn[aria-disabled=true]{background:var(--button-disabled-bg);
   color:var(--button-disabled-fg);border-color:transparent;cursor:not-allowed}
-/* aria-disabled keeps the control focusable, so the press has to be stopped
-   here rather than by the browser. */
+/* aria-disabled keeps the control focusable, which is the point — native
+   `disabled` drops it from the tab order and a keyboard user reaches the end
+   of the form and finds nothing. The trade is that the browser no longer
+   refuses the press, so the code must.
+   pointer-events:none covers the MOUSE only. It does NOT stop a keyboard
+   Enter or Space, so a real form still needs a guard in the click handler;
+   Phase 3 owes that. Saying so here rather than implying this line is
+   sufficient — it is half the fix, and the half that is easy to mistake for
+   all of it. */
 .btn[aria-disabled=true]{pointer-events:none}
 .btn[aria-disabled=true]:hover{background:var(--button-disabled-bg)}
 
@@ -346,6 +371,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
   background:var(--input-bg);color:var(--input-fg)}
 .input:focus{outline:2px solid var(--color-focus);outline-offset:2px;border-color:var(--color-focus)}
 .input--error{border:2px solid var(--input-error-border);background:var(--input-error-bg)}
+/* THE SYSTEM HAD NO PLACEHOLDER RULE AT ALL, so every field Phase 3 adds would
+   have inherited the UA default — roughly 2.35:1 on white, which fails AA for
+   text and is the single most common accessibility defect in a booking form.
+   navy-400 computes 6.94:1 on white and stays visibly lighter than the
+   navy-900 body text, so it still reads as a prompt rather than as a value. */
+.input::placeholder{color:var(--input-placeholder-fg);opacity:1}
 .input:disabled{background:var(--input-disabled-bg);color:var(--input-disabled-fg)}
 .err{font-size:var(--text-sm);color:var(--input-error-fg)}
 
@@ -450,9 +481,16 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
   layer, believes the indirection is worth the extra token, and can copy the
   pattern into Phase 2 without re-reading the prose.
 
-  FIRST VIEWPORT: Not a hero. The parts inventory — every primitive as a
-  numbered piece in a keylined box, the way a manual opens on bag contents
-  before step 1.
+  FIRST VIEWPORT: Not a hero. What this page is, what approving it unlocks,
+  and then "Butuh keputusan Anda" — the open questions — before step 00.
+  The parts inventory follows on the second scroll.
+
+  (This deliberately overrides the original contract, which opened on the
+  inventory. The critique's peak-end finding was that the page led with a
+  caveat and closed on unfinished business; putting the client's decisions
+  first and ending on the finished model fixes both, and the reviewer called
+  the reordering the best structural decision on the page. A manual opens on
+  bag contents because nobody has to approve a manual. This one is bought.)
 
   FORM: Brick build-instruction book. User-pinned over roll index 4
   (Papan Jadwal). Seed key 7a4384e8.
@@ -721,6 +759,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
         <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state" lang="id">Terisi</span></button>
         <button class="slot" type="button" data-state="available" aria-pressed="true"><span class="slot__time">14.00 - 16.00</span><span class="slot__state" lang="id">Dipilih</span></button>
+        <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">16.00 - 18.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
       </div>
       <p class="note stack-6">
         <strong>Selection lives in <code>aria-pressed</code>, not in a class.</strong> A
@@ -736,6 +775,15 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
         itself — no API change, contract stays firm. Step “Finished model” shows the treatment:
         one collapsed <span lang="id">“Sudah lewat (N)”</span> row instead of nine
         <span lang="id">“Terisi”</span> labels that make the day read as sold out.
+      </p>
+      <p class="note stack-4">
+        <strong>So <code>elapsed</code> is a fourth state, not a shade of booked.</strong> It
+        was rendering in the danger triple while carrying the label
+        <span lang="id">“Sudah lewat”</span> — which contradicts the paragraph directly above
+        and overstates how busy the day was. It is now neutral and recessed, separated from
+        <span lang="id">“Terisi”</span> by a 3px left rule rather than by hue: both are
+        unavailable, but only one of them is somebody else's booking, and a colour difference
+        alone would leave them reading as the same family.
       </p>
     </div>
   </div>
@@ -797,7 +845,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
           <div style="display:flex;gap:var(--space-3);flex-wrap:wrap">
             <button class="btn btn--primary" type="button" lang="id">Pesan Lapangan</button>
             <button class="btn btn--secondary" type="button" lang="id">Tanya Admin</button>
-            <button class="btn btn--primary" type="button" lang="id" disabled>Kirim</button>
+            <button class="btn btn--primary" type="button" lang="id" aria-disabled="true">Kirim</button>
           </div>
         </div>
         <div class="grid">
@@ -989,8 +1037,16 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
             <span lang="id">Sudah lewat (6)</span>
           </button>
           <div class="elapsed-list" id="elapsed-list">
-            <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
-            <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <!-- SIX ROWS, BECAUSE THE LABEL SAYS SIX. This rendered two under a
+                 "Sudah lewat (6)" heading, which is a small lie on the one page
+                 whose whole argument is that its numbers are checkable. Six
+                 elapsed plus the three below is the full nine-slot day. -->
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">14.00 - 16.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
+            <button class="slot" type="button" data-state="elapsed" aria-disabled="true"><span class="slot__time">16.00 - 18.00</span><span class="slot__state" lang="id">Sudah lewat</span></button>
           </div>
           <div class="grid" role="group" aria-label="Slot waktu" lang="id">
             <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">18.00 - 20.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>

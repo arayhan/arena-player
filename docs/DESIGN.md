@@ -83,6 +83,9 @@ components:
   slot-booked:
     backgroundColor: "{colors.red-100}"
     textColor: "{colors.red-800}"
+  slot-elapsed:
+    backgroundColor: "{colors.grey-50}"
+    textColor: "{colors.navy-400}"
   pill:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
@@ -128,6 +131,8 @@ components:
   input-disabled:
     backgroundColor: "{colors.grey-50}"
     textColor: "{colors.navy-400}"
+  input-placeholder:
+    textColor: "{colors.navy-400}"
 ---
 
 # Design System: Arena Player
@@ -136,21 +141,83 @@ Machine-readable tokens are the frontmatter above; this prose says how to apply 
 
 ## Overview
 
-**Creative North Star: not yet established.** Art direction is Phase 1b task 1 and has not been decided. This document currently carries tokens and component behaviour only. Writing a north star here before that task runs would pre-empt the decision the phase exists to make — see [PRD.md](PRD.md).
+**Creative North Star: the build-instruction book.** A booking is an assembly — parts laid out, named, then put together in a fixed order until a thing exists that did not before. The page teaches that assembly the way an instruction booklet does: every part shown before it is used, every step numbered, nothing on the page that is not either a part or a step. Confidence comes from legibility, not from persuasion.
+
+Chosen in Phase 1b task 1. The direction was pinned by the user over the rolled alternative and is rendered in full at [DESIGN.html](DESIGN.html) — that page **is** the specification, and this section is its written form.
+
+**The fusion rule — every colour carries both its instruction-book role and its product meaning.** The two never conflict, because where they would, product meaning wins:
+
+| Instruction-book role                      | Token       | Product meaning                                                       |
+| ------------------------------------------ | ----------- | --------------------------------------------------------------------- |
+| The ground the parts lie on                | `blue-50`   | The light, blue-white world; the anti-reference to the dark benchmark |
+| Keyline ink — every rule, edge and numeral | `navy-900`  | The brand anchor, sampled from the client's logo                      |
+| Inventory tags on the parts                | `amber-300` | Pending — "Menunggu Konfirmasi"                                       |
+| **The new part being added this step**     | `blue-600`  | Interactive: links, focus, available slots, selection                 |
+
+That last row is the rule doing real work. The source world marks the new part in **brick red**, and taking it literally would have been the obvious move — but **red already means booked here**, and a colour cannot mean "look at this, add it" and "you cannot have this" on the same grid. It maps to Signal Blue instead. When the world and the product disagree, clarity wins and the world bends.
+
+### The four parts of the direction
+
+**1. Type scale — fluid, never stepped.** A 1.25 ratio at 375px growing to 1.5 at 1440px through `clamp()`, with no breakpoint jumps anywhere. Full hierarchy under [Typography](#typography). The one addition the direction makes: `sm` and `xs` are **fixed** and do not scale, because shrinking a caption below 14px on a phone is an accessibility failure and growing it on desktop stops it reading as secondary.
+
+**2. Spacing rhythm — 4px base, two registers.** Components use 4/8/12/16 for interior padding; **section rhythm only ever uses 48/64/96/128**. Fine control where it is needed, strict rhythm where it is visible. A section gap that is not one of those four numbers is a mistake, not a judgement call.
+
+**3. Section-transition language — numbered assembly steps.** Each landing section is a step in the build, carrying an oversized Orbitron numeral in `grey-200` that bleeds off the left edge, with a navy keyline between steps. This is the load-bearing decision of the whole direction, and it exists to fix one specific failure: the benchmark runs six identically-treated centred headings in a column, so a visitor has no sense of progress or place — and the first draft of [DESIGN.html](DESIGN.html) was graded with the same flaw ("one compositional idea repeated eight times"). An ordinal fixes it for free. It costs **zero kilobytes**, requires **no motion**, and works at 375px, which matters because the alternatives all spend budget on the problem instead of composition.
+
+**4. Surpassing the benchmark** — defined as four falsifiable claims, not as ambition. See [the benchmark, read](#the-benchmark-read--what-inverted-and-surpass-mean-concretely) below.
+
+### What the direction forbids
+
+- **No section may be composed the same way as its neighbour.** The numeral gives the sequence; the composition has to give the variety. Five sections improvising five visual ideas is the failure this direction exists to prevent, but so is five sections that are one idea five times.
+- **No third typeface.** Orbitron and Inter only. `DESIGN.html` uses Archivo for its own document chrome — that is the _manual's_ voice, not the product's, and it never ships in the app.
+- **Nothing else becomes fully round.** The date pill is the only `9999px` shape and its roundness is what signals "this row scrolls".
+- **No decorative colour.** Every hue outside the neutrals carries a meaning from the fusion table above.
 
 What _is_ settled is the world's polarity. `bataskotapoint.com` is a binding reference **as an anti-reference**: dark, neon, saturated. Arena Player is its inverse — light, clean, blue-and-white, with whitespace treated as a material rather than as leftover room. Navy `#011A43` is sampled from the client's own logo, so the palette is inherited, not invented.
+
+### The benchmark, read — what "inverted" and "surpass" mean concretely
+
+Read once from `docs/references/benchmark-bataskotapoint.png`, a full-page desktop capture at 1920×7888. **The source file is gitignored and gets deleted; this section is the only thing that survives it**, so it is written to be specific enough to design against without the image.
+
+**What the benchmark does.** Near-black ground with a spring-green accent. The hero is a night photograph of a floodlit field used as the light source, with a wireframe geodesic polyhedron floating top-right and a wide-tracked uppercase two-tone headline. Then six more sections, then a booking section, then a map and a footer.
+
+| Trait              | Benchmark                                                           | Arena Player                                                                    |
+| ------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Ground             | Near-black, glow, photo-as-light-source                             | Light `blue-50`/white; whitespace is the material                               |
+| Accent             | Spring green, saturated, decorative                                 | Navy inherited from the logo; `blue-600` earns its use by meaning "interactive" |
+| Heading treatment  | Six sections, six **identical** centred uppercase two-tone headings | See the section-transition language below — this is the gap being closed        |
+| Order section      | Buried ~5 scrolls down, after hero, video, specs and gallery        | Within 1–2 scrolls at 375px. **A hard rule, and this is its evidence**          |
+| Prices             | Shown in the order summary rail                                     | Rendered nowhere until the client answers                                       |
+| Third-party embeds | A raw YouTube player, chrome and all, mid-page                      | None; an undesigned rectangle inside a designed page is a defect                |
+| Design target      | Desktop-first at 1920                                               | 375px-first, mid-range Android in an in-app browser                             |
+
+**Two things it gets right, kept deliberately rather than inverted:**
+
+1. **Booked slots are red with a lock glyph.** Arena Player arrived at the same red triple independently. Convergence here is a reason to keep it, not to differentiate: this is the local convention the audience already reads, and a booking grid is the wrong place to be original.
+2. **The date row is pills, the selected one is filled.** Same conclusion, same reason.
+
+**What "surpass" means, stated as falsifiable claims rather than as ambition** — the benchmark's real weaknesses, each one something to be measurably better at:
+
+- **The product is buried.** Five scrolls of marketing precede the thing the visitor came for. Arena Player's two-scroll rule is not a performance nicety; it is the single largest difference in the visitor's experience.
+- **Every section looks like every other section.** Six centred two-tone uppercase headings in a column give the page no sense of progress or place. A visitor cannot tell where they are.
+- **The rules are three near-identical dark cards** with keywords highlighted inline in green, red and yellow. Dense, low-contrast, and unscannable — and Arena Player's Ketentuan is ten verbatim rules, which is more content in the same trap.
+- **The map is a dead grey rectangle** in the capture, i.e. an unloaded embed shipped as the final state. Location has to survive its own loading state here.
 
 The system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on near-sharp geometry and generous white space. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added. The one fully-round shape in the entire system is the date pill, and its roundness is functional.
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
-### Open input — the body face is Inter, and Inter is everywhere
+### Settled in task 1 — Inter stays, and here is why
 
-Flagged by the design detector, recorded here rather than acted on. **Inter is one of a handful of faces that every AI-generated interface converges on**, so it contributes nothing to the personality the paragraph above credits to Orbitron. The display face is carrying the whole identity alone.
+The design detector flagged it and the flag was correct: **Inter is one of a handful of faces that every AI-generated interface converges on**, so it contributes nothing to the personality this system credits to Orbitron. The display face carries the identity alone.
 
-Not changed in Phase 1a for two reasons. It is a **stated brand commitment** — [PRODUCT.md](PRODUCT.md) records "Orbitron for display type, Inter for body" as given, not chosen — and body type is **Phase 1b task 1's decision**, which has not run. Overriding it here would pre-empt the task, and suppressing the finding would hide a real one.
+**Kept anyway, deliberately.** Three reasons, in order of weight:
 
-So it is task 1's to settle, with three honest outcomes: keep Inter deliberately (it is genuinely excellent at 375px, and "invisible" is a defensible brief for a booking utility), replace it with a body face that shares Orbitron's athletic geometry, or confirm with the client that the commitment was a default rather than a preference. **What is not acceptable is inheriting it without noticing** — which is what would have happened had the detector not flagged it.
+1. It is a **stated client commitment** — [PRODUCT.md](PRODUCT.md) records "Orbitron for display type, Inter for body" as given, not chosen. Overriding that unasked is not task 1's call, and asking would spend a client-checkpoint question on a cosmetic issue when the first two questions there block Phases 2 and 3.
+2. **"Invisible" is the right brief for body type here.** The reader is a team captain deciding fast for eight to twelve people on a 375px Android. Body type that draws attention to itself is working against the outcome.
+3. **Every printed number in this system was computed against Inter's metrics** — the 60–68ch measure, the 14px and 12px fixed sizes, the state-label ratios. Swapping the face invalidates all of them at once, and this document's credibility rests on those numbers being checkable.
+
+The identity is carried by Orbitron, by the light blue-white world, and by the numbered-step composition — **not** by body type. That is the decision, not an oversight, and the detector's finding stands recorded rather than suppressed.
 
 ### Client directive — minimal form, rich behaviour
 
@@ -175,9 +242,23 @@ The order section is exempt for a stated reason, not by oversight. It is where t
 - **Everything still routes through `src/lib/motion.ts`.** More motion means more `prefers-reduced-motion` surface to cover, not less.
 - **No CLS, and the performance budget is untouched.** GSAP is already the largest single item in a tight budget, so added effects reuse the existing instance. On a mid-range Android in an in-app webview the binding cost is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the Lighthouse gate.
 
+### Hero-video gate — DECIDED, and it failed
+
+Settled in Phase 1b as the PRD requires, **before** anything was produced. The hero is **text and logo**, and there is no hero video.
+
+It failed on the gate's second condition, which was always the binding one: the poster-only path must look intentional, because **iOS Low Power Mode and in-app webviews block autoplay outright** — and the in-app browser is not an edge case here, it is the _primary device_. A real share of visitors would only ever see the poster, which makes the video an expensive enhancement for the minority and a compromised hero for everyone else. Conditions 1 and 3 were not reached; there was no need.
+
+Consequences, all of them deliberate:
+
+- The **LCP element is the Orbitron headline plus the logo** — text, which is the cheapest and most reliable LCP there is.
+- The `/` budget stays at its measured 137.0 KB against a 240 KB ceiling, with 103.0 KB of headroom preserved for the sections still to be built.
+- The **"no autoplaying video" guardrail in [CLAUDE.md](../CLAUDE.md) stays as written, unamended.** It would only have needed an exception clause had the gate passed.
+- `/remotion-create` is reserved for **off-site** assets — an Instagram Reel, a social preview — which cost the landing page nothing and are where motion actually reaches this audience.
+
 **Key Characteristics:**
 
 - Light and blue-white, never dark — the anti-reference is binding
+- **The build-instruction book: every part shown before it is used, every step numbered**
 - Oversized Orbitron display against Inter body; no third face
 - Near-sharp corners throughout; exactly one round shape, and it means something
 - Status is a colour _triple_, never a single hue
@@ -275,7 +356,9 @@ component tokens skipped this layer while the page argued they did not.
 
 Mobile-first at 375px, scaling to a 1100px content maximum. The primary device is a mid-range Android inside the Instagram in-app browser; that is the design target, not a fallback.
 
-Spacing runs a **4px base**. Components use 4/8/12/16 for interior padding. **Section rhythm only ever uses 48/64/96/128** — fine control where it matters, strict rhythm where it shows. Sections separate with a `grey-200` hairline and alternating `grey-50` bands rather than with dividers or borders.
+Spacing runs a **4px base**. Components use 4/8/12/16 for interior padding. **Section rhythm only ever uses 48/64/96/128** — fine control where it matters, strict rhythm where it shows.
+
+**The Numbered-Step Rule.** Sections are separated by a **step numeral and a navy keyline**, not by dividers or borders. Each landing section carries an oversized Orbitron numeral in `grey-200` bleeding off the left edge, and a `navy-900` keyline runs between consecutive steps. Alternating `grey-50` bands remain available as a secondary device but are no longer the primary one — on their own they were the flaw the art direction exists to fix, since a column of identically-banded sections tells the visitor nothing about where they are. The numeral is text: **zero kilobytes, no motion required, legible at 375px.**
 
 **The Two-Scroll Rule.** The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh — `svh`, not `vh`, because in-app browsers report `vh` incorrectly and a hero sized in `vh` overshoots exactly on the primary device. A hero that pushes the order section below two scrolls has failed regardless of how it looks.
 
@@ -314,7 +397,9 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 - **Secondary:** transparent fill, 1px navy border, navy text. Hover fills `grey-50`.
 - **Disabled:** `grey-200` fill, muted text, no border, `not-allowed`.
 
-### Slot Cell — the signature component
+**The Never-Native-Disabled Rule.** A disabled button uses `aria-disabled="true"`, never the native `disabled` attribute. Native `disabled` removes the control from the tab order entirely, so a keyboard user tabbing through the `/booking` form reaches the last field and then nothing — no submit button, no explanation, no way to discover why. `aria-disabled` keeps it focusable and announced, and the press is refused in code instead of by the browser.
+
+This is the same rule the slot cell and the date pill already follow, and the submit button was the one place breaking it. Worth stating separately because the pull toward native `disabled` is strong: it is shorter, it is what the platform suggests, and it produces a control that looks correct while being unreachable.
 
 **One column, full-width rows.** This is not a stylistic preference and must not be "improved" into a grid.
 
@@ -325,7 +410,8 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 - **Hover:** fills `blue-50`. Available cells only.
 - **Selected:** `blue-600` fill, white text, label "Dipilih".
 - **Pending:** the amber triple, label "Menunggu Konfirmasi", `aria-disabled="true"`, `not-allowed`.
-- **Booked / past:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
+- **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
+- **Elapsed:** `grey-50` fill, `navy-400` text and a **3px `navy-400` left rule**, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
 
 **The Visible-Unavailable Rule.** Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Hiding an unavailable slot is never the answer.
 
@@ -334,6 +420,10 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 That is resolved and the conclusion was wrong. The client already knows the current time and the canonical starts in `src/domain/slots.ts`, so it can derive "elapsed" itself without the API saying anything. `GET /api/availability` needs no `past` status and stays **FIRM**. The full reasoning and the chosen treatment — a collapsed `Sudah lewat (N)` group rather than nine rows labelled "Terisi" — are in the order-section brief at [`.impeccable/surfaces/app-page-tsx.md`](../.impeccable/surfaces/app-page-tsx.md).
 
 Why it mattered enough to reopen: with same-day booking confirmed as the primary journey, a page opened at 19.00 rendered the whole day as "Terisi" and read as sold out. For a product measured on filling empty hours, that is the worst outcome the design can produce, and it was one derivation away from being avoidable.
+
+**And elapsed is therefore its own state, not a shade of booked.** Having established the distinction, the artifact went on rendering elapsed rows in the red triple while labelling them "Sudah lewat" — the collapse fixed the count but not the colour, so the page contradicted the rule printed directly above it and still overstated how busy the day had been. Fixed in Phase 1b task 3.
+
+**The separation is structural, not chromatic.** Elapsed and booked are both unavailable, and a hue swap alone would leave them reading as the same family. The 3px left rule is what distinguishes them: only one of the two is somebody else's booking, and the visitor is entitled to see which. `navy-400` on `grey-50` computes **6.64:1**, well clear of the 3:1 boundary requirement.
 
 ### Date Pill
 
@@ -349,6 +439,11 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 - **Focus:** 2px `blue-600` outline at 2px offset. Never `outline: none` without a replacement.
 - **Error:** 2px `red-800` border **and** `red-100` field fill, with `red-800` message text tied to the field via `aria-describedby`.
 - **Disabled:** `grey-50` fill, muted text.
+- **Placeholder:** `navy-400` at `opacity: 1`.
+
+**The Placeholder-Is-A-Token Rule.** The system carried no placeholder rule at all, so every field Phase 3 adds would have inherited the user agent's default — around **2.35:1** on white, which fails AA for text and is the most common accessibility defect in a booking form. `navy-400` computes **6.94:1** on white while staying visibly lighter than the `navy-900` body text, so it still reads as a prompt rather than as a filled value. `opacity: 1` is explicit because several browsers apply their own alpha on top of the colour and would drag the computed ratio back down.
+
+**Placeholders never replace labels.** Every field keeps its visible `<label>`; the placeholder is a format hint (`08123456789`) and nothing else. A placeholder-as-label disappears the moment the user types, which is exactly when they need it.
 
 **The Focus-Is-Required Rule.** Focus rings are restyled, never removed. Keyboard operability is a Phase 3 Definition-of-Done item, not a styling preference.
 
@@ -381,9 +476,10 @@ Why it mattered enough to reopen: with same-day booking confirmed as the primary
 - **Don't** add a third typeface, or apply body leading to Orbitron.
 - **Don't** load fonts from a CDN `<link>` in production — `next/font` is load-bearing for the no-CLS guarantee.
 - **Don't** use black shadows, or add a shadow where a hairline and a tonal band already separate two surfaces.
-- **Don't** add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video unless the Phase 1b hero-video gate passed.
+- **Don't** add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video. The hero-video gate ran in Phase 1b and **failed** — the "unless it passes" clause is spent, so this one is now absolute.
 - **Don't** animate layout properties (`width`, `height`, `top`, `left`).
 - **Don't** let a component token point at a primitive. It must route through the semantic tier, including for state colour — that is the half that gets skipped.
 - **Don't** use a neutral grey for secondary text on a coloured surface. Tint the mute from the surface's own hue.
-- **Don't** put a kicker or eyebrow above a heading. The heading carries its own weight. Where the small label holds real information — `Layer 1`, `Layer 2` — fold it into the heading instead of setting it as a separate uppercase line above.
-- **Don't** invent art direction here. It is Phase 1b task 1 and belongs to that task.
+- **Don't** put a kicker or eyebrow above a heading. The heading carries its own weight. Where the small label holds real information — `Layer 1`, `Layer 2` — fold it into the heading instead of setting it as a separate uppercase line above. **The step numeral is not an eyebrow**: it is oversized, set in `grey-200`, bleeds off the left edge, and sits beside the heading rather than above it. A small uppercase numeral stacked over a heading is the banned pattern wearing a number.
+- **Don't** compose a section the same way as the one before it. The numeral carries the sequence; composition has to carry the variety. Five sections improvising five visual ideas is one failure — five sections repeating one idea is the other, and it is the one the benchmark commits.
+- **Don't** invent art direction here. It was decided in Phase 1b task 1 and is written in the Overview — execute it, don't reopen it. A section that needs a new visual idea has found a gap in the direction, which is a question for the user, not a licence.
