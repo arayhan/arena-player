@@ -1,6 +1,8 @@
 import { Hero } from "./components/hero";
 import { OrderSection } from "./components/order-section";
 import { Section } from "./components/section";
+import { WHATSAPP_NUMBER } from "./home.constants";
+import { KETENTUAN, KETENTUAN_TITLE } from "./home.content";
 
 /**
  * The landing page shell — Phase 2 task 1.
@@ -41,22 +43,67 @@ export function HomePage() {
         title="Ketentuan"
         lede="Sepuluh aturan main, apa adanya dari pihak lapangan."
       >
-        <p className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-          Phase 2 task 4. The ten rules are verbatim client content and are copied from the PRD
-          without rewording — unlike the hero copy, which we drafted.
-        </p>
+        <div className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
+          <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
+            {KETENTUAN_TITLE}
+          </h3>
+          {/* An ordered list, because the rules ARE numbered and the client
+              refers to them by number. A <ul> with rendered digits would look
+              identical and read wrong to a screen reader. */}
+          <ol
+            lang="id"
+            className="mt-4 grid list-decimal gap-3 pl-5 marker:font-semibold marker:text-[var(--color-interactive)] md:grid-cols-2 md:gap-x-8"
+          >
+            {KETENTUAN.map((rule) => (
+              <li key={rule} className="max-w-[52ch] pl-1">
+                {rule}
+              </li>
+            ))}
+          </ol>
+        </div>
       </Section>
 
       <Section step="03" title="Lokasi & Kontak" lede="Mudah dijangkau, parkir luas.">
-        {/* TODO(content): address + maps coords. Still outstanding and still
-            un-inventable — an address nobody checked sends a customer to the
-            wrong field. The WhatsApp number is no longer here: the client
-            supplied it on 2026-08-11 and it lives in home.constants.ts. */}
-        <p className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]">
-          Phase 2 task 4. The address and map coordinates are still outstanding from the client and
-          may not be invented. The WhatsApp number has arrived and is already wired into the order
-          CTA.
-        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* TODO(content): address + maps coords. Deliberately rendered as a
+              VISIBLE GAP rather than as filler text or a grey map tile.
+              Product Principle 7: a placeholder must look like a placeholder,
+              because the honest failure mode is an obvious hole the client
+              fills — never plausible-looking invented detail that ships
+              unnoticed. An address nobody checked sends a customer to the
+              wrong field, and a map pin is worse: it is followed without
+              being read. */}
+          <div className="rounded-[14px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
+            <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
+              Alamat
+            </h3>
+            <p
+              lang="id"
+              className="mt-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
+            >
+              Alamat dan titik Google Maps menyusul — menunggu data dari pihak lapangan.
+            </p>
+          </div>
+
+          <div className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+            <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
+              Kontak
+            </h3>
+            <p
+              lang="id"
+              className="mt-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
+            >
+              Pertanyaan di luar pemesanan bisa langsung lewat WhatsApp.
+            </p>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              lang="id"
+              className="mt-4 inline-flex h-12 items-center justify-center rounded-[10px] border border-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-accent-strong)] hover:bg-[var(--color-bg-subtle)]"
+            >
+              Tanya Admin
+            </a>
+          </div>
+        </div>
       </Section>
 
       {/* Footer — Phase 2 task 5. Not a Section: it closes the page rather than

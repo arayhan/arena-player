@@ -524,6 +524,50 @@ for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
   }
 }
 
+// --- 14. The Ketentuan is VERBATIM, and this is the only thing that proves it -
+//
+// Hard rule 5 says the ten rules are copied from docs/PRD.md word for word.
+// That rule is unenforceable by eye: the failure is not a crash or a visual
+// defect, it is somebody tidying "Diluar" to "Di luar", normalising the mixed
+// capitalisation, or shortening rule 7 — each individually an improvement, and
+// collectively a rewrite of an agreement the client wrote and we do not own.
+//
+// A visitor is agreeing to this text when they book. So the PRD block and the
+// shipped array are compared character for character.
+{
+  const prd = readFileSync(join(ROOT, "docs/PRD.md"), "utf8");
+  const content = readFileSync(join(ROOT, "src/modules/home/home.content.ts"), "utf8");
+
+  // The PRD block is a numbered markdown list under the verbatim heading.
+  const block = prd.split("## Static content — Rules section (verbatim, Indonesian)")[1];
+  if (!block) {
+    fail("ketentuan-verbatim", "docs/PRD.md — the verbatim rules heading is gone; cannot compare");
+  } else {
+    const prdRules = [...block.matchAll(/^\d+\.\s+(.+)$/gm)].map((m) => m[1].trim());
+    const shipped = [...content.matchAll(/^\s+"(.+)",$/gm)].map((m) => m[1].replace(/\\"/g, '"'));
+
+    if (prdRules.length !== 10) {
+      fail("ketentuan-verbatim", `docs/PRD.md — expected 10 rules, parsed ${prdRules.length}`);
+    }
+    if (shipped.length !== prdRules.length) {
+      fail(
+        "ketentuan-verbatim",
+        `home.content.ts ships ${shipped.length} rules, docs/PRD.md declares ${prdRules.length}`,
+      );
+    }
+    prdRules.forEach((rule, i) => {
+      if (shipped[i] !== rule) {
+        fail(
+          "ketentuan-verbatim",
+          `rule ${i + 1} differs from docs/PRD.md — the Ketentuan is client content and is never reworded.\n` +
+            `        PRD:     ${rule}\n` +
+            `        shipped: ${shipped[i] ?? "(missing)"}`,
+        );
+      }
+    });
+  }
+}
+
 // --- report -----------------------------------------------------------------
 // Findings go to STDOUT, not stderr. The exit code carries pass/fail; the text
 // is informational. PowerShell 5.1 wraps every stderr line from a native
@@ -544,6 +588,7 @@ const CHECKS = [
   "phase-table-drift",
   "design-value-drift",
   "unbalanced-fence",
+  "ketentuan-verbatim",
 ];
 
 if (failures.length === 0) {
