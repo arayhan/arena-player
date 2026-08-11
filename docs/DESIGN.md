@@ -227,14 +227,34 @@ This is an **input to Phase 1b task 1, not a north star.** Task 1 still owns the
 
 Read as a whole rather than as two competing requests: **minimal in form, rich in behaviour.** Few elements, each responding precisely. The restraint is not despite the motion — it is what makes dense motion legible. The same effects on a busy layout read as noise. "Minimalist" here is confirmed to mean _few elements and generous whitespace_, which the system already says above, and **not** reduced colour: the status triples are an accessibility requirement, not decoration, and the palette is unchanged by this directive.
 
-**Where the motion lives — this split is a rule, not a preference:**
+**Where the motion lives:**
 
-| Area                                        | Motion                                                                       |
-| ------------------------------------------- | ---------------------------------------------------------------------------- |
-| Hero, content sections, section transitions | Expressive. This is where the directive is spent                             |
-| **Order section**                           | **Functional feedback only** — state change, selection, the elapsed collapse |
+| Area                                        | Motion                                              |
+| ------------------------------------------- | --------------------------------------------------- |
+| Hero, content sections, section transitions | Expressive. This is where the directive is spent    |
+| **Order section**                           | **Expressive too — opened by the user, 2026-08-11** |
 
-The order section is exempt for a stated reason, not by oversight. It is where the booking happens, where the per-section Lighthouse gate bites hardest, and where the organiser is deciding fastest with people waiting on them. Motion that delays that decision works against the outcome the client is paying for. Withholding it there is the directive being honoured, not ignored.
+**The order section used to be exempt, and it no longer is.** This document argued that the order section should carry functional feedback only — state change, selection, the elapsed collapse — because it is where the booking happens, where the per-section Lighthouse gate bites hardest, and where the organiser is deciding fastest with people waiting on them.
+
+**That restriction is lifted.** The client asked for many animations and did not carve out the section where their product actually happens, and the user decided the section should not be the one quiet room on an otherwise moving page. Recorded as a decision with a name and a date rather than quietly relaxed, because the old rule was stated emphatically and a future session will otherwise read the two as a contradiction.
+
+**One thing survives, and it is latency rather than taste.** Selection feedback stays immediate: when a slot is tapped, the state change reads at once rather than arriving at the end of a transition. That is not a restriction on how much the section moves — entrances, reveals, the date row, the elapsed collapse and the grid itself can all animate as expressively as the rest of the page. It is a rule about the one moment where animation and feedback are the same event, and where a delay is not decoration but a slower answer to "is 8pm free". Everything around that moment is open.
+
+**The per-section performance gate is unchanged**, and it is the real constraint now: LCP under 2.5s and Lighthouse mobile at or above 85, verified as the section merges. On a mid-range Android in an in-app webview the binding cost of motion is CPU per frame, not kilobytes — an effect can pass the KB budget and still fail the gate.
+
+#### The three order-section effects, chosen by the user before any code
+
+| Moment                      | Effect                                                                                                      | Timing                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Section enters the viewport | Heading fades and rises 12px; date pills slide in from the left; **slot rows stagger upward one at a time** | ~400ms total, 40ms between rows |
+| An available slot is tapped | **Fill lands at 0ms**; a ring expands out from the tap point and fades                                      | 0ms + 300ms decorative          |
+| `Sudah lewat (N)` is opened | Caret rotates 90°; container height opens; the six elapsed rows stagger in                                  | 280ms + 30ms between rows       |
+
+**The stagger is the instruction-book idea made literal** — parts arriving one at a time and seating themselves, which is what the whole page argues a booking is.
+
+**The tap effect is split into two layers on purpose**, and it is the one place the latency rule still bites. The fill is the _answer_ to "is this slot mine now", so it lands immediately; the expanding ring is decoration and runs after. A single 300ms transition would have made the answer arrive 300ms late, which is a slower reply dressed as polish.
+
+**Everything is `transform` and `opacity` only**, so nothing reflows. The collapse measures its own natural height through GSAP rather than animating to `auto`, which is what keeps it off the CLS budget. All three route through `src/lib/motion.ts` — a direct `gsap.to()` in a component is still banned, because GSAP has no built-in `prefers-reduced-motion` handling and the wrapper is the only thing that supplies it.
 
 **What this does not change:**
 
