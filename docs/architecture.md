@@ -222,7 +222,7 @@ Written during Phase 1a task 8. Its purpose is to make every future "can we add 
 
 ### What `/` actually costs — measured, Phase 1a step 02
 
-Every figure below came from `node scripts/measure-bundle.mjs` against a real `pnpm build`, one library at a time. **The estimates this table replaced were 30% low**, so nothing here is carried forward from a guess.
+Every figure below came from `node scripts/check-budget.mjs --report` against a real `pnpm build`, one library at a time. **The estimates this table replaced were 30% low**, so nothing here is carried forward from a guess.
 
 Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only legacy browsers fetch it, and the target device does not.
 
@@ -296,7 +296,9 @@ This is the same rule zod and react-hook-form already live under, now with a thi
 
 **Next 16 removed the source that check was going to read.** Next 15 printed a per-route First Load JS table on every build; Next 16 prints route names only, and Turbopack emits no `app-build-manifest.json`. There is no output left to parse — `--experimental-analyze` prints a route count and nothing sized.
 
-So the check measures the emitted bytes instead. `scripts/measure-bundle.mjs` gzips every file under `.next/static`, and splits shared chunks (from `build-manifest.json`'s `polyfillFiles` + `rootMainFiles` + `lowPriorityFiles`) from route chunks. Step 08 adds thresholds on top of it. This is more honest than parsing a printed table anyway: it counts what ships. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 240KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
+So the check measures the emitted bytes instead. **`scripts/check-budget.mjs` is the one measurement**, in two modes: bare, it enforces the ceiling per route; `--report` prints the per-chunk table. Both read the same route script list out of each prerendered HTML and exclude the legacy polyfill by consulting `build-manifest.json`'s own `polyfillFiles`, never by guessing at a filename.
+
+It was two scripts until the Phase 1a engineering review, and the split had already produced a defect: the enforcing copy identified the polyfill by the hash prefix `static/chunks/0cz`, which is Turbopack **content-addressed** output. The next dependency bump would rehash that chunk, the prefix would stop matching, and 38.7KB would silently count as shipped on every route — 137.0 becomes 175.7, still inside 240, so nothing would have failed. It would only have eaten a third of the headroom and made the table wrong. This is more honest than parsing a printed table anyway: it counts what ships. If the measured subtotal breaches the budget, the resolution is a deliberate decision at that point — raise the 240KB ceiling with evidence, drop a library, or `next/dynamic` the form page's dependencies off the landing route so `/` never pays for `react-hook-form` and `zod`. **That last option is the most likely fix** and costs nothing to plan for now: the form libraries are only needed on `/booking`.
 
 The 40KB WebGL cap is what excludes three.js (~150KB gzip) and pixi.js (~140KB) — by arithmetic, not by naming them. It still permits the effect: a hand-written GLSL fragment shader on a fullscreen quad costs ~3–5KB with no library at all, and OGL is ~10KB. A gradient-mesh or noise-field hero — which is what most light-theme Awwwards heroes actually are — fits comfortably. Reach for the shader, not the engine.
 

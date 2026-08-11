@@ -62,7 +62,7 @@ format(add(date, { days: 13 }, { in: jakarta }), "yyyy-MM-dd", { in: jakarta });
 Two reasons that matters here, in order of importance:
 
 1. **It cannot break the `toISOString()` rule, because the method does not exist.** This project bans `toISOString()` anywhere near `booking_date` — it shifts to UTC and can move the date across midnight. A ban enforced by absence beats a ban enforced by review.
-2. `date-fns` + `@date-fns/tz` measured **8.1KB** on `/`. `TZDateMini` may reduce that. **Measure it with `node scripts/measure-bundle.mjs`, do not assume it** — every estimate in this project so far has been wrong by 30%.
+2. `date-fns` + `@date-fns/tz` measured **8.1KB** on `/`. `TZDateMini` may reduce that. **Measure it with `node scripts/check-budget.mjs --report`, do not assume it** — every estimate in this project so far has been wrong by 30%.
 
 **`scripts/check-domain.mjs`** + a `check:domain` script. It was originally specified as running _inside_ `check:unit` so it could not be skipped; that bundling was replaced by `pnpm check`, which runs the whole gate and covers five checks rather than two.
 
