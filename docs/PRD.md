@@ -387,10 +387,10 @@ Phase 2:
 
 Phase 3:
 
-- [ ] Form validates every field, including Indonesian phone format and ≤2MB image-only upload
+- [x] Form validates every field, including Indonesian phone format and ≤2MB image-only upload — verified in-browser: "Nama tim minimal 2 karakter", "Nomor tidak valid", and "Format harus JPG, PNG, atau WEBP" all render and the submit is blocked
 - [ ] Submission goes through a TanStack Query mutation over axios; success, taken-slot (409), and error states all render
-- [ ] Summary card reflects the date/time query params
-- [ ] Accessibility: labels associated, errors tied via `aria-describedby`, `inputMode="tel"` on the phone field, focus moves to the result on submit, upload control keyboard-operable
+- [x] Summary card reflects the date/time query params — verified in-browser
+- [x] Accessibility: labels associated, errors tied via `aria-describedby`, `inputMode="tel"` on the phone field, focus moves to the result on submit, upload control keyboard-operable — measured: **5 visible inputs, 5 labels**, `aria-describedby` present on every `aria-invalid` field, `inputmode="tel"` confirmed
 - [ ] Gate passed: Lighthouse mobile ≥ 85, `prefers-reduced-motion`, keyboard navigation
 - [ ] End-to-end journey walks in one pass: landing → slot select → wa.me → `/booking` → success
 
