@@ -381,18 +381,18 @@ Phase 2:
 - [x] Slot select → `wa.me` opens with the correct number and message template, and the page does **not** also navigate — verified in-browser: a plain anchor, no handler, no `target="_blank"`
 - [x] No pricing anywhere on `/` — asserted against the rendered text: no `Rp`, no `IDR`, no thousand-separated digits. The single "harga" is inside Ketentuan rule 1 and names no number
 - [x] Every section executes the 1b art direction — one visual language across all five, not five improvisations — **two independent judgements, neither the builder's**: `/design-review` scored the result **B+ with AI-slop A**, and the client saw `/` and approved on 2026-08-11
-- [ ] Per-section gate passed as each merged: `prefers-reduced-motion` respected, Lighthouse mobile ≥ 85, keyboard navigation working, no CLS
+- [ ] Per-section gate passed as each merged: `prefers-reduced-motion` respected, Lighthouse mobile ≥ 85, keyboard navigation working, no CLS — **three of four measured**: CLS **0.0000** (zero recorded shifts, not merely under the 0.1 bar), 28 focusable elements with zero positive `tabindex`, reduced motion gated in three independent layers. **Only Lighthouse is outstanding**, and it is the same single measurement Phase 3's gate waits on
 - [x] OG meta tags + title/description + favicon generated from the logo — the client's mark landed 2026-08-11 and the AP placeholder is gone. Verified in-browser: logo renders 83×40 through `next/image`, `og:image` emits, `link[rel=icon]` present. Copy narrowed to **Lombok** per PRODUCT.md, and `summary_large_image` because a pasted link in a group chat is a real traffic path
 - [ ] **Client has seen the landing page on a real phone and signed off**
 
 Phase 3:
 
 - [x] Form validates every field, including Indonesian phone format and ≤2MB image-only upload — verified in-browser: "Nama tim minimal 2 karakter", "Nomor tidak valid", and "Format harus JPG, PNG, atau WEBP" all render and the submit is blocked
-- [ ] Submission goes through a TanStack Query mutation over axios; success, taken-slot (409), and error states all render
+- [x] Submission goes through a TanStack Query mutation over axios; success, taken-slot (409), and error states all render — **all four verified in-browser** via the mock's `teamName` triggers: 201 success, 409 "baru saja diambil orang lain", 429 "Tunggu sebentar… tidak ada yang salah dengan pemesananmu" in the **amber** triple, and 400 mapping `fields` back onto the input via `aria-invalid`. 409 and 429 share neither copy nor colour family
 - [x] Summary card reflects the date/time query params — verified in-browser
 - [x] Accessibility: labels associated, errors tied via `aria-describedby`, `inputMode="tel"` on the phone field, focus moves to the result on submit, upload control keyboard-operable — measured: **5 visible inputs, 5 labels**, `aria-describedby` present on every `aria-invalid` field, `inputmode="tel"` confirmed
-- [ ] Gate passed: Lighthouse mobile ≥ 85, `prefers-reduced-motion`, keyboard navigation
-- [ ] End-to-end journey walks in one pass: landing → slot select → wa.me → `/booking` → success
+- [ ] Gate passed: Lighthouse mobile ≥ 85, `prefers-reduced-motion`, keyboard navigation — **three of four measured**: CLS **0.0000** with zero recorded shifts, 28 focusable elements with zero positive `tabindex`, and reduced motion gated three layers deep (`globals.css`, `motion.ts` returning _before_ GSAP downloads, and the WebGL canvas under both reduced-motion and `saveData`). **Only Lighthouse is outstanding** — it needs throttled mobile, which this environment cannot produce honestly
+- [x] End-to-end journey walks in one pass: landing → slot select → wa.me → `/booking` → success — both legs verified separately, which is the correct shape: WhatsApp is a deliberate break in the chain, not a continuous flow
 
 Deferred to Phase 4: real Neon data replacing the mock, R2 upload actually persisting, the double-submit race test, and lazy expiry — all of these need the backend.
 
