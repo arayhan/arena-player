@@ -564,7 +564,15 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 - **Sm** (Inter 400, 14px fixed, 1.5): state labels, helper text, field labels.
 - **Xs** (Inter 400, 12px fixed, 1.5): captions and metadata.
 
-**The Fluid-Not-Stepped Rule.** There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it.
+**The Fluid-Not-Stepped Rule.** There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it. One exception exists, below, and it is 39 pixels wide.
+
+**The Sub-360 Floor.** Below `360px`, and only there, `h2` is pinned to **24px**. Everything at 360px and above is the clamp above, untouched.
+
+The reason is geometry, not taste. At 320px the section content box is 288px; the [numeral track](#the-numbered-step-rule) takes 97.9px and the gutter 16px, leaving the heading column **174px**. Two headings do not fit that at 28px — "KETENTUAN" measures 198px and "PESAN LAPANGAN" 182px — and "KETENTUAN" is a single word, so wrapping cannot absorb it. The page scrolled sideways by 8px.
+
+**A lower `clamp()` floor cannot deliver this**, which is worth writing down because it is the obvious fix and it fails silently. At 320px the clamp's _middle_ term is what governs: drop the floor to 1.5rem and `1rem + 3.4vw` still computes 26.88px there. Steepening the middle term to reach 24px at 320px drags every width from 375px to 738px off the approved scale. The floor is the only part of the curve that moves without moving 375px, and a floor only binds where the viewport is narrow enough to reach it — hence a media query rather than a second scale. The frontmatter keeps the one canonical clamp.
+
+This is a floor under a device class the scale was never measured against, not a stepped scale returning by the back door. If a second exception is ever proposed, the honest conclusion is that the numeral track — not the type — is the thing that needs to change.
 
 **The Fixed-Small Rule.** `sm`, `xs` and `eyebrow` deliberately do not scale. Shrinking a caption below 12px on mobile is an accessibility failure, and growing it on desktop makes it stop reading as secondary. The eyebrow is fixed for a further reason: at `0.22em` tracking a fluid size would change the eyebrow's own line length at every viewport, and it has to hold on one line at 375px.
 
@@ -721,7 +729,10 @@ The state label sits **under** the time inside every cell at every width — the
 - **State:** Inter at 13px.
 - **Available:** white fill, 1.5px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
 - **Hover:** fills `blue-50` **and takes `glow-interactive`**. Available cells only, and pointer-fine only.
-- **Selected:** `blue-600` fill and border, white text, state label at 85% white, label "Dipilih".
+- **Selected:** `blue-600` fill and border, white text, state label **full white**, label "Dipilih".
+
+  This line read "state label at 85% white" until 2026-08-12, and that was a contrast failure, not a style. White at 85% over `blue-600` composites to `rgb(222,232,252)` and computes **4.19:1** against the fill — under the 4.5:1 AA bar, and the state label is 13px, so the large-text exemption does not apply. Full white computes 5.17:1. The label separates from the time by size and face, never by transparency; DESIGN.html had already caught and corrected this once, on the date pill's day label, and recorded it there while this line still said 85%.
+
 - **Pending:** the amber triple, label "Menunggu Konfirmasi", `aria-disabled="true"`, `not-allowed`.
 - **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
 - **Elapsed:** `grey-200` fill with a matching `grey-200` border — the only borderless-reading cell in the system — `navy-400` text, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.

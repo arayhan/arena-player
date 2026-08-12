@@ -116,9 +116,14 @@ export function SlotCell({
       </span>
       {/* State: Inter at 13px, sitting UNDER the time at every width — the
           redesign made this universal rather than a desktop-only stack, which
-          is what keeps the 20-character label intact at any column count. At
-          85% white when the cell is selected, per DESIGN.md. */}
-      <span className={cn("text-[13px] whitespace-nowrap", selected && "opacity-85")}>{label}</span>
+          is what keeps the 20-character label intact at any column count.
+          FULL WHITE WHEN SELECTED, NEVER 85%. DESIGN.md said 85% until
+          2026-08-12 and DESIGN.html had already overruled it: white at 85%
+          over blue-600 composites to rgb(222,232,252) and computes 4.19:1
+          against the fill, under AA, and at 13px there is no large-text
+          exemption. Full white is 5.17:1. The label separates from the time
+          by size and face, not by transparency. */}
+      <span className="text-[13px] whitespace-nowrap">{label}</span>
 
       {/* A quiet second line, not a coloured chip. The state label is what the
           cell exists to carry, and a badge that competes with it would trade

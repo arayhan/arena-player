@@ -68,9 +68,15 @@ export function DatePills({
                 "block text-[length:var(--text-xs)]",
                 // The day name is secondary INSIDE an unselected pill, but on
                 // the filled pill it sits on blue-600, where the muted navy
-                // would drop under AA. It inherits the pill's own colour there
-                // instead of keeping a mute that only works on white.
-                isSelected ? "opacity-80" : "text-[var(--color-fg-muted)]",
+                // would drop under AA. It takes the pill's own colour there,
+                // AT FULL STRENGTH — the first fix for this was `opacity-80`,
+                // which measured 3.89:1 against the fill (white at 80%
+                // composites to rgb(211,224,251)) and is under AA at 12px,
+                // trading one contrast failure for a quieter one. DESIGN.html
+                // recorded this as a P0 and its rule is the one applied here:
+                // the day separates from the date by SIZE, never by
+                // transparency. Full white is 5.17:1.
+                isSelected ? undefined : "text-[var(--color-fg-muted)]",
               )}
             >
               {day}

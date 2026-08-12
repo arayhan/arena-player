@@ -49,8 +49,7 @@
    * `--text-step` because the numeral was a plain filled digit with no
    * outline. The redesign makes it outlined, leaning, and load-bearing enough
    * to name after its DESIGN.md role instead of its old visual treatment.
-   * `section.tsx` still reads `--text-step` and will not find this token —
-   * that is a reportable break, not a fix made here. */
+   * `section.tsx` was ported to read this name in the same wave. */
   --text-numeral: clamp(
     3.5rem,
     2rem + 8vw,
@@ -219,6 +218,35 @@
  * claim about what the visitor sees, so the browser has to be told. */
 :root {
   color-scheme: light;
+}
+
+/* THE ONE PLACE THE TYPE SCALE IS OVERRIDDEN, AND IT IS 39px WIDE.
+ *
+ * Below 360px the Numbered-Step Rule's geometry runs out of room. Measured at
+ * 320px: the section content box is 288px, the numeral track takes 97.9px
+ * (`--text-numeral` resolves to 57.6px there, times the 1.7 two-digit
+ * allowance) and `gap-x-4` takes 16px, leaving the heading column 174px. Two
+ * headings need more than that at `--text-h2`'s own floor: "KETENTUAN" measures
+ * 198px and "PESAN LAPANGAN" 182px, and the first is a single unbreakable word
+ * that no amount of wrapping can absorb. The page scrolled sideways by 8px.
+ *
+ * WHY THIS IS NOT A LOWER `clamp()` FLOOR, which is the obvious move and does
+ * not work: at 320px the clamp's MIDDLE term is what would take over. Drop the
+ * floor to 1.5rem and `1rem + 3.4vw` computes 26.88px there, which still
+ * overflows — and steepening the middle term to reach 24px at 320px would drag
+ * every width between 375px and 738px off the scale the design was approved at.
+ * The floor is the only part of the curve that can move without touching 375px,
+ * and the floor only binds if the viewport is narrow enough to reach it.
+ *
+ * So: 24px, below 360px, full stop. 360px and up is byte-identical to the
+ * approved scale — `--text-h2` computes 28.24px at 360 and 28.75px at 375
+ * either way, because this query has already stopped applying. The DESIGN.md
+ * frontmatter keeps the one canonical clamp; this is a floor under it for a
+ * device class the scale was never measured against, not a second scale. */
+@media (max-width: 359px) {
+  :root {
+    --text-h2: 1.5rem;
+  }
 }
 
 /* IN `@layer base`, NOT UNLAYERED — and this is a correctness fix, not tidying.

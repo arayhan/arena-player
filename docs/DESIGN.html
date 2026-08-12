@@ -118,7 +118,7 @@
 
   --text-display:clamp(3rem, 1rem + 11vw, 9.5rem);   /* 48 → 152px */
   --text-numeral:clamp(3.5rem, 2rem + 8vw, 9rem);    /* 56 → 144px */
-  --text-h2:clamp(1.75rem, 1rem + 3.4vw, 3.5rem);    /* 28 → 56px  */
+  --text-h2:clamp(1.75rem, 1rem + 3.4vw, 3.5rem);    /* 28 → 56px, floored below 360px — see The Sub-360 Floor */
   --text-h3:clamp(1.25rem, 0.99rem + 1.13vw, 2rem);  /* 20 → 32px  */
   --text-body:clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
   --text-eyebrow:12px;
@@ -284,6 +284,16 @@ h2{font-family:var(--font-display);font-weight:800;font-size:var(--text-h2);
   line-height:1.05;letter-spacing:-.01em;text-transform:uppercase;margin:0}
 h3{font-family:var(--font-display);font-weight:500;font-size:var(--text-h3);
   line-height:1.25;margin:0}
+
+/* THE SUB-360 FLOOR. The one breakpoint jump in the whole type system, and it
+   is 39px wide. At 320px the section content box is 288px, the numeral track
+   takes 97.9px and the gutter 16px, leaving the heading column 174px —
+   "KETENTUAN" needs 198px at 28px and is one unbreakable word, so the page
+   scrolled sideways by 8px. A lower clamp floor cannot fix it: at 320px the
+   clamp's MIDDLE term governs, and 1rem + 3.4vw still computes 26.88px there.
+   Steepening the middle term to reach 24px at 320px would drag every width
+   from 375px to 738px off the approved scale. 360px and up is untouched. */
+@media (max-width:359px){:root{--text-h2:1.5rem}}
 code{font-family:ui-monospace,'Cascadia Code',Menlo,monospace;font-size:var(--text-xs);
   background:var(--callout-bg);padding:2px 6px;border-radius:var(--radius-control);
   overflow-wrap:anywhere}
