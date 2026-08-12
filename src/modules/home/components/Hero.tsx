@@ -6,6 +6,9 @@ import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { useMotion } from "@/lib/motion";
 
+import { Button } from "./Button";
+import { Marquee } from "./Marquee";
+
 // ssr:false and no loading state — the static fallback IS the loading state,
 // and it is already painted. Removing the WebGL moment is deleting this import,
 // the <HeroCanvas /> below, and one file. That deletability is a condition of
@@ -172,42 +175,40 @@ export function Hero() {
 
         {/* Two CTAs, side by side above ~420px and stacked below it — a phone
             narrow enough for two 56px-tall full-width buttons to collide
-            otherwise. Filled primary, outlined secondary — the same
-            accent-strong / accent-strong-hover pair every other button on the
-            page reads from the semantic tier. */}
+            otherwise. Filled primary, outlined secondary, both now the
+            shared `Button` — its own wipe and lift replace what used to be a
+            plain colour-transition hover here. */}
         <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-center">
-          <a
+          <Button
             href="#order"
             lang="id"
             onMouseEnter={() => setScrambling(true)}
             onMouseLeave={() => setScrambling(false)}
-            className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-[34px] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong-hover)]"
+            // The arrow is passed as `icon`, deliberately OUTSIDE `children` —
+            // `Button` renders it as its own element so the scramble tween
+            // below, which targets only the label span via `ctaRef`, never
+            // sweeps through it and substitutes it with a random glyph
+            // mid-tween.
+            icon="→"
+            className="w-full min-[420px]:w-auto"
           >
             <span ref={ctaRef} data-label="Pesan Lapangan">
               Pesan Lapangan
             </span>
-            {/* The arrow is its own element, deliberately outside the scramble
-                target — a scramble tween would otherwise substitute it with a
-                random glyph mid-tween. It advances 5px on hover, a plain CSS
-                transform that the page-wide reduced-motion rule in
-                globals.css already neutralises without any JS of its own. */}
-            <span
-              aria-hidden="true"
-              className="inline-block transition-transform duration-300 group-hover:translate-x-[5px]"
-            >
-              →
-            </span>
-          </a>
+          </Button>
 
-          <a
+          <Button
             href="#lokasi"
             lang="id"
-            className="inline-flex h-14 w-full items-center justify-center rounded-[var(--radius-control)] border-2 border-[var(--color-accent-strong)] px-[30px] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-accent-strong)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong)] hover:text-[var(--color-fg-inverse)]"
+            variant="secondary"
+            className="w-full min-[420px]:w-auto"
           >
             Lihat Lokasi
-          </a>
+          </Button>
         </div>
       </div>
+
+      <Marquee />
     </section>
   );
 }

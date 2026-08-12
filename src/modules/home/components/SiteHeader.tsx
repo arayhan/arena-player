@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/cn";
 
+import { Button } from "./Button";
+
 /**
  * The page chrome — DESIGN.md's Header component.
  *
@@ -72,14 +74,12 @@ export function SiteHeader() {
             header pill computes to roughly 37px, which is under the tap floor
             on the primary device — a phone, held one-handed, at the top of the
             screen where the thumb reaches worst. The pill grows to 44px; the
-            text does not shrink to fit a smaller pill. */}
-        <a
-          href="#order"
-          lang="id"
-          className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-5 type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-accent-strong-hover)]"
-        >
+            text does not shrink to fit a smaller pill. `size="sm"` is the one
+            place `Button` is asked for that height instead of the 56px spec
+            height — see the comment on `ButtonSize` in Button.tsx. */}
+        <Button href="#order" lang="id" size="sm">
           Pesan Lapangan
-        </a>
+        </Button>
       </div>
     </header>
   );
