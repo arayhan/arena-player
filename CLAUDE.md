@@ -77,9 +77,13 @@ arena-player-web/
 ├── .claude/         # agents, skills, hooks, settings
 ├── db/migrations/   # SQL, run manually — outside src/ because nothing imports it
 ├── src/
-│   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/
+│   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/.
+│   │                # The one folder where a component file is lowercase: layout/page/route
+│   │                # are framework filenames and providers.tsx keeps their casing
 │   ├── modules/     # named after SURFACES. home/ (renders /), booking-form/ (renders /booking).
-│   │                # Modules NEVER import each other, and carry no index.ts barrel
+│   │                # Modules NEVER import each other, and carry no index.ts barrel.
+│   │                # Component files are PascalCase.tsx named for their export (SlotCell.tsx);
+│   │                # everything else keeps <module>.<role>.ts
 │   ├── domain/      # BYTE-IDENTICAL with the admin repo, same path there — slots, dates,
 │   │                # status, phone. Only dates.ts has a dependency
 │   ├── server/      # import "server-only" — db.ts, storage.ts, env.ts
