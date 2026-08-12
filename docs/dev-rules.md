@@ -19,13 +19,15 @@ The conventions an agent cannot infer from the code. Getting one wrong here cost
 | Kind          | Convention                                                             | Example                                         |
 | ------------- | ---------------------------------------------------------------------- | ----------------------------------------------- |
 | Module file   | `<module>.<role>.ts`                                                   | `home.service.ts`, `booking-form.schema.ts`     |
-| Component     | kebab-case file, PascalCase export                                     | `order-section.tsx` → `OrderSection`            |
+| Component     | `PascalCase.tsx`, matching the export                                  | `OrderSection.tsx` → `OrderSection`             |
 | Hook          | `use-<thing>.ts` in `src/hooks/`, or `<module>.queries.ts` in a module | `use-media-query.ts`, `home.queries.ts`         |
 | Test          | colocated `<file>.test.ts`, beside what it covers                      | `slots.ts` → `slots.test.ts`                    |
 | Route handler | `route.ts` under its path segment                                      | `src/app/api/availability/route.ts`             |
 | Domain module | plain noun, no suffix                                                  | `slots.ts`, `dates.ts`, `status.ts`, `phone.ts` |
 
 Roles in use: `service` (transport), `queries` (TanStack Query hooks), `schema` (zod), `types`, `store` (zustand), `proof` (upload constraints).
+
+**Components are the one PascalCase thing here, and `src/app/` is the one place they are not.** `layout.tsx`, `page.tsx` and `route.ts` are framework-mandated filenames; `providers.tsx` is not, but it sits beside them and keeps their casing rather than being the single PascalCase file in a lowercase folder. Everything under `src/modules/` follows the table. A component file's name and its export are the same string, so a stale import reads as wrong at a glance instead of resolving to something that merely looks plausible.
 
 **`schema` is the one role that is NOT available to every module.** zod measures **63.2KB gzip** on `/` — 26% of the entire budget, measured during the Phase 1a engineering review by building a probe against the real page. ESLint therefore allows it in `src/modules/booking-form/**`, `src/app/api/**` and `src/server/**` only, and a `home.schema.ts` is a lint error rather than an oversight.
 

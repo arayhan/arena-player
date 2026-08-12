@@ -426,7 +426,9 @@ arena-player-web/
 │   ├── migrations/            # run manually in the Neon SQL editor
 │   └── README.md
 ├── src/                        # *.test.ts colocated beside the module each one covers
-│   ├── app/                    # Next.js App Router — the composition layer
+│   ├── app/                    # Next.js App Router — the composition layer.
+│   │   │                       # The one lowercase-component folder: layout/page/route
+│   │   │                       # are framework filenames and providers.tsx keeps their casing
 │   │   ├── page.tsx
 │   │   ├── providers.tsx       # QueryClientProvider, client component
 │   │   ├── booking/page.tsx
@@ -434,14 +436,19 @@ arena-player-web/
 │   │       ├── availability/route.ts
 │   │       └── bookings/route.ts
 │   ├── modules/                # named after SURFACES. Modules never import each other.
-│   │   │                       # No index.ts barrels — see the route split
+│   │   │                       # No index.ts barrels — see the route split.
+│   │   │                       # Components are PascalCase.tsx, named for their export;
+│   │   │                       # everything else keeps <module>.<role>.ts
 │   │   ├── home/               # renders /
-│   │   │   ├── components/     # hero, order-section, rules, location, cta-footer
+│   │   │   ├── HomePage.tsx    # the page composition
+│   │   │   ├── components/     # Hero, HeroCanvas, OrderSection, Section, DatePills, SlotCell
 │   │   │   ├── home.service.ts # native fetch — the availability GET
 │   │   │   ├── home.queries.ts # TanStack Query hooks
 │   │   │   └── home.types.ts
 │   │   └── booking-form/       # renders /booking. Named booking-FORM because / is
 │   │       │                   # also about booking — its product is the slot grid
+│   │       ├── BookingEntry.tsx        # decides which of the entry states renders
+│   │       ├── BookingForm.tsx         # the form itself
 │   │       ├── components/
 │   │       ├── booking-form.schema.ts  # zod
 │   │       ├── booking-form.service.ts # axios, via services/api-client
