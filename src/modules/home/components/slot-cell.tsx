@@ -24,6 +24,17 @@ const STATE_LABEL: Record<DisplaySlot["status"], string> = {
  * `aria-disabled` rather than the native attribute, so they stay focusable —
  * a visitor needs to be able to reach 18.00 and hear that it is taken, not
  * find it missing from the tab order.
+ *
+ * STACKED AT EVERY WIDTH, NOT JUST ABOVE A BREAKPOINT. DESIGN.md's "velocity"
+ * redesign makes the label-under-time layout universal rather than a desktop
+ * variant, and this is also what settles the slot grid's 320px overflow: the
+ * pre-redesign row layout put time and label side by side and needed ~321px
+ * to hold both without truncating the 20-character label; stacked, the cell
+ * only needs the WIDER of the two lines plus padding — "Menunggu Konfirmasi"
+ * at 13px is DESIGN.md's re-measured 133px floor, comfortably under the
+ * ~240-288px a single grid column has even at a 320px viewport. No narrower
+ * breakpoint, no truncation, no special-cased width: completing the port is
+ * what closes the gap, not a new rule.
  */
 export function SlotCell({
   slot,
@@ -48,6 +59,9 @@ export function SlotCell({
   runHours?: number;
 }) {
   const selectable = status === "available";
+  // "Dipilih" replaces the status label the instant a slot is selected —
+  // DESIGN.md's Slot Cell spec, and the label the fill is answering for.
+  const label = selected ? "Dipilih" : STATE_LABEL[status];
 
   return (
     <button
@@ -62,23 +76,20 @@ export function SlotCell({
       // activation, which `pointer-events: none` does not.
       onClick={selectable ? onSelect : undefined}
       className={cn(
-        "group relative flex w-full min-h-14 items-center justify-between gap-x-3 gap-y-1",
-        "overflow-hidden rounded-[10px] border p-4 text-left",
-        // Above 768px the cell stacks so the 20-character state label keeps
-        // its full width in a narrower column. Below that it stays a row,
-        // where the label fits at 146px inside a 343px screen.
-        "md:flex-col md:items-start",
+        "group relative flex min-h-16 w-full flex-col items-start justify-center gap-1",
+        "overflow-hidden rounded-[var(--radius-control)] border-[1.5px] px-4 py-[14px] text-left",
         "transition-colors duration-200",
         selectable
           ? // THE HOVER FILL IS THE PAGE GROUND, SO IT NEEDS THE SECOND SIGNAL.
             // `--color-wash` and `--color-page` are both blue-50: measured, an
             // available cell hovers from white to rgb(239,246,255) on a body of
             // rgb(239,246,255), so the surface does not lift, it disappears into
-            // the band and leaves the blue keyline floating. The fill stays
-            // because DESIGN.md specifies it; `shadow-md` is what makes the
-            // state perceptible, and it is the system's own vocabulary for it —
-            // "shadow-md: raised or hovered surfaces", navy-tinted, no new token.
-            "cursor-pointer border-[var(--color-interactive)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:bg-[var(--color-wash)] hover:shadow-[var(--shadow-md)]"
+            // the band and leaves the blue keyline floating. `--glow-interactive`
+            // is DESIGN.md's own fix — the second signal on the SAME event as
+            // the blue border, not a separate lighting effect — and it is
+            // `pointer-fine` only, per the Slot Cell spec, so a touch tap never
+            // leaves a cell stuck "hovered".
+            "cursor-pointer border-[var(--color-interactive)] bg-[var(--color-bg)] text-[var(--color-fg)] pointer-fine:hover:bg-[var(--color-wash)] pointer-fine:hover:shadow-[var(--glow-interactive)]"
           : "cursor-not-allowed",
         !selectable &&
           status === "pending" &&
@@ -98,21 +109,24 @@ export function SlotCell({
           "!border-[var(--color-interactive)] !bg-[var(--color-interactive)] !text-[var(--color-fg-inverse)] !transition-none",
       )}
     >
-      <span className="font-[family-name:var(--font-display)] font-medium tracking-[0.01em] whitespace-nowrap">
+      {/* Time: Orbitron 700 at 16px, 0.02em — no longer the h3 role. An h3
+          inside a grid of nine would be nine sub-headings. */}
+      <span className="font-[family-name:var(--font-display)] text-[16px] font-bold tracking-[0.02em] whitespace-nowrap">
         {slot}
       </span>
-      <span className="text-[length:var(--text-sm)] whitespace-nowrap">{STATE_LABEL[status]}</span>
+      {/* State: Inter at 13px, sitting UNDER the time at every width — the
+          redesign made this universal rather than a desktop-only stack, which
+          is what keeps the 20-character label intact at any column count. At
+          85% white when the cell is selected, per DESIGN.md. */}
+      <span className={cn("text-[13px] whitespace-nowrap", selected && "opacity-85")}>{label}</span>
 
       {/* A quiet second line, not a coloured chip. The state label is what the
           cell exists to carry, and a badge that competes with it would trade
-          the primary reading for the secondary one. `basis-full` drops it to
-          its own row in the flex layout at every width, so it never squeezes
-          the 20-character label that the whole one-column rule protects. */}
+          the primary reading for the secondary one. Column layout already
+          puts it on its own line — no `basis-full` needed now that the row
+          layout is gone. */}
       {runHours ? (
-        <span
-          lang="id"
-          className="basis-full text-[length:var(--text-xs)] text-[var(--color-interactive)]"
-        >
+        <span lang="id" className="text-[length:var(--text-xs)] text-[var(--color-interactive)]">
           Bisa main {runHours} jam berturut-turut
         </span>
       ) : null}
@@ -124,7 +138,7 @@ export function SlotCell({
       {selected ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 animate-[slot-ring_300ms_var(--ease-out)_forwards] rounded-[10px] ring-2 ring-[var(--color-interactive)]"
+          className="pointer-events-none absolute inset-0 animate-[slot-ring_300ms_var(--ease-out)_forwards] rounded-[var(--radius-control)] ring-2 ring-[var(--color-interactive)]"
         />
       ) : null}
     </button>

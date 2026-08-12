@@ -10,11 +10,15 @@ import { formatPill } from "../order.utils";
  * THE ONLY FULLY ROUND SHAPE IN THE SYSTEM, and that is functional rather than
  * decorative: a row of pills reads as horizontally scrollable without an
  * arrow, a gradient fade, or a hint label. Everything else in the system sits
- * at 10px or 14px, which is what leaves 999px meaning something.
+ * at 12px or 22px, which is what leaves 9999px meaning something.
  *
  * `overscroll-behavior-x: contain` stops a sideways swipe bouncing the page
  * underneath the row — the defect is invisible on a trackpad and immediate on
- * the phone this site is designed for.
+ * the phone this site is designed for. The scrollbar itself is hidden across
+ * engines (`scrollbar-width`, `-ms-overflow-style`, the WebKit pseudo-element):
+ * DESIGN.md's Date Pill spec says the row scrolls "with its scrollbar hidden",
+ * because the pill shape is what already says "this scrolls" — a visible
+ * scrollbar is a second device doing the same job.
  */
 export function DatePills({
   dates,
@@ -30,7 +34,7 @@ export function DatePills({
       role="group"
       aria-label="Pilih tanggal"
       lang="id"
-      className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] [overscroll-behavior-x:contain]"
+      className="flex gap-2 overflow-x-auto pb-2 [overscroll-behavior-x:contain] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {dates.map((date, index) => {
         const { day, label } = formatPill(date);
@@ -43,19 +47,20 @@ export function DatePills({
             aria-pressed={isSelected}
             onClick={() => onSelect(date)}
             className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-center transition-colors duration-150",
+              // 64px minimum width, 10px vertical / 16px horizontal padding —
+              // DESIGN.md's Date Pill spec. `transition` (not `transition-colors`)
+              // because the hover lift below animates `transform` too.
+              "min-w-16 shrink-0 rounded-[var(--radius-pill)] border px-4 py-[10px] text-center transition duration-150",
               isSelected
                 ? "border-[var(--color-interactive)] bg-[var(--color-interactive)] text-[var(--color-fg-inverse)]"
                 : // HOVER HAS TO CHANGE THE BORDER, NOT ONLY THE FILL.
                   // `--color-wash` and `--color-page` are both blue-50, so the
                   // fill this pill hovers to is EXACTLY the band it sits on —
                   // measured, white to rgb(239,246,255) against a body of
-                  // rgb(239,246,255). The pill did not light up, it dissolved,
-                  // and with the border left at the hairline there was no
-                  // hover feedback at all. DESIGN.md's Date Pill spec already
-                  // called for both halves: "Hover: blue-50 fill, blue-600
-                  // border". Only the fill had been implemented.
-                  "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:border-[var(--color-interactive)] hover:bg-[var(--color-wash)]",
+                  // rgb(239,246,255). DESIGN.md: "Hover: blue-50 fill, blue-600
+                  // border, 2px lift" — the lift is the second signal here, the
+                  // same role `--glow-interactive` plays on the slot cell.
+                  "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] hover:-translate-y-0.5 hover:border-[var(--color-interactive)] hover:bg-[var(--color-wash)]",
             )}
           >
             <span
