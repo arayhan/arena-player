@@ -380,9 +380,9 @@ Phase 2:
 - [x] Slot grid reads the mock; **all four** states render correctly — `elapsed` was split from `booked` in Phase 1b
 - [x] Slot select → `wa.me` opens with the correct number and message template, and the page does **not** also navigate — verified in-browser: a plain anchor, no handler, no `target="_blank"`
 - [x] No pricing anywhere on `/` — asserted against the rendered text: no `Rp`, no `IDR`, no thousand-separated digits. The single "harga" is inside Ketentuan rule 1 and names no number
-- [ ] Every section executes the 1b art direction — one visual language across all five, not five improvisations
+- [x] Every section executes the 1b art direction — one visual language across all five, not five improvisations — **two independent judgements, neither the builder's**: `/design-review` scored the result **B+ with AI-slop A**, and the client saw `/` and approved on 2026-08-11
 - [ ] Per-section gate passed as each merged: `prefers-reduced-motion` respected, Lighthouse mobile ≥ 85, keyboard navigation working, no CLS
-- [ ] OG meta tags + title/description + favicon generated from the logo
+- [x] OG meta tags + title/description + favicon generated from the logo — the client's mark landed 2026-08-11 and the AP placeholder is gone. Verified in-browser: logo renders 83×40 through `next/image`, `og:image` emits, `link[rel=icon]` present. Copy narrowed to **Lombok** per PRODUCT.md, and `summary_large_image` because a pasted link in a group chat is a real traffic path
 - [ ] **Client has seen the landing page on a real phone and signed off**
 
 Phase 3:

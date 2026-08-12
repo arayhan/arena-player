@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useRef, useState } from "react";
 
 import { useMotion } from "@/lib/motion";
@@ -83,18 +84,22 @@ export function Hero() {
       <HeroCanvas />
 
       <div ref={rootRef} className="relative mx-auto w-full max-w-[1100px] px-4">
-        {/* TODO(content): logo file. A generated AP monogram in the brand navy
-            until the client supplies theirs; the favicon and OG image derive
-            from the same placeholder. Deliberately a monogram rather than
-            anything field-shaped — a placeholder should look like a
-            placeholder, not like a logo nobody approved. */}
-        <span
-          aria-label="Arena Player"
-          role="img"
-          className="inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-[var(--color-accent-strong)] font-[family-name:var(--font-display)] text-lg font-black text-[var(--color-fg-inverse)]"
-        >
-          AP
-        </span>
+        {/* The real mark, supplied by the client 2026-08-11 — the AP monogram
+            placeholder that stood here is gone.
+
+            NOT `priority`, and that is deliberate. The LCP element is the
+            headline below: text, server-rendered, in a self-hosted font. A
+            preloaded 1042×502 logo would compete for that slot and could take
+            it, which would trade the cheapest, most reliable LCP there is for
+            an image. Explicit width and height keep it off the CLS budget
+            regardless. */}
+        <Image
+          src="/logo-mark.png"
+          alt="Arena Player"
+          width={1042}
+          height={502}
+          className="h-10 w-auto md:h-12"
+        />
 
         <h1 className="mt-8 max-w-[14ch]">Pilih Jam. Kirim. Main.</h1>
 
