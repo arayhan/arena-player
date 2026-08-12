@@ -30,11 +30,22 @@ export function SlotCell({
   status,
   selected,
   onSelect,
+  runHours,
 }: {
   slot: DisplaySlot["slot"];
   status: DisplaySlot["status"];
   selected: boolean;
   onSelect: () => void;
+  /**
+   * Set ONLY on the first slot of the day's longest free run, and only when
+   * that run is three slots or more. At most one cell on the page carries it.
+   *
+   * It answers the organiser's own question — *can we play longer?* — rather
+   * than saying "take this dead hour", which is the client's interest and not
+   * theirs. The two align on quiet hours, which is what makes it an affordance
+   * instead of a nudge. See `longestFreeRun` for the anti-dilution rules.
+   */
+  runHours?: number;
 }) {
   const selectable = status === "available";
 
@@ -91,6 +102,20 @@ export function SlotCell({
         {slot}
       </span>
       <span className="text-[length:var(--text-sm)] whitespace-nowrap">{STATE_LABEL[status]}</span>
+
+      {/* A quiet second line, not a coloured chip. The state label is what the
+          cell exists to carry, and a badge that competes with it would trade
+          the primary reading for the secondary one. `basis-full` drops it to
+          its own row in the flex layout at every width, so it never squeezes
+          the 20-character label that the whole one-column rule protects. */}
+      {runHours ? (
+        <span
+          lang="id"
+          className="basis-full text-[length:var(--text-xs)] text-[var(--color-interactive)]"
+        >
+          Bisa main {runHours} jam berturut-turut
+        </span>
+      ) : null}
 
       {/* The decorative half of the tap: a ring that expands from the cell and
           fades. Pure CSS, so it costs no JavaScript and the reduced-motion

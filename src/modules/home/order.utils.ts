@@ -68,6 +68,87 @@ export function partitionSlots(
   return { elapsed, live };
 }
 
+/** Hours per slot. Nine 2-hour slots span 06.00–24.00. */
+const HOURS_PER_SLOT = 2;
+
+/** The longest unbroken stretch of bookable hours on a day. */
+export interface FreeRun {
+  /** The slot the run starts at. Only this one is badged. */
+  startSlot: TimeSlot;
+  /** Consecutive available slots. */
+  slots: number;
+  /** The number a visitor actually reads: `slots * 2`. */
+  hours: number;
+}
+
+/**
+ * The minimum run worth pointing at, in slots.
+ *
+ * THREE, NOT TWO, AND THIS NUMBER IS THE WHOLE DESIGN. A run of two is
+ * ordinary — most days have several — so badging them would put a marker on
+ * half the grid and the signal would read as decoration. Three consecutive
+ * slots is six hours, which is rare enough to be worth saying and long enough
+ * for a group to plan around.
+ */
+const MIN_RUN_SLOTS = 3;
+
+/**
+ * Find the one run worth surfacing, or nothing.
+ *
+ * WHY THIS EXISTS. The client measures this product by whether DEAD HOURS get
+ * booked, and until now the design was neutral about that: 07.00 and 20.00
+ * rendered identically even though one is nearly always free and the other is
+ * contested. PRODUCT.md calls that the clearest gap between the goal and the
+ * build.
+ *
+ * WHAT IT DELIBERATELY DOES NOT DO. It never says "take this dead hour" —
+ * that is the client's interest, not the visitor's, and a booking grid is the
+ * wrong place to push. It answers a question the organiser actually has:
+ * *can we play longer?* The two interests happen to align on quiet hours,
+ * which is what makes the nudge honest rather than manipulative. And it names
+ * no price, because no rate card exists and an invented one is the single
+ * placeholder a visitor would act on.
+ *
+ * AT MOST ONE PER DAY. Only the longest run, only its first slot. Three badges
+ * for one fact would be three claims, and a quiet day would otherwise light up
+ * end to end and mean nothing.
+ *
+ * Pass the LIVE slots from `partitionSlots`, not the raw response: elapsed
+ * hours must break a run rather than pad it. A morning that has already passed
+ * is not six bookable hours.
+ */
+export function longestFreeRun(live: readonly DisplaySlot[]): FreeRun | null {
+  let best: FreeRun | null = null;
+  let runStart = -1;
+  let runLength = 0;
+
+  const close = () => {
+    // `>` not `>=`, so an earlier run of equal length wins the tie. Earlier is
+    // the better offer: it leaves the rest of the evening open behind it.
+    if (runLength >= MIN_RUN_SLOTS && (best === null || runLength > best.slots)) {
+      best = {
+        startSlot: live[runStart].slot,
+        slots: runLength,
+        hours: runLength * HOURS_PER_SLOT,
+      };
+    }
+    runStart = -1;
+    runLength = 0;
+  };
+
+  for (let i = 0; i < live.length; i++) {
+    if (live[i].status === "available") {
+      if (runStart === -1) runStart = i;
+      runLength++;
+    } else {
+      close();
+    }
+  }
+  close();
+
+  return best;
+}
+
 /** How many live slots a visitor can actually book right now. */
 export function countAvailable(slots: readonly DisplaySlot[]): number {
   return slots.filter((s) => s.status === "available").length;

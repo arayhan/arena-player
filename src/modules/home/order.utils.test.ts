@@ -10,10 +10,12 @@ import { describe, expect, it } from "vitest";
 import { TIME_SLOTS } from "@/domain/slots";
 
 import type { SlotAvailability } from "./home.types";
+import type { DisplaySlot } from "./order.utils";
 import {
   countAvailable,
   formatFullDate,
   formatPill,
+  longestFreeRun,
   partitionSlots,
   whatsappLink,
 } from "./order.utils";
@@ -111,6 +113,90 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
 
   it("handles an empty response without throwing", () => {
     expect(partitionSlots([], "2026-08-11", at(12))).toEqual({ elapsed: [], live: [] });
+  });
+});
+
+describe("longestFreeRun — the anti-dilution rules ARE the design", () => {
+  const run = (...statuses: DisplaySlot["status"][]): DisplaySlot[] =>
+    statuses.map((status, i) => ({ slot: TIME_SLOTS[i], status }));
+
+  it("returns null for a run of two — ordinary, and badging it marks half the grid", () => {
+    expect(longestFreeRun(run("available", "available", "booked"))).toBeNull();
+  });
+
+  it("returns three slots as SIX HOURS — the unit a visitor reads", () => {
+    // The shape preview said "3 jam" and that was wrong: a slot is two hours.
+    expect(longestFreeRun(run("available", "available", "available"))).toEqual({
+      startSlot: TIME_SLOTS[0],
+      slots: 3,
+      hours: 6,
+    });
+  });
+
+  it("returns only the LONGEST run when a day has several", () => {
+    const result = longestFreeRun(
+      run(
+        "available",
+        "available",
+        "available",
+        "booked",
+        "available",
+        "available",
+        "available",
+        "available",
+      ),
+    );
+    expect(result?.slots).toBe(4);
+    expect(result?.startSlot).toBe(TIME_SLOTS[4]);
+  });
+
+  it("gives an earlier run the tie — it leaves the evening open behind it", () => {
+    const result = longestFreeRun(
+      run("available", "available", "available", "booked", "available", "available", "available"),
+    );
+    expect(result?.startSlot).toBe(TIME_SLOTS[0]);
+  });
+
+  it("BREAKS a run on pending and on booked, not only on booked", () => {
+    // Pending is somebody else's slot too. Counting through it would promise
+    // six hours that cannot all be had.
+    expect(longestFreeRun(run("available", "pending", "available", "available"))).toBeNull();
+    expect(longestFreeRun(run("available", "booked", "available", "available"))).toBeNull();
+  });
+
+  it("badges the FIRST slot of the run, never the middle", () => {
+    const result = longestFreeRun(run("booked", "available", "available", "available"));
+    expect(result?.startSlot).toBe(TIME_SLOTS[1]);
+  });
+
+  it("counts elapsed hours as gone, because it is handed the live array", () => {
+    // The contract: pass partitionSlots' `live`, never the raw response. A
+    // morning that already passed is not six bookable hours — and here that is
+    // load-bearing, since `elapsed` is not `available` and so breaks the run.
+    // at(9) is 17:00 WITA — three hours left, exactly the minimum run.
+    const { live } = partitionSlots(allAvailable, "2026-08-11", at(9));
+    expect(live).toHaveLength(3);
+    expect(longestFreeRun(live)?.hours).toBe(6);
+
+    // at(11) is 19:00 WITA — two left, and two is below the threshold. The
+    // badge disappears as the evening runs out, which is correct: there is no
+    // longer a long block to offer.
+    const late = partitionSlots(allAvailable, "2026-08-11", at(11));
+    expect(late.live).toHaveLength(2);
+    expect(longestFreeRun(late.live)).toBeNull();
+  });
+
+  it("returns null on an empty day rather than throwing", () => {
+    expect(longestFreeRun([])).toBeNull();
+  });
+
+  it("returns null when nothing is available at all", () => {
+    expect(longestFreeRun(run("booked", "pending", "booked"))).toBeNull();
+  });
+
+  it("handles a whole day free — nine slots, eighteen hours", () => {
+    const { live } = partitionSlots(allAvailable, "2026-08-20", at(12));
+    expect(longestFreeRun(live)).toEqual({ startSlot: TIME_SLOTS[0], slots: 9, hours: 18 });
   });
 });
 

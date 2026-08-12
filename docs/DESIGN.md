@@ -480,6 +480,19 @@ This is the same rule the slot cell and the date pill already follow, and the su
 - **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
 - **Elapsed:** `grey-200` fill with a matching `grey-200` border — the only borderless cell in the system — `navy-400` text, label "Sudah lewat", `aria-disabled="true"`, `not-allowed`.
 
+### The free-run affordance — the one place the design serves the business goal
+
+`PRODUCT.md` names this as the clearest gap between the goal and the build: the client measures this product by **whether dead hours get booked**, and the grid was neutral about that. 07.00 and 20.00 rendered identically even though one is nearly always free and the other is contested.
+
+**The signal is a consecutive free run**, derived from the nine statuses already returned per date. No new endpoint, no price, no claim that cannot be computed.
+
+- **`Bisa main {n} jam berturut-turut`**, `--text-xs` in `--color-interactive`, on its own line inside the cell.
+- **Minimum three consecutive available slots (6 hours).** Two is ordinary — most days have several — so badging runs of two would mark half the grid and the signal would read as decoration.
+- **One badge per date, on the run's first slot only.** The longest run; an earlier run wins a tie, because it leaves the evening open behind it. Three badges for one fact would be three claims.
+- **`pending`, `booked` and `elapsed` all break a run.** Computed from `partitionSlots`' `live` array, never the raw response — a morning that has already passed is not six bookable hours.
+
+**Why this is an affordance and not a nudge.** It never says "take this dead hour" — that is the client's interest, not the visitor's, and a booking grid is the wrong place to push. It answers a question the organiser genuinely has: _can we play longer?_ The two interests happen to align on quiet hours, and that alignment is what makes it honest. It also names **no price**, because no rate card exists and an invented one is the single placeholder a visitor would act on.
+
 **The Visible-Unavailable Rule.** Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Hiding an unavailable slot is never the answer.
 
 **Elapsed slots are not booked slots, and the distinction is now the client's to make.** `GET /api/availability` returns `booked` for today's elapsed slots, so an earlier draft of this section concluded the client could not tell them apart and that separating them needed a `past` status in the API contract — a Phase 4 change.

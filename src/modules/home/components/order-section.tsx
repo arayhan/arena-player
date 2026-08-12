@@ -8,7 +8,7 @@ import { useMotion } from "@/lib/motion";
 
 import { WHATSAPP_NUMBER } from "../home.constants";
 import { useAvailability } from "../home.queries";
-import { countAvailable, partitionSlots, whatsappLink } from "../order.utils";
+import { countAvailable, longestFreeRun, partitionSlots, whatsappLink } from "../order.utils";
 import { DatePills } from "./date-pills";
 import { SlotCell } from "./slot-cell";
 
@@ -97,6 +97,11 @@ export function OrderSection() {
   );
 
   const availableCount = countAvailable(live);
+
+  // Computed from `live`, never the raw response — elapsed hours must break a
+  // run rather than pad it. At most one cell on the page gets a badge, and on
+  // a busy day none does.
+  const freeRun = useMemo(() => longestFreeRun(live), [live]);
 
   return (
     // A FLEX COLUMN, NOT A GRID. An implicit grid track is `auto`-sized, so the
@@ -201,6 +206,7 @@ export function OrderSection() {
                   // Reversible: tapping the selected slot clears it rather
                   // than forcing the visitor to pick a different one to escape.
                   onSelect={() => setSelected((cur) => (cur === s.slot ? null : s.slot))}
+                  runHours={freeRun?.startSlot === s.slot ? freeRun.hours : undefined}
                 />
               </div>
             ))}

@@ -354,6 +354,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
    slack -- and it only shows inside the Alur frames, which are narrower. */
 .slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em;white-space:nowrap}
 .slot__state{font-size:var(--text-sm);white-space:nowrap}
+/* The free-run affordance. A quiet second line, never a coloured chip: the
+   state label is what the cell exists to carry. flex-basis:100% drops it to
+   its own row so it never squeezes the 20-character label. Shown on the FIRST
+   slot of the day's longest run only, and only when that run is 3+ slots —
+   see DESIGN.md. At most one of these exists on a page. */
+.slot__run{flex-basis:100%;font-size:var(--text-xs);color:var(--color-interactive)}
 /* THE FILL ALONE IS INVISIBLE, AND THIS PAGE IS WHERE THAT WAS MISSED.
    --slot-hover-bg resolves to --color-wash, which is blue-50 — the SAME value
    as --color-page. Measured on the built product: white to rgb(239,246,255)
@@ -865,7 +871,7 @@ th{font-family:var(--font-manual);font-weight:700;color:var(--color-fg-muted);
     </svg>
     <div class="plate settle">
       <div class="slot-grid" role="group" aria-label="Slot waktu" lang="id">
-        <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span></button>
+        <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">06.00 - 08.00</span><span class="slot__state" lang="id">Tersedia</span><span class="slot__run" lang="id">Bisa main 6 jam berturut-turut</span></button>
         <button class="slot" type="button" data-state="available" aria-pressed="false"><span class="slot__time">08.00 - 10.00</span><span class="slot__state" lang="id">Tersedia</span></button>
         <button class="slot" type="button" data-state="pending" aria-disabled="true"><span class="slot__time">10.00 - 12.00</span><span class="slot__state" lang="id">Menunggu Konfirmasi</span></button>
         <button class="slot" type="button" data-state="booked" aria-disabled="true"><span class="slot__time">12.00 - 14.00</span><span class="slot__state" lang="id">Terisi</span></button>
