@@ -1,685 +1,718 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-08-12T00:00:00Z",
-  "title": "Design System: Arena Player",
-  "extensions": {
-    "note": "Regenerated 2026-08-12 for the 'velocity' art direction. Motion, shadow, breakpoint, axis and border tokens have no home in the DESIGN.md frontmatter schema and live here; where a value appears in both, docs/DESIGN.md wins. NOT CLIENT-APPROVED: the client approved the superseded light-only direction on 2026-08-11 and a re-approval is owed.",
-    "axis": {
-      "note": "The whole direction rides on two values, sampled from the client's tilted AP mark and reduced until they survive 375px. A SECOND SKEW VALUE ANYWHERE IS A DEFECT, not a variation. The marquee's own -1.2deg is the same lean read at band scale and is the single declared exception, with its reason attached: a full-width band skewed -8deg drops its corner more than 100px below the fold at 1280px.",
-      "tokens": [
-        {
-          "name": "--skew",
-          "value": "-8deg",
-          "purpose": "Section numerals, rule numerals, the hero eyebrow rule, the button wipe, the marquee band."
-        },
-        {
-          "name": "--diag",
-          "value": "168deg",
-          "purpose": "Gradient axis — the hero shader fallback and the map placeholder."
-        }
-      ],
-      "knownDiscrepancy": "docs/DESIGN.md contradicts itself on the button wipe: its axis table lists the wipe as a consumer of --skew, while the Buttons section transcribes the prototype's literal skewX(-12deg). docs/DESIGN.html implements -8deg, following the rule over the transcription."
+ "schemaVersion": 2,
+ "generatedAt": "2026-08-12T12:00:00Z",
+ "title": "Design System: Arena Player",
+ "extensions": {
+  "note": "Regenerated 2026-08-12 for the 'velocity' art direction. Motion, shadow, breakpoint, axis and border tokens have no home in the DESIGN.md frontmatter schema and live here; where a value appears in both, docs/DESIGN.md wins. NOT CLIENT-APPROVED: the client approved the superseded light-only direction on 2026-08-11 and a re-approval is owed.",
+  "axis": {
+   "note": "The whole direction rides on two values, sampled from the client's tilted AP mark and reduced until they survive 375px. A SECOND SKEW VALUE ANYWHERE IS A DEFECT, not a variation. The marquee's own -1.2deg is the same lean read at band scale and is the single declared exception, with its reason attached: a full-width band skewed -8deg drops its corner more than 100px below the fold at 1280px.",
+   "tokens": [
+    {
+     "name": "--skew",
+     "value": "-8deg",
+     "purpose": "Section numerals, rule numerals, the hero eyebrow rule, the button wipe, the marquee band."
     },
-    "colorMeta": {
-      "navy-900": {
-        "role": "primary",
-        "displayName": "Arena Navy",
-        "canonical": "#011A43",
-        "note": "Sampled from the client's logo. Inherited, not chosen. New in the redesign: it is also the FULL-BLEED BAND SURFACE, permitted only under the five conditions in DESIGN.md — light ground, light sections outnumbering navy, never the hero or the order section, band text is the page ground itself at 15.69:1, and no glow.",
-        "tonalRamp": [
-          "#000B1D",
-          "#011232",
-          "#011A43",
-          "#0A2E6B",
-          "#1B4894",
-          "#3A6CBD",
-          "#7699DB",
-          "#C3D5F2"
-        ]
-      },
-      "navy-700": {
-        "role": "primary",
-        "displayName": "Navy Depth",
-        "canonical": "#0A2E6B",
-        "note": "Hover and pressed depth on navy surfaces, the hairline that divides content INSIDE a navy band (1.31:1 — structure, not state), and the numeral stroke on a band. Never used for text."
-      },
-      "navy-400": {
-        "role": "neutral",
-        "displayName": "Muted Ink",
-        "canonical": "#4A5A78",
-        "note": "Secondary text ON LIGHT SURFACES ONLY. 6.94:1 on white, 6.38:1 on blue-50, 5.61:1 on grey-200. Replaced grey-500, which failed AA (4.44:1) once secondary text sat on a coloured ground. On navy-900 it computes 2.46:1 and fails at any size — use navy-200 there."
-      },
-      "navy-200": {
-        "role": "neutral",
-        "displayName": "Muted Ink Inverse",
-        "canonical": "#9FB2CE",
-        "note": "NEW in the redesign. Secondary text, captions and metadata INSIDE a navy band. 7.91:1 on navy-900. On-dark only."
-      },
-      "blue-700": {
-        "role": "secondary",
-        "displayName": "Signal Blue Pressed",
-        "canonical": "#1D4ED8",
-        "note": "The active state of a blue affordance. 6.70:1 on white."
-      },
-      "blue-600": {
-        "role": "secondary",
-        "displayName": "Signal Blue",
-        "canonical": "#2563EB",
-        "note": "Every interactive affordance on a LIGHT surface. 5.17:1 on white, 4.75:1 on blue-50. On navy-900 it computes 3.30:1 — large text only, and it fails the moment it carries a caption or a thin outline stroke, so blue-400 exists instead.",
-        "tonalRamp": [
-          "#0A1F52",
-          "#12307D",
-          "#1D4ED8",
-          "#2563EB",
-          "#5B8BF2",
-          "#93B4F8",
-          "#C7DAFC",
-          "#EFF6FF"
-        ]
-      },
-      "blue-400": {
-        "role": "secondary",
-        "displayName": "Signal Blue On Dark",
-        "canonical": "#60A5FA",
-        "note": "NEW in the redesign. Every accent and interactive tint INSIDE a navy band — the accent word in a section heading, the rule numerals, any link, the focus ring. 6.72:1 on navy-900. On-dark only: on white it computes 2.54:1 and must never appear there."
-      },
-      "blue-100": {
-        "role": "secondary",
-        "displayName": "Signal Tint",
-        "canonical": "#DBEAFE",
-        "note": "NEW in the redesign. Gradient terminal only — the hero shader's static fallback and the map placeholder, both on the 168deg axis. Never a text colour and never a state."
-      },
-      "blue-50": {
-        "role": "secondary",
-        "displayName": "Signal Wash",
-        "canonical": "#EFF6FF",
-        "note": "The page ground AND the hover fill on white plates AND the text colour on a navy band (15.69:1). The wash and the ground being the same blue is a trap DESIGN.md sets deliberately: anything hovering DIRECTLY on the page ground needs a second signal — a border change or a shadow. Inside the white order panel the wash is visible and the defect does not recur."
-      },
-      "amber-100": {
-        "role": "tertiary",
-        "displayName": "Pending Surface",
-        "canonical": "#FEF3C7"
-      },
-      "amber-300": {
-        "role": "tertiary",
-        "displayName": "Pending Border",
-        "canonical": "#FCD34D"
-      },
-      "amber-800": {
-        "role": "tertiary",
-        "displayName": "Pending Ink",
-        "canonical": "#92400E",
-        "note": "6.37:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
-      },
-      "red-100": {
-        "role": "tertiary",
-        "displayName": "Booked Surface",
-        "canonical": "#FEE2E2"
-      },
-      "red-300": {
-        "role": "tertiary",
-        "displayName": "Booked Border",
-        "canonical": "#FCA5A5"
-      },
-      "red-800": {
-        "role": "tertiary",
-        "displayName": "Booked Ink",
-        "canonical": "#991B1B",
-        "note": "6.80:1 on red-100, 8.31:1 on white."
-      },
-      "white": {
-        "role": "neutral",
-        "displayName": "Page White",
-        "canonical": "#FFFFFF",
-        "note": "The plate surface — panels, cards, slot cells. 17.07:1 on navy-900, 5.17:1 on blue-600."
-      },
-      "grey-50": {
-        "role": "neutral",
-        "displayName": "Band Grey",
-        "canonical": "#F9FAFB",
-        "note": "Disabled fills only. It is NOT the elapsed slot fill: measured against an available cell's white it computes 1.05:1, no surface difference at all."
-      },
-      "grey-200": {
-        "role": "neutral",
-        "displayName": "Hairline",
-        "canonical": "#E5E7EB",
-        "note": "Dividers and resting borders on light surfaces, the stroke colour of a section numeral on a light section, and the elapsed slot's fill AND matching border — the only borderless-reading cell in the system."
-      }
-    },
-    "semanticLayer": {
-      "note": "DESIGN.md frontmatter carries primitives only, because a token may not reference another token in the same group. This is the layer a re-theme edits. Reference flows one direction: primitive to semantic to component. SIX ROWS EXIST ONLY FOR THE NAVY BAND and they are the redesign's single largest new source of defects, because the failure is invisible in a light-only screenshot.",
-      "map": {
-        "--color-page": "blue-50",
-        "--color-bg": "white",
-        "--color-bg-subtle": "grey-50",
-        "--color-band": "navy-900",
-        "--color-fg": "navy-900",
-        "--color-fg-muted": "navy-400",
-        "--color-fg-on-band": "blue-50",
-        "--color-fg-muted-on-band": "navy-200",
-        "--color-interactive": "blue-600",
-        "--color-interactive-on-band": "blue-400",
-        "--color-interactive-pressed": "blue-700",
-        "--color-border": "grey-200",
-        "--color-border-on-band": "navy-700",
-        "--color-focus": "blue-600",
-        "--color-focus-on-band": "blue-400",
-        "--color-fg-inverse": "white",
-        "--color-wash": "blue-50",
-        "--color-accent-strong": "navy-900",
-        "--color-accent-strong-hover": "blue-600",
-        "--color-gradient-end": "blue-100",
-        "--color-disabled-bg": "grey-200",
-        "--color-warning-surface": "amber-100",
-        "--color-warning-line": "amber-300",
-        "--color-warning-strong": "amber-800",
-        "--color-danger-surface": "red-100",
-        "--color-danger-line": "red-300",
-        "--color-danger-strong": "red-800",
-        "--color-success-fg": "navy-900"
-      },
-      "onBandRows": [
-        "--color-fg-on-band",
-        "--color-fg-muted-on-band",
-        "--color-interactive-on-band",
-        "--color-border-on-band",
-        "--color-focus-on-band",
-        "--color-band"
-      ]
-    },
-    "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "Hero headline and the closing heading. The single largest gesture on the page. 48 to 152px, 0.95 leading, -0.03em, UPPERCASE. The 3rem floor is a measurement: 'Pilih Jam.' at Orbitron 900 and 48px occupies about 324px against a 343px content box at 375px, which is why the headline's longest word is five characters."
-      },
-      "numeral": {
-        "displayName": "Section Numeral",
-        "purpose": "The section ordinal. 56 to 144px, 0.8 leading, skewed -8deg, OUTLINED, sitting on the baseline BESIDE the heading. aria-hidden: it is a compositional device, not content. Its stroke is grey-200 on light and navy-700 on a band, both deliberately below text contrast — a numeral that competes with its own heading has inverted the hierarchy."
-      },
-      "h2": {
-        "displayName": "Section Heading",
-        "purpose": "Section titles. 28 to 56px, 1.05 leading, -0.01em, UPPERCASE. One word per heading may take the accent colour — blue-600 on light, blue-400 on a band; the rest is the surface's foreground."
-      },
-      "h3": {
-        "displayName": "Sub-heading",
-        "purpose": "Sub-headings. 20 to 32px, 1.25 leading. NO LONGER THE SLOT TIME — an h3 inside a grid of nine is nine sub-headings, and the time is a label on a control."
-      },
-      "eyebrow": {
-        "displayName": "Eyebrow",
-        "purpose": "The hero eyebrow, and nothing else. Orbitron 600, 12px FIXED, 0.22em, uppercase. THE ONE-EYEBROW RULE: the page carries exactly one, above the h1, never above an h2. Fixed rather than fluid because at 0.22em tracking a fluid size changes its own line length at every viewport and it must hold on one line at 375px."
-      },
-      "body": {
-        "displayName": "Body",
-        "purpose": "All prose. 16 to 18px, 1.6 leading. Cap measure at 60-68ch. Never uppercase — uppercase Indonesian body text is measurably slower to read and the Ketentuan is the longest reading on the page."
-      },
-      "sm": {
-        "displayName": "Small",
-        "purpose": "State labels, helper text, field labels. Fixed at 14px on purpose."
-      },
-      "xs": {
-        "displayName": "Caption",
-        "purpose": "Captions, metadata, and the free-run badge. Fixed at 12px on purpose."
-      }
-    },
-    "componentLiterals": {
-      "note": "Sizes DESIGN.md sets in prose on a specific component rather than on the type ramp. They are intentional and are the reason a literal-font-size scan reports them.",
-      "values": [
-        { "where": "Ketentuan rule numeral", "value": "24px", "why": "The floor the Outline-Needs-A-Floor Rule sets; this is the one place the system sits exactly on it." },
-        { "where": "Slot cell state label", "value": "13px", "why": "DESIGN.md, Slot Cell: 'State: Inter at 13px.'" },
-        { "where": "Slot cell time", "value": "16px", "why": "DESIGN.md, Slot Cell: 'Orbitron 700 at 16px, 0.02em.'" },
-        { "where": "Button label", "value": "15px", "why": "DESIGN.md, Buttons: 'uppercase Orbitron 800 at 15px with 0.06em.'" }
-      ]
-    },
-    "shadows": [
-      {
-        "name": "shadow-sm",
-        "value": "0 1px 2px rgb(1 26 67 / 0.06)",
-        "purpose": "Resting cards. Reads as edge definition, not lift."
-      },
-      {
-        "name": "shadow-md",
-        "value": "0 4px 12px rgb(1 26 67 / 0.08)",
-        "purpose": "Raised or hovered surfaces."
-      },
-      {
-        "name": "shadow-lg",
-        "value": "0 24px 70px -30px rgb(1 26 67 / 0.25)",
-        "purpose": "NEW in the redesign. The order panel only, once per page — a second usage is a defect. shadow-md is edge definition and does not read as an object at 660px wide; this is a wide, very soft, heavily negative-spread navy shadow, which is depth rather than a border."
-      },
-      {
-        "name": "glow-interactive",
-        "value": "0 10px 30px -12px rgb(37 99 235 / 0.4)",
-        "purpose": "NEW in the redesign. Hovered AVAILABLE slot cells only, pointer-fine only, never on a disabled cell. Blue rather than navy because it is the SAME EVENT as the Signal Blue border it sits under, not a lighting effect — the Tinted-Shadow Rule is written against neutral black."
-      }
-    ],
-    "shadowRules": [
-      {
-        "name": "The Tinted-Shadow Rule",
-        "body": "Shadows are navy- or Signal-Blue-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth."
-      },
-      {
-        "name": "The No-Shadow-On-Band Rule",
-        "body": "Nothing inside a navy band takes a shadow. A shadow on a dark surface is either invisible or a glow, and glow is the anti-reference. Depth inside a band comes from navy-700 hairlines and from the row hover tint."
-      }
-    ],
-    "motion": [
-      {
-        "name": "dur-fast",
-        "value": "160ms",
-        "purpose": "Hover, focus, colour change."
-      },
-      {
-        "name": "dur-base",
-        "value": "280ms",
-        "purpose": "Slot state change, pill selection, the elapsed group opening."
-      },
-      {
-        "name": "dur-reveal",
-        "value": "700ms",
-        "purpose": "The page-wide scroll reveal — fade with a 48px rise, fired once and then unobserved."
-      },
-      {
-        "name": "dur-slow",
-        "value": "520ms",
-        "purpose": "Longer section transitions."
-      },
-      {
-        "name": "ease-out",
-        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
-        "purpose": "Entrances. GSAP power3.out."
-      },
-      {
-        "name": "ease-in-out",
-        "value": "cubic-bezier(0.65, 0, 0.35, 1)",
-        "purpose": "Movement between two states."
-      }
-    ],
-    "motionRules": [
-      {
-        "name": "The Off-Screen-Is-Off Rule",
-        "body": "The hero field and the marquee are the only two continuously-running animations in the system and the only two things that can burn CPU while the visitor reads something else. Both must stop via IntersectionObserver when their section leaves the viewport, under prefers-reduced-motion, and under navigator.connection.saveData. The prototype's own loop runs forever; that is the one thing about it that must not be copied."
-      },
-      {
-        "name": "The One-Marquee Rule",
-        "body": "Exactly one marquee, at the foot of the hero, carrying facts rather than slogans, aria-hidden — so every fact in it must also appear somewhere reachable. It carries no price and no claim the page cannot compute. Its clock is WITA."
-      },
-      {
-        "name": "The Selection-Lands-At-0ms Rule",
-        "body": "When an available slot is tapped the fill lands immediately and the expanding ring runs after. A single 300ms transition would have made the answer to 'is 8pm mine now' arrive 300ms late, which is a slower reply dressed as polish."
-      }
-    ],
-    "breakpoints": [
-      {
-        "name": "mobile",
-        "value": "375px",
-        "note": "The design target, not a fallback. Instagram in-app browser on mid-range Android. Content box is 343px."
-      },
-      {
-        "name": "slot-grid-2col",
-        "value": "640px",
-        "note": "Moved down from 768px. The grid measures the PANEL, not the viewport: at a 640px viewport the panel is roughly 570px, so two columns give about 280px each and the 20-character 'Menunggu Konfirmasi' fits with room to spare."
-      },
-      {
-        "name": "order-2col",
-        "value": "980px",
-        "note": "Copy and legend left, the order panel right, at 0.9fr 1.1fr. Below this it is one column, PANEL FIRST — the two-scroll rule is about reaching the grid, not the paragraph introducing it."
-      },
-      {
-        "name": "slot-grid-3col",
-        "value": "1180px",
-        "note": "Moved down from 1024px, and for the same reason: this is where the panel is wide enough that each cell still clears 133px comfortably."
-      },
-      {
-        "name": "desktop",
-        "value": "1440px",
-        "note": "Where the fluid type scale tops out."
-      },
-      {
-        "name": "container-max",
-        "value": "1280px",
-        "note": "Widened from 1100px. The redesign's two-column sections put a panel beside a column of copy, and at 1100px the panel is narrow enough that the slot grid drops to two columns on a desktop where three fit."
-      }
-    ],
-    "rhythm": [
-      {
-        "name": "section-y",
-        "value": "clamp(96px, 12vw, 160px)",
-        "purpose": "THE FLUID-RHYTHM RULE. Section vertical padding, the same value on every section on the page, light or navy. Replaces the previous fixed 48/64/96/128 rhythm: a stepped rhythm under a fluid type scale changes the whitespace-to-type ratio at every width, and at 152px display type that shows. A section gap that is not this clamp is a mistake, not a judgement call."
-      },
-      {
-        "name": "section-x",
-        "value": "clamp(16px, 4vw, 48px)",
-        "purpose": "Section horizontal padding, every section."
-      },
-      {
-        "name": "head-gap",
-        "value": "clamp(48px, 6vw, 80px)",
-        "purpose": "Section head to section body."
-      }
-    ],
-    "borders": [
-      {
-        "name": "hairline",
-        "value": "1px solid #E5E7EB",
-        "purpose": "Resting borders and dividers on light surfaces."
-      },
-      {
-        "name": "hairline-on-band",
-        "value": "1px solid #0A2E6B",
-        "purpose": "Dividers inside a navy band. 1.31:1 against the band, and that is correct — it is structure, not state."
-      },
-      {
-        "name": "slot-cell",
-        "value": "1.5px",
-        "purpose": "The one exception to the 1px resting weight, because a slot cell's border is a state signal at rest."
-      },
-      {
-        "name": "state",
-        "value": "2px",
-        "purpose": "Error only. Weight change carries the state, so no state depends on colour alone."
-      },
-      {
-        "name": "focus",
-        "value": "3px solid, 3px offset",
-        "purpose": "Grew from 2px/2px with the redesign: at a 22px panel radius and 12px controls a 2px ring at 2px offset gets visually absorbed by the corner. One ring, one offset, on every focusable thing, with blue-400 substituted inside a navy band."
-      },
-      {
-        "name": "state-boundary-floor",
-        "value": "3:1 contrast minimum",
-        "purpose": "WCAG 1.4.11. When a border is a state's only visual signal it must clear 3:1 against its surroundings. red-300 on white is 1.90:1 and fails; red-800 is 8.31:1 and passes. On a navy band this is why no interactive control lives inside a reading section — the navy-700 hairline is 1.31:1 and may only carry structure."
-      }
-    ],
-    "outline": {
-      "note": "Outlined stroked type is the system's emphasis device, replacing a second colour, a second typeface, and the highlight box. On the landing page it appears in exactly four places: one word of the hero headline (KIRIM.), the section numerals, the middle line of the location block, and one word of the closing heading.",
-      "strokeWidths": [
-        { "where": "hero headline, closing heading", "value": "2px" },
-        { "where": "section numerals, location block", "value": "1.5px" },
-        { "where": "Ketentuan rule numerals", "value": "1px" }
-      ],
-      "rule": "THE OUTLINE-NEEDS-A-FLOOR RULE. Its failure mode is invisibility, not ugliness. (1) Apply the transparency only inside @supports (-webkit-text-stroke: 1px currentColor); the fallback is the same word filled solid in the accent colour. (2) Under @media (forced-colors: active) drop the transparency and fill with CanvasText — Windows High Contrast Mode does not honour a text stroke. (3) No outlined text is ever smaller than 24px. Outlined text is still text: it stays in the DOM, is never an image, and is never the only place a word appears."
+    {
+     "name": "--diag",
+     "value": "168deg",
+     "purpose": "Gradient axis — the hero shader fallback and the map placeholder."
     }
+   ],
+   "knownDiscrepancy": "docs/DESIGN.md contradicts itself on the button wipe: its axis table lists the wipe as a consumer of --skew, while the Buttons section transcribes the prototype's literal skewX(-12deg). docs/DESIGN.html implements -8deg, following the rule over the transcription."
   },
-  "components": [
-    {
-      "name": "Slot Cell - Available",
-      "kind": "custom",
-      "refersTo": "slot-available",
-      "description": "The signature component. Time above, state below, at every width — the stacked layout became universal in the redesign because it is what keeps all 20 characters of 'Menunggu Konfirmasi' at any column count. One column below 640px is a hard constraint, not a preference. Hover takes glow-interactive as a second signal, because the wash and the page ground are the same blue.",
-      "html": "<button class=\"ds-slot\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-slot__time\">06.00 - 08.00</span><span class=\"ds-slot__state\">Tersedia</span><span class=\"ds-slot__run\">Bisa main 6 jam berturut-turut</span></button>",
-      "css": ".ds-slot { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#FFFFFF; border:1.5px solid #2563EB; color:#011A43; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1), color 160ms cubic-bezier(.22,1,.36,1), box-shadow 160ms cubic-bezier(.22,1,.36,1); } .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; letter-spacing:.02em; white-space:nowrap; } .ds-slot__state { font-size:13px; color:#4A5A78; } .ds-slot__run { font-size:12px; color:#2563EB; } .ds-slot:hover { background:#EFF6FF; box-shadow:0 10px 30px -12px rgb(37 99 235 / .4); } .ds-slot:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
-    },
-    {
-      "name": "Slot Cell - Selected",
-      "kind": "custom",
-      "refersTo": "slot-selected",
-      "description": "Selection holds nothing server-side. Only a successful POST does. THE STATE LABEL IS FULL WHITE, NOT 85% WHITE, and that is a deliberate departure from DESIGN.md's Slot Cell section: white at 85% over blue-600 composites to rgb(222,232,252) and computes 4.20:1 against the fill, below the 4.5:1 AA bar for 13px text. Full white is 5.17:1. The label separates by size and face, not by transparency — this project already took a P0 for the identical mistake on the pill's day label.",
-      "html": "<button class=\"ds-slot-selected\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-slot__time\">14.00 - 16.00</span><span class=\"ds-slot__state\">Dipilih</span></button>",
-      "css": ".ds-slot-selected { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#2563EB; border:1.5px solid #2563EB; color:#FFFFFF; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:pointer; } .ds-slot-selected .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-selected .ds-slot__state { font-size:13px; color:#FFFFFF; } .ds-slot-selected:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
-    },
-    {
-      "name": "Slot Cell - Pending",
-      "kind": "custom",
-      "refersTo": "slot-pending",
-      "description": "The amber triple, 6.37:1. 'Menunggu Konfirmasi' is 20 characters and renders 133px wide at the cell's 13px Inter (measured; it was 146px before the redesign dropped the state label from 14px). That is the number the whole grid is derived from: a 3-column grid at 375px gives about 106px per cell, roughly 71px inside the padding. aria-disabled, never native disabled.",
-      "html": "<button class=\"ds-slot-pending\" type=\"button\" aria-disabled=\"true\"><span class=\"ds-slot__time\">10.00 - 12.00</span><span class=\"ds-slot__state\">Menunggu Konfirmasi</span></button>",
-      "css": ".ds-slot-pending { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#FEF3C7; border:1.5px solid #FCD34D; color:#92400E; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:not-allowed; } .ds-slot-pending .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-pending .ds-slot__state { font-size:13px; color:#92400E; }"
-    },
-    {
-      "name": "Slot Cell - Elapsed",
-      "kind": "custom",
-      "refersTo": "slot-elapsed",
-      "description": "A FOURTH STATE, NOT A VARIANT OF BOOKED. The neutral family against the danger one, plus the label — 'Sudah lewat' against 'Terisi' — which is what satisfies WCAG 1.4.1. navy-400 on grey-200 computes 5.61:1. The border matches the fill, making it the only borderless-reading cell in the system: a structural difference, not an accent tab. grey-50 was tried and measured 1.05:1 against an available cell's white, which is no surface difference at all. On the page these collapse into a 'Sudah lewat (N)' group rather than rendering inline.",
-      "html": "<button class=\"ds-slot-elapsed\" type=\"button\" aria-disabled=\"true\"><span class=\"ds-slot__time\">08.00 - 10.00</span><span class=\"ds-slot__state\">Sudah lewat</span></button>",
-      "css": ".ds-slot-elapsed { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#E5E7EB; border:1.5px solid #E5E7EB; color:#4A5A78; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:not-allowed; } .ds-slot-elapsed .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-elapsed .ds-slot__state { font-size:13px; color:#4A5A78; }"
-    },
-    {
-      "name": "Section Head",
-      "kind": "custom",
-      "refersTo": "section-numeral",
-      "description": "THE NUMBERED-STEP RULE. An outlined numeral leaning -8deg sits ON THE BASELINE beside the heading — not above it, and not bleeding off the page edge. This replaces the previous treatment, a filled grey-200 numeral bleeding off the left edge with a navy keyline between steps. The keyline is gone: the light/navy alternation separates sections now, and a hairline plus a band is two devices doing one job. The numeral is aria-hidden; the heading carries the meaning. Inside a band, swap the stroke to navy-700 and the accent word to blue-400.",
-      "html": "<div class=\"ds-sec\"><span class=\"ds-sec__n\" aria-hidden=\"true\">01</span><h2 class=\"ds-sec__t\">Jadwal <em>Hari Ini</em>, Bukan Janji</h2></div>",
-      "css": ".ds-sec { display:flex; align-items:baseline; gap:clamp(16px,3vw,40px); margin-bottom:clamp(48px,6vw,80px); } .ds-sec__n { font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:clamp(3.5rem,2rem + 8vw,9rem); line-height:.8; flex:none; transform:skewX(-8deg); color:#E5E7EB; } @supports (-webkit-text-stroke: 1px currentColor) { .ds-sec__n { color:transparent; -webkit-text-stroke:1.5px #E5E7EB; } } @media (forced-colors: active) { .ds-sec__n { color:CanvasText; -webkit-text-stroke:0; } } .ds-sec__t { font-family:Orbitron,system-ui,sans-serif; font-weight:800; font-size:clamp(1.75rem,1rem + 3.4vw,3.5rem); line-height:1.05; letter-spacing:-.01em; text-transform:uppercase; margin:0; } .ds-sec__t em { font-style:normal; color:#2563EB; }"
-    },
-    {
-      "name": "Ketentuan Rule Row",
-      "kind": "custom",
-      "refersTo": "rule-row",
-      "description": "The answer to the benchmark's worst section: three dense dark cards with inline colour highlights become ten scannable rows with an ordinal each, on a navy band that makes reading the point. The numeral is 24px — the floor the outline rule sets, and the one place the system sits exactly on it. The row text is verbatim client content from docs/PRD.md and is never reworded, tidied or re-capitalised; check:docs compares it character for character. Hover is pointer-fine only and slides along the axis.",
-      "html": "<li class=\"ds-rule\"><span class=\"ds-rule__n\" aria-hidden=\"true\">01</span><p class=\"ds-rule__t\">Booking dianggap sah setelah pembayaran dikonfirmasi admin.</p></li>",
-      "css": ".ds-rule { display:grid; grid-template-columns:84px 1fr; gap:clamp(14px,3vw,36px); align-items:baseline; padding:22px 0; border-bottom:1px solid #0A2E6B; transition:background-color 250ms cubic-bezier(.22,1,.36,1), transform 250ms cubic-bezier(.22,1,.36,1); } @media (hover:hover) and (pointer:fine) { .ds-rule:hover { background:rgb(37 99 235 / .08); transform:translateX(14px); } } .ds-rule__n { font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:24px; line-height:1; transform:skewX(-8deg); color:#60A5FA; } @supports (-webkit-text-stroke: 1px currentColor) { .ds-rule__n { color:transparent; -webkit-text-stroke:1px #60A5FA; } } @media (forced-colors: active) { .ds-rule__n { color:CanvasText; -webkit-text-stroke:0; } } .ds-rule__t { margin:0; color:#EFF6FF; max-width:72ch; }"
-    },
-    {
-      "name": "Date Pill",
-      "kind": "chip",
-      "refersTo": "pill",
-      "description": "The only fully round shape in the system. Roundness signals that the row scrolls horizontally, which is why the scrollbar is hidden rather than absent. THE DAY NAME IS FULL WHITE WHEN SELECTED, not the 80% white DESIGN.md's Date Pill section specifies: white at 80% over blue-600 composites to rgb(211,224,251) and computes 3.90:1, which fails AA for 12px text. Full white is 5.17:1, and the date stays dominant because it is larger and set in Orbitron.",
-      "html": "<button class=\"ds-pill\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-pill__day\">Jum</span><span class=\"ds-pill__date\">8 Agu</span></button>",
-      "css": ".ds-pill { flex:0 0 auto; min-width:64px; padding:10px 16px; border-radius:9999px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:Inter,system-ui,sans-serif; text-align:center; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1), transform 160ms cubic-bezier(.22,1,.36,1); } .ds-pill__day { display:block; font-size:12px; color:#4A5A78; } .ds-pill__date { display:block; font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:14px; } .ds-pill:hover { background:#EFF6FF; border-color:#2563EB; transform:translateY(-2px); } .ds-pill[aria-pressed=true] { background:#2563EB; border-color:#2563EB; color:#FFFFFF; } .ds-pill[aria-pressed=true] .ds-pill__day { color:#FFFFFF; } .ds-pill:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
-    },
-    {
-      "name": "Primary Button",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Navy fill, 56px tall. The hover is a blue-600 WIPE travelling in along the axis as a pseudo-element under the label, so the text never moves relative to its own box; the button lifts 3px and the arrow advances 5px. This is the only place a skewX is animated rather than static, it runs on transform alone on a compositor layer, and it collapses to a plain colour change under prefers-reduced-motion. NOTE: DESIGN.md's Buttons section writes the wipe as skewX(-12deg) while its axis table lists the wipe as a consumer of --skew and forbids a second skew value. The rule wins; -8deg ships.",
-      "html": "<button class=\"ds-btn-primary\" type=\"button\"><span>Pesan Lapangan <span class=\"arr\">&#8594;</span></span></button>",
-      "css": ".ds-btn-primary { position:relative; display:inline-flex; align-items:center; gap:12px; min-height:56px; padding:0 34px; border-radius:12px; background:#011A43; color:#FFFFFF; border:none; overflow:hidden; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:transform 250ms cubic-bezier(.22,1,.36,1); } .ds-btn-primary > span { position:relative; } .ds-btn-primary::before { content:\"\"; position:absolute; inset:0; background:#2563EB; transform:translateX(-101%) skewX(-8deg); transition:transform 350ms cubic-bezier(.22,1,.36,1); } .ds-btn-primary:hover::before { transform:translateX(0) skewX(0); } .ds-btn-primary:hover { transform:translateY(-3px); } .ds-btn-primary:active { background:#1D4ED8; } .ds-btn-primary:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
-    },
-    {
-      "name": "Primary Button - On A Navy Band",
-      "kind": "button",
-      "refersTo": "button-primary-on-dark",
-      "description": "A navy-900 button on a navy-900 band is invisible, so the on-band primary takes the Signal Blue fill — white on blue-600 computes 5.17:1 — and its wipe inverts to white with navy-900 text.",
-      "html": "<button class=\"ds-btn-on-band\" type=\"button\"><span>Pesan Lapangan <span class=\"arr\">&#8594;</span></span></button>",
-      "css": ".ds-btn-on-band { position:relative; display:inline-flex; align-items:center; gap:12px; min-height:56px; padding:0 34px; border-radius:12px; background:#2563EB; color:#FFFFFF; border:none; overflow:hidden; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; } .ds-btn-on-band > span { position:relative; } .ds-btn-on-band::before { content:\"\"; position:absolute; inset:0; background:#FFFFFF; transform:translateX(-101%) skewX(-8deg); transition:transform 350ms cubic-bezier(.22,1,.36,1); } .ds-btn-on-band:hover::before { transform:translateX(0) skewX(0); } .ds-btn-on-band:hover { color:#011A43; } .ds-btn-on-band:focus-visible { outline:3px solid #60A5FA; outline-offset:3px; }"
-    },
-    {
-      "name": "Secondary Button",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Transparent fill, 2px navy border, navy text. Hover fills navy and inverts the text. The lower-priority action in a pair.",
-      "html": "<button class=\"ds-btn-secondary\" type=\"button\"><span>Lihat Lokasi</span></button>",
-      "css": ".ds-btn-secondary { min-height:56px; padding:0 30px; border-radius:12px; background:transparent; color:#011A43; border:2px solid #011A43; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), color 160ms cubic-bezier(.22,1,.36,1); } .ds-btn-secondary:hover { background:#011A43; color:#FFFFFF; } .ds-btn-secondary:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
-    },
-    {
-      "name": "Input - Error",
-      "kind": "input",
-      "refersTo": "input-error",
-      "description": "Error state pairs an 8.31:1 red-800 border with a red-100 fill, so the signal never depends on one property or on hue alone. An earlier draft used a red-300 border on a white field: 1.90:1, below the 3:1 WCAG 1.4.11 floor for non-text UI boundaries. Message ties to the field via aria-describedby. The placeholder is a token, not a default — the UA default is roughly 2.35:1 on white and fails AA; navy-400 is 6.94:1. Placeholders never replace labels.",
-      "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-p\">Nomor WhatsApp</label><input class=\"ds-input ds-input--error\" id=\"ds-p\" value=\"12345\" aria-describedby=\"ds-pe\" aria-invalid=\"true\"><span class=\"ds-err\" id=\"ds-pe\">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span></div>",
-      "css": ".ds-field { display:flex; flex-direction:column; gap:8px; font-family:Inter,system-ui,sans-serif; } .ds-label { font-size:14px; font-weight:500; color:#011A43; } .ds-input { height:48px; padding:0 12px; border-radius:12px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:inherit; font-size:1rem; } .ds-input::placeholder { color:#4A5A78; opacity:1; } .ds-input--error { border:2px solid #991B1B; background:#FEE2E2; } .ds-input:focus-visible { outline:3px solid #2563EB; outline-offset:3px; border-color:#2563EB; } .ds-err { font-size:14px; color:#991B1B; }"
-    },
-    {
-      "name": "Hand-off Bar",
-      "kind": "custom",
-      "refersTo": "panel",
-      "description": "Appears inside the order panel when a slot is selected: the moment the page's whole purpose becomes a single button, and the only navy surface inside a light section. It rises 12px and fades in over 350ms, but the selection fill it follows still lands at 0ms. aria-live=\"polite\", so a screen-reader user learns the hand-off exists without having to find it. When it is not shown it is pointer-events:none and its link is not focusable, so a keyboard user never tabs into an invisible control. Its metadata line reads --color-fg-muted-on-band (navy-200, 7.91:1), not a light-surface mute.",
-      "html": "<div class=\"ds-handoff\" aria-live=\"polite\"><span class=\"ds-handoff__label\">Dipilih<b>20.00 - 22.00</b></span><a class=\"ds-handoff__go\" href=\"#\">Lanjut ke WhatsApp &#8594;</a></div>",
-      "css": ".ds-handoff { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding:16px 18px; border-radius:12px; background:#011A43; color:#FFFFFF; font-family:Inter,system-ui,sans-serif; } .ds-handoff__label { font-size:14px; color:#9FB2CE; } .ds-handoff__label b { display:block; color:#FFFFFF; font-family:Orbitron,system-ui,sans-serif; font-size:16px; font-weight:700; margin-top:2px; } .ds-handoff__go { flex:none; font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; color:#011A43; background:#FFFFFF; padding:13px 18px; border-radius:12px; }"
-    }
-  ],
-  "narrative": {
-    "northStar": "Velocity — the page leans on the logo's own axis. The client's AP monogram is tilted roughly 20 degrees off vertical, and that tilt is the one geometric fact the brand already owns. Everything that leans here leans -8deg, in the same direction, off one token. A skew applied once at one value is an axis; applied twice at two values it is a gimmick. The direction also expresses the product rather than only the brand: this is a page about a clock running down, and a page built on forward lean says that before a word is read.",
-    "overview": "Light world, navy punctuation. The page ground is blue-50, the product's own surfaces are white, and navy-900 arrives as FULL-BLEED BANDS that punctuate that world — never as the world itself. bataskotapoint.com remains binding as an anti-reference, but read precisely: what the client ruled out is a dark-NEON world, not their own navy as a surface. Five conditions make a band punctuation instead of that world, and all five bind — the ground stays light, light sections outnumber navy ones, the hero and the order section are never navy, the band's text is the page ground itself at 15.69:1, no glow or neon or saturated hue appears on it, and the navy is the logo's own #011A43.\n\nOutlined stroked type is the emphasis device, replacing a second colour, a second typeface, and the highlight box. Display type roughly doubled in the redesign, 48 to 152px uppercase at 0.95 leading, and the 3rem floor is a measurement rather than a taste: 'Pilih Jam.' at Orbitron 900 and 48px occupies about 324px against a 343px content box.\n\nDensity is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.",
-    "keyCharacteristics": [
-      "Light world, navy punctuation — a light blue-50/white ground with bounded full-bleed navy bands, never a dark world and never a glow",
-      "Everything leans on one axis, -8deg, sampled from the client's mark and reduced until it survives 375px",
-      "Outline is the second weight — stroked type instead of a second face, a second colour, or a highlight box",
-      "Oversized uppercase Orbitron display against Inter body; no third face",
-      "Rounded throughout — 12px controls, 22px panels; exactly one fully round shape, and it means something",
-      "Status is a colour triple, never a single hue",
-      "Navy-tinted shadows, or Signal Blue when the shadow is the same event as a Signal Blue border; black shadows read as dirt on a blue-white page",
-      "Whitespace is the layout device, not a shortage of content",
-      "Minimal in form, rich in behaviour — few elements, each responding precisely"
-    ],
-    "rules": [
-      {
-        "name": "The One-Axis Rule",
-        "body": "One skew value, -8deg, applied to a fixed list: section numerals, rule numerals, the hero eyebrow rule, the button wipe, the marquee band. A second skew value anywhere is a defect, not a variation, and nothing tilts that is not on the list. The marquee's -1.2deg is the same lean read at band scale and is the one declared exception.",
-        "section": "overview"
-      },
-      {
-        "name": "The Five Band Conditions",
-        "body": "A navy band is punctuation only if all five hold: the ground stays light and body is never navy; light sections outnumber navy ones and the hero and order section are never navy; the band's text is blue-50, the page ground itself, at 15.69:1; no glow, no neon, no saturated non-blue hue; and the navy is the logo's #011A43. Falsifiable: at 375px, if more than half the full-page height is navy, if the hero or order section is navy, if any navy pixel abuts a saturated non-blue hue, or if anything inside a band has a non-navy, non-blue box-shadow, the band is wrong.",
-        "section": "colors"
-      },
-      {
-        "name": "The On-Band Rule",
-        "body": "Every colour decision has two answers, and a component that can appear on both surfaces must read both. Six semantic rows exist only for the navy band; without them every component inside a band reaches for a light-surface primitive and ships at 2.46:1. This is the redesign's single largest new source of defects, because the failure is invisible in a light-only screenshot.",
-        "section": "colors"
-      },
-      {
-        "name": "The Three-Layer Rule",
-        "body": "Reference flows one direction only: primitive to semantic to component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else — including for state colour, which is the half that gets skipped.",
-        "section": "colors"
-      },
-      {
-        "name": "The Status-Is-Information Rule",
-        "body": "A booking state the user cannot read is a booking state they will get wrong. No status may be expressed as a single hue, and no status label may fall below AA. All four booking states live on white plates only; no status triple was computed against a navy ground and none may be placed on one.",
-        "section": "colors"
-      },
-      {
-        "name": "The Outline-Needs-A-Floor Rule",
-        "body": "Outlined type is color:transparent plus -webkit-text-stroke, and its failure mode is INVISIBILITY. Guard the transparency inside @supports (-webkit-text-stroke: 1px currentColor) with the filled word as fallback; drop it under @media (forced-colors: active) and fill with CanvasText; and never outline text below 24px. Outlined text is still text and is never the only place a word appears.",
-        "section": "typography"
-      },
-      {
-        "name": "The Fluid-Not-Stepped Rule",
-        "body": "There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it.",
-        "section": "typography"
-      },
-      {
-        "name": "The Fixed-Small Rule",
-        "body": "sm, xs and the eyebrow deliberately do not scale. Shrinking a caption below 12px on mobile is an accessibility failure and growing it on desktop stops it reading as secondary. The eyebrow is fixed for a further reason: at 0.22em tracking a fluid size changes its own line length at every viewport, and it must hold on one line at 375px.",
-        "section": "typography"
-      },
-      {
-        "name": "The Tight-Display Rule",
-        "body": "Orbitron takes tighter leading than Inter or it reads as loose: 0.95 display, 1.05 section headings, 1.25 sub-headings, 1.6 body. Never apply body leading to Orbitron. Display went below 1 because at 152px an uppercase line has no descenders to clear and 1.1 opens a gutter that reads as three separate headings.",
-        "section": "typography"
-      },
-      {
-        "name": "The Uppercase-Is-Display-Only Rule",
-        "body": "display, numeral, h2 and eyebrow are uppercase. Body, sm and xs never are. Uppercase Indonesian body text is measurably slower to read and the Ketentuan is the longest reading on the page.",
-        "section": "typography"
-      },
-      {
-        "name": "The One-Eyebrow Rule",
-        "body": "The page carries exactly one eyebrow, in the hero, above the display headline — never above an h2. It earns the exception because every token in it is a fact the headline cannot carry: Mini Soccer / WITA / 06.00-24.00. Three tests keep it from spreading: rg for the eyebrow class returns one usage; it states facts absent from the headline; and it sits above the h1 only. The section numeral is not an eyebrow — it is oversized, outlined, leaning, aria-hidden, and sits BESIDE the heading on the baseline.",
-        "section": "typography"
-      },
-      {
-        "name": "The Fluid-Rhythm Rule",
-        "body": "Section vertical padding is clamp(96px, 12vw, 160px) and horizontal padding is clamp(16px, 4vw, 48px), the same two values on every section, light or navy, with the head-to-body gap at clamp(48px, 6vw, 80px). A section gap that is not that clamp is a mistake, not a judgement call.",
-        "section": "layout"
-      },
-      {
-        "name": "The Band Rule",
-        "body": "A navy band is full-bleed — edge to edge, no radius, no margin, no inset card. A navy section that is a rounded rectangle floating on the page ground is a large dark card, which reads as an ad unit. Its inner content still respects the container maximum.",
-        "section": "layout"
-      },
-      {
-        "name": "The Numbered-Step Rule",
-        "body": "Every landing section carries an ordinal set in the numeral role, outlined, leaning -8deg, sitting on the baseline BESIDE the heading — not above it and not bleeding off the page edge. Its stroke is grey-200 on light and navy-700 on navy, both deliberately below text contrast because the numeral is aria-hidden decoration. This replaces the filled grey numeral bleeding off the left edge plus a navy keyline; the keyline is gone, because the light/navy alternation now separates sections and a hairline plus a band is two devices doing one job.",
-        "section": "layout"
-      },
-      {
-        "name": "The Two-Scroll Rule",
-        "body": "The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh, not vh, because in-app browsers report vh incorrectly and a hero sized in vh overshoots exactly on the primary device. The redesign puts pressure on this rule and it does not bend: if the hero cannot fit inside one svh at 375px, the marquee is what gets cut.",
-        "section": "layout"
-      },
-      {
-        "name": "The Horizontal-Containment Rule",
-        "body": "The date row scrolls with overscroll-behavior-x: contain, so a sideways swipe never bounces the page underneath it. The same applies to the marquee, and the page itself carries overflow-x: hidden — with a skewed band and a display size that can exceed the viewport, a horizontal scrollbar is one bad measurement away.",
-        "section": "layout"
-      },
-      {
-        "name": "The Tinted-Shadow Rule",
-        "body": "Shadows are navy- or Signal-Blue-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth. The Signal Blue exception is narrow: glow-interactive is the same event as the blue border it sits under.",
-        "section": "elevation"
-      },
-      {
-        "name": "The No-Shadow-On-Band Rule",
-        "body": "Nothing inside a navy band takes a shadow. A shadow on a dark surface is either invisible or a glow, and glow is the anti-reference. Depth inside a band comes from navy-700 hairlines and the row hover tint.",
-        "section": "elevation"
-      },
-      {
-        "name": "The One-Round-Shape Rule",
-        "body": "Nothing but the date pill is fully round. The moment a second element takes the pill radius, the date row stops meaning 'this scrolls' and becomes just another style. The gap between 22px and 9999px is what carries the signal, and it is wider now than it was.",
-        "section": "shapes"
-      },
-      {
-        "name": "The No-Third-Radius Rule",
-        "body": "12px controls, 22px panels, one pill. The redesign concept uses 8px for its legend chips, hand-off button and map note; those take rounded.control here. Three radii plus a pill is a system nobody can hold in their head, and a 12px button beside an 8px button reads as a mistake rather than as a hierarchy.",
-        "section": "shapes"
-      },
-      {
-        "name": "The Never-Native-Disabled Rule",
-        "body": "A disabled control uses aria-disabled=\"true\", never the native disabled attribute. Native disabled removes the control from the tab order, so a keyboard user reaches the last field and then nothing. aria-disabled keeps it focusable and announced, and the press is refused in code instead of by the browser. Applies to the slot cell, the date pill and the submit button.",
-        "section": "components"
-      },
-      {
-        "name": "The Visible-Unavailable Rule",
-        "body": "Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Elapsed slots are not booked slots: they collapse into a 'Sudah lewat (N)' group rather than rendering as nine 'Terisi' rows that make a 19.00 arrival read as sold out.",
-        "section": "components"
-      },
-      {
-        "name": "The Focus-Is-Required Rule",
-        "body": "Focus rings are restyled, never removed. 3px at 3px offset, one ring and one offset on every focusable thing, with blue-400 substituted inside a navy band. Keyboard operability is a Definition-of-Done item, not a styling preference.",
-        "section": "components"
-      },
-      {
-        "name": "The Visible-Boundary Rule",
-        "body": "When a border is a state's only visual signal it must clear 3:1 (WCAG 1.4.11). red-300 on a white field computes 1.90:1 and fails; the error state pairs a red-800 border at 8.31:1 with a red-100 fill so the signal survives both the contrast floor and colour-blindness. Any boundary on a navy band that carries a STATE must clear 3:1 too, which is why no interactive control lives inside a reading band.",
-        "section": "components"
-      },
-      {
-        "name": "The Placeholder-Is-A-Token Rule",
-        "body": "Without a placeholder rule every field inherits the user agent default — around 2.35:1 on white, which fails AA and is the most common accessibility defect in a booking form. navy-400 computes 6.94:1 while staying visibly lighter than navy-900 body text. opacity:1 is explicit because several browsers apply their own alpha. Placeholders never replace labels.",
-        "section": "components"
-      },
-      {
-        "name": "The No-Left-Accent Rule",
-        "body": "A thick coloured left border on a card or a state is the single most recognisable tell of AI-generated UI, and this project already added one and removed it once. The fix for a weak state is a heavier fill, not an accent tab. Callouts are tonal: drop the shadow and fill grey-50.",
-        "section": "components"
-      }
-    ],
-    "dos": [
-      "Do keep every reference flowing primitive to semantic to component. A hex code in a component file is a defect.",
-      "Do read the on-band semantic rows for anything that can render inside a navy band. That is where this redesign will ship its first accessibility failure.",
-      "Do express every booking status as a surface + border + text triple that passes AA at the stated ratio.",
-      "Do route every animation through src/lib/motion.ts. GSAP has no built-in prefers-reduced-motion handling, so a direct gsap.to() in a component is banned.",
-      "Do animate transform and opacity only, and reserve space before animating in. No CLS.",
-      "Do stop the hero field and the marquee when they leave the viewport, under reduced motion, and under saveData.",
-      "Do guard every outlined word with an @supports fallback and a forced-colors fallback.",
-      "Do keep the hero LCP element as text or logo, never an image and never the canvas.",
-      "Do tint shadows navy, or Signal Blue when the shadow is the same event as a Signal Blue border.",
-      "Do let the date pill be the only fully round shape in the system.",
-      "Do recompute a contrast ratio before printing it. This project has taken a P0 for two plausible, wrong figures."
-    ],
-    "donts": [
-      "Don't make the page dark, neon, glowing, or saturated. Navy BANDS are permitted under the five conditions; a navy WORLD is the thing the client ruled out by name.",
-      "Don't put a shadow, a glow, or a saturated non-blue hue inside a navy band.",
-      "Don't make the hero or the order section navy.",
-      "Don't use a light-surface primitive on a navy band — blue-600 computes 3.30:1 there and navy-400 computes 2.46:1.",
-      "Don't introduce a second skew value, or tilt anything that is not on the axis list.",
-      "Don't set outlined text below 24px, or ship color:transparent without both fallbacks. The failure mode is an invisible word, not an ugly one.",
-      "Don't render a price on the landing page. That half of the rule is permanent; /booking is the exception the client settled on 2026-08-11.",
-      "Don't invent a placeholder price on /booking either. The rate card has not been supplied, so the figure is a content placeholder. Every other missing item is inert if it ships by accident; a price is the one a visitor would act on.",
-      "Don't print Asia/Jakarta, WIB, or any Jakarta-derived time anywhere. The field is in Lombok and runs on WITA.",
-      "Don't reword, retitle, re-capitalise or shorten the Ketentuan. Ten rules, verbatim, compared character for character by check:docs.",
-      "Don't turn the slot grid into 2 or 3 columns below 640px, and don't truncate the state label to make columns fit at any width.",
-      "Don't hide unavailable slots.",
-      "Don't add a third typeface, a third radius, a second marquee, or a second eyebrow.",
-      "Don't put a kicker or eyebrow above an h2, ever. The one exception is the hero, above the h1, and it is exhausted.",
-      "Don't load fonts from a CDN link in production — next/font is load-bearing for the no-CLS guarantee.",
-      "Don't use black shadows, or add a shadow where a hairline and a band already separate two surfaces.",
-      "Don't add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video. The hero-video gate ran in Phase 1b and failed, so that clause is spent, and the one WebGL exception is spent on the hero field.",
-      "Don't animate layout properties (width, height, top, left).",
-      "Don't let a component token point at a primitive. It must route through the semantic tier, including for state colour.",
-      "Don't use a neutral grey for secondary text on a coloured surface. Tint the mute from the surface's own hue.",
-      "Don't compose a section the same way as the one before it. The alternation carries the rhythm; composition has to carry the variety.",
-      "Don't invent art direction here. It was replaced on 2026-08-12 and is written in DESIGN.md's Overview — execute it, don't reopen it.",
-      "Don't present anything in this system as client-approved until the re-approval named at the top of docs/DESIGN.md has actually happened."
+  "colorMeta": {
+   "navy-900": {
+    "role": "primary",
+    "displayName": "Arena Navy",
+    "canonical": "#011A43",
+    "note": "Sampled from the client's logo. Inherited, not chosen. New in the redesign: it is also the FULL-BLEED BAND SURFACE, permitted only under the five conditions in DESIGN.md — light ground, light sections outnumbering navy, never the hero or the order section, band text is the page ground itself at 15.69:1, and no glow.",
+    "tonalRamp": [
+     "#000B1D",
+     "#011232",
+     "#011A43",
+     "#0A2E6B",
+     "#1B4894",
+     "#3A6CBD",
+     "#7699DB",
+     "#C3D5F2"
     ]
+   },
+   "navy-700": {
+    "role": "primary",
+    "displayName": "Navy Depth",
+    "canonical": "#0A2E6B",
+    "note": "Hover and pressed depth on navy surfaces, the hairline that divides content INSIDE a navy band (1.31:1 — structure, not state), and the numeral stroke on a band. Never used for text."
+   },
+   "navy-400": {
+    "role": "neutral",
+    "displayName": "Muted Ink",
+    "canonical": "#4A5A78",
+    "note": "Secondary text ON LIGHT SURFACES ONLY. 6.94:1 on white, 6.38:1 on blue-50, 5.61:1 on grey-200. Replaced grey-500, which failed AA (4.44:1) once secondary text sat on a coloured ground. On navy-900 it computes 2.46:1 and fails at any size — use navy-200 there."
+   },
+   "navy-200": {
+    "role": "neutral",
+    "displayName": "Muted Ink Inverse",
+    "canonical": "#9FB2CE",
+    "note": "NEW in the redesign. Secondary text, captions and metadata INSIDE a navy band. 7.91:1 on navy-900. On-dark only."
+   },
+   "blue-700": {
+    "role": "secondary",
+    "displayName": "Signal Blue Pressed",
+    "canonical": "#1D4ED8",
+    "note": "The active state of a blue affordance. 6.70:1 on white."
+   },
+   "blue-600": {
+    "role": "secondary",
+    "displayName": "Signal Blue",
+    "canonical": "#2563EB",
+    "note": "Every interactive affordance on a LIGHT surface. 5.17:1 on white, 4.75:1 on blue-50. On navy-900 it computes 3.30:1 — large text only, and it fails the moment it carries a caption or a thin outline stroke, so blue-400 exists instead.",
+    "tonalRamp": [
+     "#0A1F52",
+     "#12307D",
+     "#1D4ED8",
+     "#2563EB",
+     "#5B8BF2",
+     "#93B4F8",
+     "#C7DAFC",
+     "#EFF6FF"
+    ]
+   },
+   "blue-400": {
+    "role": "secondary",
+    "displayName": "Signal Blue On Dark",
+    "canonical": "#60A5FA",
+    "note": "NEW in the redesign. Every accent and interactive tint INSIDE a navy band — the accent word in a section heading, the rule numerals, any link, the focus ring. 6.72:1 on navy-900. On-dark only: on white it computes 2.54:1 and must never appear there."
+   },
+   "blue-100": {
+    "role": "secondary",
+    "displayName": "Signal Tint",
+    "canonical": "#DBEAFE",
+    "note": "NEW in the redesign. Gradient terminal only — the hero shader's static fallback and the map placeholder, both on the 168deg axis. Never a text colour and never a state."
+   },
+   "blue-50": {
+    "role": "secondary",
+    "displayName": "Signal Wash",
+    "canonical": "#EFF6FF",
+    "note": "The page ground AND the hover fill on white plates AND the text colour on a navy band (15.69:1). The wash and the ground being the same blue is a trap DESIGN.md sets deliberately: anything hovering DIRECTLY on the page ground needs a second signal — a border change or a shadow. Inside the white order panel the wash is visible and the defect does not recur."
+   },
+   "amber-100": {
+    "role": "tertiary",
+    "displayName": "Pending Surface",
+    "canonical": "#FEF3C7"
+   },
+   "amber-300": {
+    "role": "tertiary",
+    "displayName": "Pending Border",
+    "canonical": "#FCD34D"
+   },
+   "amber-800": {
+    "role": "tertiary",
+    "displayName": "Pending Ink",
+    "canonical": "#92400E",
+    "note": "6.37:1 on amber-100. The triple exists so 'Menunggu Konfirmasi' is readable."
+   },
+   "red-100": {
+    "role": "tertiary",
+    "displayName": "Booked Surface",
+    "canonical": "#FEE2E2"
+   },
+   "red-300": {
+    "role": "tertiary",
+    "displayName": "Booked Border",
+    "canonical": "#FCA5A5"
+   },
+   "red-800": {
+    "role": "tertiary",
+    "displayName": "Booked Ink",
+    "canonical": "#991B1B",
+    "note": "6.80:1 on red-100, 8.31:1 on white."
+   },
+   "white": {
+    "role": "neutral",
+    "displayName": "Page White",
+    "canonical": "#FFFFFF",
+    "note": "The plate surface — panels, cards, slot cells. 17.07:1 on navy-900, 5.17:1 on blue-600."
+   },
+   "grey-50": {
+    "role": "neutral",
+    "displayName": "Band Grey",
+    "canonical": "#F9FAFB",
+    "note": "Disabled fills only. It is NOT the elapsed slot fill: measured against an available cell's white it computes 1.05:1, no surface difference at all."
+   },
+   "grey-200": {
+    "role": "neutral",
+    "displayName": "Hairline",
+    "canonical": "#E5E7EB",
+    "note": "Dividers and resting borders on light surfaces, the stroke colour of a section numeral on a light section, and the elapsed slot's fill AND matching border — the only borderless-reading cell in the system."
+   }
+  },
+  "semanticLayer": {
+   "note": "DESIGN.md frontmatter carries primitives only, because a token may not reference another token in the same group. This is the layer a re-theme edits. Reference flows one direction: primitive to semantic to component. SIX ROWS EXIST ONLY FOR THE NAVY BAND and they are the redesign's single largest new source of defects, because the failure is invisible in a light-only screenshot.",
+   "map": {
+    "--color-page": "blue-50",
+    "--color-bg": "white",
+    "--color-bg-subtle": "grey-50",
+    "--color-band": "navy-900",
+    "--color-fg": "navy-900",
+    "--color-fg-muted": "navy-400",
+    "--color-fg-on-band": "blue-50",
+    "--color-fg-muted-on-band": "navy-200",
+    "--color-interactive": "blue-600",
+    "--color-interactive-on-band": "blue-400",
+    "--color-interactive-pressed": "blue-700",
+    "--color-border": "grey-200",
+    "--color-border-on-band": "navy-700",
+    "--color-focus": "blue-600",
+    "--color-focus-on-band": "blue-400",
+    "--color-fg-inverse": "white",
+    "--color-wash": "blue-50",
+    "--color-accent-strong": "navy-900",
+    "--color-accent-strong-hover": "blue-600",
+    "--color-gradient-end": "blue-100",
+    "--color-disabled-bg": "grey-200",
+    "--color-warning-surface": "amber-100",
+    "--color-warning-line": "amber-300",
+    "--color-warning-strong": "amber-800",
+    "--color-danger-surface": "red-100",
+    "--color-danger-line": "red-300",
+    "--color-danger-strong": "red-800",
+    "--color-success-fg": "navy-900"
+   },
+   "onBandRows": [
+    "--color-fg-on-band",
+    "--color-fg-muted-on-band",
+    "--color-interactive-on-band",
+    "--color-border-on-band",
+    "--color-focus-on-band",
+    "--color-band"
+   ]
+  },
+  "typographyMeta": {
+   "display": {
+    "displayName": "Display",
+    "purpose": "Hero headline and the closing heading. The single largest gesture on the page. 48 to 152px, 0.95 leading, -0.03em, UPPERCASE. The 3rem floor is a measurement: 'Pilih Jam.' at Orbitron 900 and 48px occupies about 324px against a 343px content box at 375px, which is why the headline's longest word is five characters."
+   },
+   "numeral": {
+    "displayName": "Section Numeral",
+    "purpose": "The section ordinal. 56 to 144px, 0.8 leading, skewed -8deg, OUTLINED, sitting on the baseline BESIDE the heading. aria-hidden: it is a compositional device, not content. Its stroke is grey-200 on light and navy-700 on a band, both deliberately below text contrast — a numeral that competes with its own heading has inverted the hierarchy."
+   },
+   "h2": {
+    "displayName": "Section Heading",
+    "purpose": "Section titles. 28 to 56px, 1.05 leading, -0.01em, UPPERCASE. One word per heading may take the accent colour — blue-600 on light, blue-400 on a band; the rest is the surface's foreground."
+   },
+   "h3": {
+    "displayName": "Sub-heading",
+    "purpose": "Sub-headings. 20 to 32px, 1.25 leading. NO LONGER THE SLOT TIME — an h3 inside a grid of nine is nine sub-headings, and the time is a label on a control."
+   },
+   "eyebrow": {
+    "displayName": "Eyebrow",
+    "purpose": "The hero eyebrow, and nothing else. Orbitron 600, 12px FIXED, 0.22em, uppercase. THE ONE-EYEBROW RULE: the page carries exactly one, above the h1, never above an h2. Fixed rather than fluid because at 0.22em tracking a fluid size changes its own line length at every viewport and it must hold on one line at 375px."
+   },
+   "body": {
+    "displayName": "Body",
+    "purpose": "All prose. 16 to 18px, 1.6 leading. Cap measure at 60-68ch. Never uppercase — uppercase Indonesian body text is measurably slower to read and the Ketentuan is the longest reading on the page."
+   },
+   "sm": {
+    "displayName": "Small",
+    "purpose": "State labels, helper text, field labels. Fixed at 14px on purpose."
+   },
+   "xs": {
+    "displayName": "Caption",
+    "purpose": "Captions, metadata, and the free-run badge. Fixed at 12px on purpose."
+   }
+  },
+  "componentLiterals": {
+   "note": "Sizes DESIGN.md sets in prose on a specific component rather than on the type ramp. They are intentional and are the reason a literal-font-size scan reports them.",
+   "values": [
+    {
+     "where": "Ketentuan rule numeral",
+     "value": "24px",
+     "why": "The floor the Outline-Needs-A-Floor Rule sets; this is the one place the system sits exactly on it."
+    },
+    {
+     "where": "Slot cell time",
+     "value": "16px",
+     "why": "DESIGN.md, Slot Cell: 'Orbitron 700 at 16px, 0.02em.'"
+    },
+    {
+     "where": "Button label",
+     "value": "15px",
+     "why": "DESIGN.md, Buttons: 'uppercase Orbitron 800 at 15px with 0.06em.'"
+    }
+   ]
+  },
+  "shadows": [
+   {
+    "name": "shadow-sm",
+    "value": "0 1px 2px rgb(1 26 67 / 0.06)",
+    "purpose": "Resting cards. Reads as edge definition, not lift."
+   },
+   {
+    "name": "shadow-md",
+    "value": "0 4px 12px rgb(1 26 67 / 0.08)",
+    "purpose": "Raised or hovered surfaces."
+   },
+   {
+    "name": "shadow-lg",
+    "value": "0 24px 70px -30px rgb(1 26 67 / 0.25)",
+    "purpose": "NEW in the redesign. The order panel only, once per page — a second usage is a defect. shadow-md is edge definition and does not read as an object at 660px wide; this is a wide, very soft, heavily negative-spread navy shadow, which is depth rather than a border."
+   },
+   {
+    "name": "glow-interactive",
+    "value": "0 10px 30px -12px rgb(37 99 235 / 0.4)",
+    "purpose": "NEW in the redesign. Hovered AVAILABLE slot cells only, pointer-fine only, never on a disabled cell. Blue rather than navy because it is the SAME EVENT as the Signal Blue border it sits under, not a lighting effect — the Tinted-Shadow Rule is written against neutral black."
+   }
+  ],
+  "shadowRules": [
+   {
+    "name": "The Tinted-Shadow Rule",
+    "body": "Shadows are navy- or Signal-Blue-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth."
+   },
+   {
+    "name": "The No-Shadow-On-Band Rule",
+    "body": "Nothing inside a navy band takes a shadow. A shadow on a dark surface is either invisible or a glow, and glow is the anti-reference. Depth inside a band comes from navy-700 hairlines and from the row hover tint."
+   }
+  ],
+  "motion": [
+   {
+    "name": "dur-fast",
+    "value": "160ms",
+    "purpose": "Hover, focus, colour change."
+   },
+   {
+    "name": "dur-base",
+    "value": "280ms",
+    "purpose": "Slot state change, pill selection, the elapsed group opening."
+   },
+   {
+    "name": "dur-reveal",
+    "value": "700ms",
+    "purpose": "The page-wide scroll reveal — fade with a 48px rise, fired once and then unobserved."
+   },
+   {
+    "name": "dur-slow",
+    "value": "520ms",
+    "purpose": "Longer section transitions."
+   },
+   {
+    "name": "ease-out",
+    "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "purpose": "Entrances. GSAP power3.out."
+   },
+   {
+    "name": "ease-in-out",
+    "value": "cubic-bezier(0.65, 0, 0.35, 1)",
+    "purpose": "Movement between two states."
+   }
+  ],
+  "motionRules": [
+   {
+    "name": "The Off-Screen-Is-Off Rule",
+    "body": "The hero field and the marquee are the only two continuously-running animations in the system and the only two things that can burn CPU while the visitor reads something else. Both must stop via IntersectionObserver when their section leaves the viewport, under prefers-reduced-motion, and under navigator.connection.saveData. The prototype's own loop runs forever; that is the one thing about it that must not be copied."
+   },
+   {
+    "name": "The One-Marquee Rule",
+    "body": "Exactly one marquee, at the foot of the hero, carrying facts rather than slogans, aria-hidden — so every fact in it must also appear somewhere reachable. It carries no price and no claim the page cannot compute. Its clock is WITA."
+   },
+   {
+    "name": "The Selection-Lands-At-0ms Rule",
+    "body": "When an available slot is tapped the fill lands immediately and the expanding ring runs after. A single 300ms transition would have made the answer to 'is 8pm mine now' arrive 300ms late, which is a slower reply dressed as polish."
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "mobile",
+    "value": "375px",
+    "note": "The design target, not a fallback. Instagram in-app browser on mid-range Android. Content box is 343px."
+   },
+   {
+    "name": "slot-grid-2col",
+    "value": "640px",
+    "note": "Moved down from 768px. The grid measures the PANEL, not the viewport: at a 640px viewport the panel is roughly 570px, so two columns give about 280px each and the 20-character 'Menunggu Konfirmasi' fits with room to spare."
+   },
+   {
+    "name": "order-2col",
+    "value": "980px",
+    "note": "Copy and legend left, the order panel right, at 0.9fr 1.1fr. Below this it is one column, PANEL FIRST — the two-scroll rule is about reaching the grid, not the paragraph introducing it."
+   },
+   {
+    "name": "slot-grid-3col",
+    "value": "1180px",
+    "note": "Moved down from 1024px, and for the same reason: this is where the panel is wide enough that each cell still clears 145.5px comfortably."
+   },
+   {
+    "name": "desktop",
+    "value": "1440px",
+    "note": "Where the fluid type scale tops out."
+   },
+   {
+    "name": "container-max",
+    "value": "1280px",
+    "note": "Widened from 1100px. The redesign's two-column sections put a panel beside a column of copy, and at 1100px the panel is narrow enough that the slot grid drops to two columns on a desktop where three fit."
+   }
+  ],
+  "rhythm": [
+   {
+    "name": "section-y",
+    "value": "clamp(96px, 12vw, 160px)",
+    "purpose": "THE FLUID-RHYTHM RULE. Section vertical padding, the same value on every section on the page, light or navy. Replaces the previous fixed 48/64/96/128 rhythm: a stepped rhythm under a fluid type scale changes the whitespace-to-type ratio at every width, and at 152px display type that shows. A section gap that is not this clamp is a mistake, not a judgement call."
+   },
+   {
+    "name": "section-x",
+    "value": "clamp(16px, 4vw, 48px)",
+    "purpose": "Section horizontal padding, every section."
+   },
+   {
+    "name": "head-gap",
+    "value": "clamp(48px, 6vw, 80px)",
+    "purpose": "Section head to section body."
+   }
+  ],
+  "borders": [
+   {
+    "name": "hairline",
+    "value": "1px solid #E5E7EB",
+    "purpose": "Resting borders and dividers on light surfaces."
+   },
+   {
+    "name": "hairline-on-band",
+    "value": "1px solid #0A2E6B",
+    "purpose": "Dividers inside a navy band. 1.31:1 against the band, and that is correct — it is structure, not state."
+   },
+   {
+    "name": "slot-cell",
+    "value": "1.5px",
+    "purpose": "The one exception to the 1px resting weight, because a slot cell's border is a state signal at rest."
+   },
+   {
+    "name": "state",
+    "value": "2px",
+    "purpose": "Error only. Weight change carries the state, so no state depends on colour alone."
+   },
+   {
+    "name": "focus",
+    "value": "3px solid, 3px offset",
+    "purpose": "Grew from 2px/2px with the redesign: at a 22px panel radius and 12px controls a 2px ring at 2px offset gets visually absorbed by the corner. One ring, one offset, on every focusable thing, with blue-400 substituted inside a navy band."
+   },
+   {
+    "name": "state-boundary-floor",
+    "value": "3:1 contrast minimum",
+    "purpose": "WCAG 1.4.11. When a border is a state's only visual signal it must clear 3:1 against its surroundings. red-300 on white is 1.90:1 and fails; red-800 is 8.31:1 and passes. On a navy band this is why no interactive control lives inside a reading section — the navy-700 hairline is 1.31:1 and may only carry structure."
+   }
+  ],
+  "outline": {
+   "note": "Outlined stroked type is the system's emphasis device, replacing a second colour, a second typeface, and the highlight box. On the landing page it appears in exactly four places: one word of the hero headline (KIRIM.), the section numerals, the middle line of the location block, and one word of the closing heading.",
+   "strokeWidths": [
+    {
+     "where": "hero headline, closing heading",
+     "value": "2px"
+    },
+    {
+     "where": "section numerals, location block",
+     "value": "1.5px"
+    },
+    {
+     "where": "Ketentuan rule numerals",
+     "value": "1px"
+    }
+   ],
+   "rule": "THE OUTLINE-NEEDS-A-FLOOR RULE. Its failure mode is invisibility, not ugliness. (1) Apply the transparency only inside @supports (-webkit-text-stroke: 1px currentColor); the fallback is the same word filled solid in the accent colour. (2) Under @media (forced-colors: active) drop the transparency and fill with CanvasText — Windows High Contrast Mode does not honour a text stroke. (3) No outlined text is ever smaller than 24px. Outlined text is still text: it stays in the DOM, is never an image, and is never the only place a word appears."
   }
+ },
+ "components": [
+  {
+   "name": "Site Header",
+   "kind": "nav",
+   "refersTo": "header",
+   "description": "Sticky in feel, position: fixed in fact — a sticky header takes flow space before it sticks, and the hero is a full 100svh, so the header has to sit OVER it. Transparent at rest; past 40px of scroll it takes white at 82% with a 14px backdrop blur and a grey-200 bottom edge, over 300ms. Logo left, one CTA right, no nav links: the page has four sections and a menu for four anchors is furniture. THE CTA IS 44px MINIMUM — the source prototype's pill computes to roughly 37px, which is under the tap floor on a phone held one-handed at the top of the screen, so the pill grows rather than the text shrinking. The blur is progressive enhancement and the 82% fill is not: backdrop-filter is unavailable on a real share of in-app webviews, and the fill has to separate the header from a moving generative field on its own.",
+   "html": "<header class=\"ds-header ds-header--scrolled\"><span class=\"ds-header__mark\">AP</span><a class=\"ds-header__cta\" href=\"#order\">Pesan Lapangan</a></header>",
+   "css": ".ds-header { position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 24px; border-bottom:1px solid transparent; background:transparent; transition:background-color 300ms cubic-bezier(.22,1,.36,1), border-color 300ms cubic-bezier(.22,1,.36,1); } .ds-header--scrolled { background:rgb(255 255 255 / .82); border-bottom-color:#E5E7EB; } @supports (backdrop-filter: blur(1px)) { .ds-header--scrolled { backdrop-filter:blur(14px); } } .ds-header__mark { font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:20px; color:#011A43; letter-spacing:.02em; } .ds-header__cta { display:inline-flex; align-items:center; justify-content:center; height:44px; padding:0 20px; border-radius:12px; background:#011A43; color:#FFFFFF; font-family:Orbitron,system-ui,sans-serif; font-weight:800; font-size:12px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; transition:background-color 300ms cubic-bezier(.22,1,.36,1), transform 300ms cubic-bezier(.22,1,.36,1); } .ds-header__cta:hover { background:#2563EB; transform:translateY(-2px); } .ds-header__cta:focus-visible { outline:2px solid #2563EB; outline-offset:2px; }"
+  },
+  {
+   "name": "Slot Cell - Available",
+   "kind": "custom",
+   "refersTo": "slot-available",
+   "description": "The signature component. Time above, state below, at every width — the stacked layout became universal in the redesign because it is what keeps all 20 characters of 'Menunggu Konfirmasi' at any column count. One column below 640px is a hard constraint, not a preference. Hover takes glow-interactive as a second signal, because the wash and the page ground are the same blue.",
+   "html": "<button class=\"ds-slot\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-slot__time\">06.00 - 08.00</span><span class=\"ds-slot__state\">Tersedia</span><span class=\"ds-slot__run\">Bisa main 6 jam berturut-turut</span></button>",
+   "css": ".ds-slot { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#FFFFFF; border:1.5px solid #2563EB; color:#011A43; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1), color 160ms cubic-bezier(.22,1,.36,1), box-shadow 160ms cubic-bezier(.22,1,.36,1); } .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; letter-spacing:.02em; white-space:nowrap; } .ds-slot__state { font-size:14px; color:#4A5A78; } .ds-slot__run { font-size:12px; color:#2563EB; } .ds-slot:hover { background:#EFF6FF; box-shadow:0 10px 30px -12px rgb(37 99 235 / .4); } .ds-slot:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
+  },
+  {
+   "name": "Slot Cell - Selected",
+   "kind": "custom",
+   "refersTo": "slot-selected",
+   "description": "Selection holds nothing server-side. Only a successful POST does. THE STATE LABEL IS FULL WHITE, NOT 85% WHITE, and that is a deliberate departure from DESIGN.md's Slot Cell section: white at 85% over blue-600 composites to rgb(222,232,252) and computes 4.20:1 against the fill, below the 4.5:1 AA bar for 13px text. Full white is 5.17:1. The label separates by size and face, not by transparency — this project already took a P0 for the identical mistake on the pill's day label.",
+   "html": "<button class=\"ds-slot-selected\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-slot__time\">14.00 - 16.00</span><span class=\"ds-slot__state\">Dipilih</span></button>",
+   "css": ".ds-slot-selected { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#2563EB; border:1.5px solid #2563EB; color:#FFFFFF; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:pointer; } .ds-slot-selected .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-selected .ds-slot__state { font-size:14px; color:#FFFFFF; } .ds-slot-selected:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
+  },
+  {
+   "name": "Slot Cell - Pending",
+   "kind": "custom",
+   "refersTo": "slot-pending",
+   "description": "The amber triple, 6.37:1. 'Menunggu Konfirmasi' is 20 characters and renders 145.5px wide at the cell's 14px Inter — measured with the font loaded, on 2026-08-12, when the state label went back onto the sm step of the ramp. That figure has now moved three times in one day (146px estimated, 133px at a hard-coded 13px, 145.5px measured at 14px), which is the argument for measuring it rather than quoting it. It is the number the whole grid is derived from: a 3-column grid at 375px gives about 106px per cell, roughly 71px inside the padding. aria-disabled, never native disabled.",
+   "html": "<button class=\"ds-slot-pending\" type=\"button\" aria-disabled=\"true\"><span class=\"ds-slot__time\">10.00 - 12.00</span><span class=\"ds-slot__state\">Menunggu Konfirmasi</span></button>",
+   "css": ".ds-slot-pending { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#FEF3C7; border:1.5px solid #FCD34D; color:#92400E; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:not-allowed; } .ds-slot-pending .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-pending .ds-slot__state { font-size:14px; color:#92400E; }"
+  },
+  {
+   "name": "Slot Cell - Elapsed",
+   "kind": "custom",
+   "refersTo": "slot-elapsed",
+   "description": "A FOURTH STATE, NOT A VARIANT OF BOOKED. The neutral family against the danger one, plus the label — 'Sudah lewat' against 'Terisi' — which is what satisfies WCAG 1.4.1. navy-400 on grey-200 computes 5.61:1. The border matches the fill, making it the only borderless-reading cell in the system: a structural difference, not an accent tab. grey-50 was tried and measured 1.05:1 against an available cell's white, which is no surface difference at all. On the page these collapse into a 'Sudah lewat (N)' group rather than rendering inline.",
+   "html": "<button class=\"ds-slot-elapsed\" type=\"button\" aria-disabled=\"true\"><span class=\"ds-slot__time\">08.00 - 10.00</span><span class=\"ds-slot__state\">Sudah lewat</span></button>",
+   "css": ".ds-slot-elapsed { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; min-height:64px; padding:14px 16px; border-radius:12px; background:#E5E7EB; border:1.5px solid #E5E7EB; color:#4A5A78; font-family:Inter,system-ui,sans-serif; text-align:left; cursor:not-allowed; } .ds-slot-elapsed .ds-slot__time { font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:16px; } .ds-slot-elapsed .ds-slot__state { font-size:14px; color:#4A5A78; }"
+  },
+  {
+   "name": "Section Head",
+   "kind": "custom",
+   "refersTo": "section-numeral",
+   "description": "THE NUMBERED-STEP RULE. An outlined numeral leaning -8deg sits ON THE BASELINE beside the heading — not above it, and not bleeding off the page edge. This replaces the previous treatment, a filled grey-200 numeral bleeding off the left edge with a navy keyline between steps. The keyline is gone: the light/navy alternation separates sections now, and a hairline plus a band is two devices doing one job. The numeral is aria-hidden; the heading carries the meaning. Inside a band, swap the stroke to navy-700 and the accent word to blue-400.",
+   "html": "<div class=\"ds-sec\"><span class=\"ds-sec__n\" aria-hidden=\"true\">01</span><h2 class=\"ds-sec__t\">Jadwal <em>Hari Ini</em>, Bukan Janji</h2></div>",
+   "css": ".ds-sec { display:flex; align-items:baseline; gap:clamp(16px,3vw,40px); margin-bottom:clamp(48px,6vw,80px); } .ds-sec__n { font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:clamp(3.5rem,2rem + 8vw,9rem); line-height:.8; flex:none; transform:skewX(-8deg); color:#E5E7EB; } @supports (-webkit-text-stroke: 1px currentColor) { .ds-sec__n { color:transparent; -webkit-text-stroke:1.5px #E5E7EB; } } @media (forced-colors: active) { .ds-sec__n { color:CanvasText; -webkit-text-stroke:0; } } .ds-sec__t { font-family:Orbitron,system-ui,sans-serif; font-weight:800; font-size:clamp(1.75rem,1rem + 3.4vw,3.5rem); line-height:1.05; letter-spacing:-.01em; text-transform:uppercase; margin:0; } .ds-sec__t em { font-style:normal; color:#2563EB; }"
+  },
+  {
+   "name": "Ketentuan Rule Row",
+   "kind": "custom",
+   "refersTo": "rule-row",
+   "description": "The answer to the benchmark's worst section: three dense dark cards with inline colour highlights become ten scannable rows with an ordinal each, on a navy band that makes reading the point. The numeral is 24px — the floor the outline rule sets, and the one place the system sits exactly on it. The row text is verbatim client content from docs/PRD.md and is never reworded, tidied or re-capitalised; check:docs compares it character for character. Hover is pointer-fine only and slides along the axis.",
+   "html": "<li class=\"ds-rule\"><span class=\"ds-rule__n\" aria-hidden=\"true\">01</span><p class=\"ds-rule__t\">Booking dianggap sah setelah pembayaran dikonfirmasi admin.</p></li>",
+   "css": ".ds-rule { display:grid; grid-template-columns:84px 1fr; gap:clamp(14px,3vw,36px); align-items:baseline; padding:22px 0; border-bottom:1px solid #0A2E6B; transition:background-color 250ms cubic-bezier(.22,1,.36,1), transform 250ms cubic-bezier(.22,1,.36,1); } @media (hover:hover) and (pointer:fine) { .ds-rule:hover { background:rgb(37 99 235 / .08); transform:translateX(14px); } } .ds-rule__n { font-family:Orbitron,system-ui,sans-serif; font-weight:900; font-size:24px; line-height:1; transform:skewX(-8deg); color:#60A5FA; } @supports (-webkit-text-stroke: 1px currentColor) { .ds-rule__n { color:transparent; -webkit-text-stroke:1px #60A5FA; } } @media (forced-colors: active) { .ds-rule__n { color:CanvasText; -webkit-text-stroke:0; } } .ds-rule__t { margin:0; color:#EFF6FF; max-width:72ch; }"
+  },
+  {
+   "name": "Date Pill",
+   "kind": "chip",
+   "refersTo": "pill",
+   "description": "The only fully round shape in the system. Roundness signals that the row scrolls horizontally, which is why the scrollbar is hidden rather than absent. THE DAY NAME IS FULL WHITE WHEN SELECTED, not the 80% white DESIGN.md's Date Pill section specifies: white at 80% over blue-600 composites to rgb(211,224,251) and computes 3.90:1, which fails AA for 12px text. Full white is 5.17:1, and the date stays dominant because it is larger and set in Orbitron.",
+   "html": "<button class=\"ds-pill\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-pill__day\">Jum</span><span class=\"ds-pill__date\">8 Agu</span></button>",
+   "css": ".ds-pill { flex:0 0 auto; min-width:64px; padding:10px 16px; border-radius:9999px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:Inter,system-ui,sans-serif; text-align:center; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), border-color 160ms cubic-bezier(.22,1,.36,1), transform 160ms cubic-bezier(.22,1,.36,1); } .ds-pill__day { display:block; font-size:12px; color:#4A5A78; } .ds-pill__date { display:block; font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:14px; } .ds-pill:hover { background:#EFF6FF; border-color:#2563EB; transform:translateY(-2px); } .ds-pill[aria-pressed=true] { background:#2563EB; border-color:#2563EB; color:#FFFFFF; } .ds-pill[aria-pressed=true] .ds-pill__day { color:#FFFFFF; } .ds-pill:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
+  },
+  {
+   "name": "Primary Button",
+   "kind": "button",
+   "refersTo": "button-primary",
+   "description": "Navy fill, 56px tall. The hover is a blue-600 WIPE travelling in along the axis as a pseudo-element under the label, so the text never moves relative to its own box; the button lifts 3px and the arrow advances 5px. This is the only place a skewX is animated rather than static, it runs on transform alone on a compositor layer, and it collapses to a plain colour change under prefers-reduced-motion. NOTE: DESIGN.md's Buttons section writes the wipe as skewX(-12deg) while its axis table lists the wipe as a consumer of --skew and forbids a second skew value. The rule wins; -8deg ships.",
+   "html": "<button class=\"ds-btn-primary\" type=\"button\"><span>Pesan Lapangan <span class=\"arr\">&#8594;</span></span></button>",
+   "css": ".ds-btn-primary { position:relative; display:inline-flex; align-items:center; gap:12px; min-height:56px; padding:0 34px; border-radius:12px; background:#011A43; color:#FFFFFF; border:none; overflow:hidden; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:transform 250ms cubic-bezier(.22,1,.36,1); } .ds-btn-primary > span { position:relative; } .ds-btn-primary::before { content:\"\"; position:absolute; inset:0; background:#2563EB; transform:translateX(-101%) skewX(-8deg); transition:transform 350ms cubic-bezier(.22,1,.36,1); } .ds-btn-primary:hover::before { transform:translateX(0) skewX(0); } .ds-btn-primary:hover { transform:translateY(-3px); } .ds-btn-primary:active { background:#1D4ED8; } .ds-btn-primary:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
+  },
+  {
+   "name": "Primary Button - On A Navy Band",
+   "kind": "button",
+   "refersTo": "button-primary-on-dark",
+   "description": "A navy-900 button on a navy-900 band is invisible, so the on-band primary takes the Signal Blue fill — white on blue-600 computes 5.17:1 — and its wipe inverts to white with navy-900 text.",
+   "html": "<button class=\"ds-btn-on-band\" type=\"button\"><span>Pesan Lapangan <span class=\"arr\">&#8594;</span></span></button>",
+   "css": ".ds-btn-on-band { position:relative; display:inline-flex; align-items:center; gap:12px; min-height:56px; padding:0 34px; border-radius:12px; background:#2563EB; color:#FFFFFF; border:none; overflow:hidden; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; } .ds-btn-on-band > span { position:relative; } .ds-btn-on-band::before { content:\"\"; position:absolute; inset:0; background:#FFFFFF; transform:translateX(-101%) skewX(-8deg); transition:transform 350ms cubic-bezier(.22,1,.36,1); } .ds-btn-on-band:hover::before { transform:translateX(0) skewX(0); } .ds-btn-on-band:hover { color:#011A43; } .ds-btn-on-band:focus-visible { outline:3px solid #60A5FA; outline-offset:3px; }"
+  },
+  {
+   "name": "Secondary Button",
+   "kind": "button",
+   "refersTo": "button-secondary",
+   "description": "Transparent fill, 2px navy border, navy text. Hover fills navy and inverts the text. The lower-priority action in a pair.",
+   "html": "<button class=\"ds-btn-secondary\" type=\"button\"><span>Lihat Lokasi</span></button>",
+   "css": ".ds-btn-secondary { min-height:56px; padding:0 30px; border-radius:12px; background:transparent; color:#011A43; border:2px solid #011A43; font-family:Orbitron,system-ui,sans-serif; font-size:15px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:background 160ms cubic-bezier(.22,1,.36,1), color 160ms cubic-bezier(.22,1,.36,1); } .ds-btn-secondary:hover { background:#011A43; color:#FFFFFF; } .ds-btn-secondary:focus-visible { outline:3px solid #2563EB; outline-offset:3px; }"
+  },
+  {
+   "name": "Input - Error",
+   "kind": "input",
+   "refersTo": "input-error",
+   "description": "Error state pairs an 8.31:1 red-800 border with a red-100 fill, so the signal never depends on one property or on hue alone. An earlier draft used a red-300 border on a white field: 1.90:1, below the 3:1 WCAG 1.4.11 floor for non-text UI boundaries. Message ties to the field via aria-describedby. The placeholder is a token, not a default — the UA default is roughly 2.35:1 on white and fails AA; navy-400 is 6.94:1. Placeholders never replace labels.",
+   "html": "<div class=\"ds-field\"><label class=\"ds-label\" for=\"ds-p\">Nomor WhatsApp</label><input class=\"ds-input ds-input--error\" id=\"ds-p\" value=\"12345\" aria-describedby=\"ds-pe\" aria-invalid=\"true\"><span class=\"ds-err\" id=\"ds-pe\">Nomor tidak valid. Gunakan format 08xx atau 62xx.</span></div>",
+   "css": ".ds-field { display:flex; flex-direction:column; gap:8px; font-family:Inter,system-ui,sans-serif; } .ds-label { font-size:14px; font-weight:500; color:#011A43; } .ds-input { height:48px; padding:0 12px; border-radius:12px; border:1px solid #E5E7EB; background:#FFFFFF; color:#011A43; font-family:inherit; font-size:1rem; } .ds-input::placeholder { color:#4A5A78; opacity:1; } .ds-input--error { border:2px solid #991B1B; background:#FEE2E2; } .ds-input:focus-visible { outline:3px solid #2563EB; outline-offset:3px; border-color:#2563EB; } .ds-err { font-size:14px; color:#991B1B; }"
+  },
+  {
+   "name": "Hand-off Bar",
+   "kind": "custom",
+   "refersTo": "panel",
+   "description": "Appears inside the order panel when a slot is selected: the moment the page's whole purpose becomes a single button, and the only navy surface inside a light section. It rises 12px and fades in over 350ms, but the selection fill it follows still lands at 0ms. aria-live=\"polite\", so a screen-reader user learns the hand-off exists without having to find it. When it is not shown it is pointer-events:none and its link is not focusable, so a keyboard user never tabs into an invisible control. Its metadata line reads --color-fg-muted-on-band (navy-200, 7.91:1), not a light-surface mute.",
+   "html": "<div class=\"ds-handoff\" aria-live=\"polite\"><span class=\"ds-handoff__label\">Dipilih<b>20.00 - 22.00</b></span><a class=\"ds-handoff__go\" href=\"#\">Lanjut ke WhatsApp &#8594;</a></div>",
+   "css": ".ds-handoff { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding:16px 18px; border-radius:12px; background:#011A43; color:#FFFFFF; font-family:Inter,system-ui,sans-serif; } .ds-handoff__label { font-size:14px; color:#9FB2CE; } .ds-handoff__label b { display:block; color:#FFFFFF; font-family:Orbitron,system-ui,sans-serif; font-size:16px; font-weight:700; margin-top:2px; } .ds-handoff__go { flex:none; font-family:Orbitron,system-ui,sans-serif; font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; text-decoration:none; color:#011A43; background:#FFFFFF; padding:13px 18px; border-radius:12px; }"
+  }
+ ],
+ "narrative": {
+  "northStar": "Velocity — the page leans on the logo's own axis. The client's AP monogram is tilted roughly 20 degrees off vertical, and that tilt is the one geometric fact the brand already owns. Everything that leans here leans -8deg, in the same direction, off one token. A skew applied once at one value is an axis; applied twice at two values it is a gimmick. The direction also expresses the product rather than only the brand: this is a page about a clock running down, and a page built on forward lean says that before a word is read.",
+  "overview": "Light world, navy punctuation. The page ground is blue-50, the product's own surfaces are white, and navy-900 arrives as FULL-BLEED BANDS that punctuate that world — never as the world itself. bataskotapoint.com remains binding as an anti-reference, but read precisely: what the client ruled out is a dark-NEON world, not their own navy as a surface. Five conditions make a band punctuation instead of that world, and all five bind — the ground stays light, light sections outnumber navy ones, the hero and the order section are never navy, the band's text is the page ground itself at 15.69:1, no glow or neon or saturated hue appears on it, and the navy is the logo's own #011A43.\n\nOutlined stroked type is the emphasis device, replacing a second colour, a second typeface, and the highlight box. Display type roughly doubled in the redesign, 48 to 152px uppercase at 0.95 leading, and the 3rem floor is a measurement rather than a taste: 'Pilih Jam.' at Orbitron 900 and 48px occupies about 324px against a 343px content box.\n\nDensity is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.",
+  "keyCharacteristics": [
+   "Light world, navy punctuation — a light blue-50/white ground with bounded full-bleed navy bands, never a dark world and never a glow",
+   "Everything leans on one axis, -8deg, sampled from the client's mark and reduced until it survives 375px",
+   "Outline is the second weight — stroked type instead of a second face, a second colour, or a highlight box",
+   "Oversized uppercase Orbitron display against Inter body; no third face",
+   "Rounded throughout — 12px controls, 22px panels; exactly one fully round shape, and it means something",
+   "Status is a colour triple, never a single hue",
+   "Navy-tinted shadows, or Signal Blue when the shadow is the same event as a Signal Blue border; black shadows read as dirt on a blue-white page",
+   "Whitespace is the layout device, not a shortage of content",
+   "Minimal in form, rich in behaviour — few elements, each responding precisely"
+  ],
+  "rules": [
+   {
+    "name": "The One-Axis Rule",
+    "body": "One skew value, -8deg, applied to a fixed list: section numerals, rule numerals, the hero eyebrow rule, the button wipe, the marquee band. A second skew value anywhere is a defect, not a variation, and nothing tilts that is not on the list. The marquee's -1.2deg is the same lean read at band scale and is the one declared exception.",
+    "section": "overview"
+   },
+   {
+    "name": "The Five Band Conditions",
+    "body": "A navy band is punctuation only if all five hold: the ground stays light and body is never navy; light sections outnumber navy ones and the hero and order section are never navy; the band's text is blue-50, the page ground itself, at 15.69:1; no glow, no neon, no saturated non-blue hue; and the navy is the logo's #011A43. Falsifiable: at 375px, if more than half the full-page height is navy, if the hero or order section is navy, if any navy pixel abuts a saturated non-blue hue, or if anything inside a band has a non-navy, non-blue box-shadow, the band is wrong.",
+    "section": "colors"
+   },
+   {
+    "name": "The On-Band Rule",
+    "body": "Every colour decision has two answers, and a component that can appear on both surfaces must read both. Six semantic rows exist only for the navy band; without them every component inside a band reaches for a light-surface primitive and ships at 2.46:1. This is the redesign's single largest new source of defects, because the failure is invisible in a light-only screenshot.",
+    "section": "colors"
+   },
+   {
+    "name": "The Three-Layer Rule",
+    "body": "Reference flows one direction only: primitive to semantic to component. No component file contains a hex code, and no component reaches past its own layer for a raw value. Re-theming touches the semantic layer and nothing else — including for state colour, which is the half that gets skipped.",
+    "section": "colors"
+   },
+   {
+    "name": "The Status-Is-Information Rule",
+    "body": "A booking state the user cannot read is a booking state they will get wrong. No status may be expressed as a single hue, and no status label may fall below AA. All four booking states live on white plates only; no status triple was computed against a navy ground and none may be placed on one.",
+    "section": "colors"
+   },
+   {
+    "name": "The Outline-Needs-A-Floor Rule",
+    "body": "Outlined type is color:transparent plus -webkit-text-stroke, and its failure mode is INVISIBILITY. Guard the transparency inside @supports (-webkit-text-stroke: 1px currentColor) with the filled word as fallback; drop it under @media (forced-colors: active) and fill with CanvasText; and never outline text below 24px. Outlined text is still text and is never the only place a word appears.",
+    "section": "typography"
+   },
+   {
+    "name": "The Fluid-Not-Stepped Rule",
+    "body": "There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it. One exception exists, The Sub-360 Floor, and it is 39 pixels wide.",
+    "section": "typography"
+   },
+   {
+    "name": "The Sub-360 Floor",
+    "body": "Below 360px, and only there, h2 is pinned to 24px. Everything at 360px and above is the clamp, untouched. The reason is geometry: at 320px the section content box is 288px, the numeral track takes 97.9px and the gutter 16px, leaving the heading column 174px — and 'KETENTUAN' measures 198px as a single unbreakable word, so the page scrolled sideways by 8px. A lower clamp floor cannot fix it, because at 320px the clamp's MIDDLE term governs and 1rem + 3.4vw still computes 26.88px; steepening that term to reach 24px at 320px would drag every width from 375px to 738px off the approved scale. The floor is the only part of the curve that moves without moving 375px. If a second exception is ever proposed, the honest conclusion is that the numeral track, not the type, is the thing that needs to change.",
+    "section": "typography"
+   },
+   {
+    "name": "The Fixed-Small Rule",
+    "body": "sm, xs and the eyebrow deliberately do not scale. Shrinking a caption below 12px on mobile is an accessibility failure and growing it on desktop stops it reading as secondary. The eyebrow is fixed for a further reason: at 0.22em tracking a fluid size changes its own line length at every viewport, and it must hold on one line at 375px.",
+    "section": "typography"
+   },
+   {
+    "name": "The Tight-Display Rule",
+    "body": "Orbitron takes tighter leading than Inter or it reads as loose: 0.95 display, 1.05 section headings, 1.25 sub-headings, 1.6 body. Never apply body leading to Orbitron. Display went below 1 because at 152px an uppercase line has no descenders to clear and 1.1 opens a gutter that reads as three separate headings.",
+    "section": "typography"
+   },
+   {
+    "name": "The Uppercase-Is-Display-Only Rule",
+    "body": "display, numeral, h2 and eyebrow are uppercase. Body, sm and xs never are. Uppercase Indonesian body text is measurably slower to read and the Ketentuan is the longest reading on the page.",
+    "section": "typography"
+   },
+   {
+    "name": "The One-Eyebrow Rule",
+    "body": "The page carries exactly one eyebrow, in the hero, above the display headline — never above an h2. It earns the exception because every token in it is a fact the headline cannot carry: Mini Soccer / WITA / 06.00-24.00. Three tests keep it from spreading: rg for the eyebrow class returns one usage; it states facts absent from the headline; and it sits above the h1 only. The section numeral is not an eyebrow — it is oversized, outlined, leaning, aria-hidden, and sits BESIDE the heading on the baseline.",
+    "section": "typography"
+   },
+   {
+    "name": "The Fluid-Rhythm Rule",
+    "body": "Section vertical padding is clamp(96px, 12vw, 160px) and horizontal padding is clamp(16px, 4vw, 48px), the same two values on every section, light or navy, with the head-to-body gap at clamp(48px, 6vw, 80px). A section gap that is not that clamp is a mistake, not a judgement call.",
+    "section": "layout"
+   },
+   {
+    "name": "The Band Rule",
+    "body": "A navy band is full-bleed — edge to edge, no radius, no margin, no inset card. A navy section that is a rounded rectangle floating on the page ground is a large dark card, which reads as an ad unit. Its inner content still respects the container maximum.",
+    "section": "layout"
+   },
+   {
+    "name": "The Numbered-Step Rule",
+    "body": "Every landing section carries an ordinal set in the numeral role, outlined, leaning -8deg, sitting on the baseline BESIDE the heading — not above it and not bleeding off the page edge. Its stroke is grey-200 on light and navy-700 on navy, both deliberately below text contrast because the numeral is aria-hidden decoration. This replaces the filled grey numeral bleeding off the left edge plus a navy keyline; the keyline is gone, because the light/navy alternation now separates sections and a hairline plus a band is two devices doing one job.",
+    "section": "layout"
+   },
+   {
+    "name": "The Two-Scroll Rule",
+    "body": "The order section must be reachable within one to two scrolls at 375px. The hero is capped at 100svh, not vh, because in-app browsers report vh incorrectly and a hero sized in vh overshoots exactly on the primary device. The redesign puts pressure on this rule and it does not bend: if the hero cannot fit inside one svh at 375px, the marquee is what gets cut.",
+    "section": "layout"
+   },
+   {
+    "name": "The Horizontal-Containment Rule",
+    "body": "The date row scrolls with overscroll-behavior-x: contain, so a sideways swipe never bounces the page underneath it. The same applies to the marquee, and the page itself carries overflow-x: hidden — with a skewed band and a display size that can exceed the viewport, a horizontal scrollbar is one bad measurement away.",
+    "section": "layout"
+   },
+   {
+    "name": "The Tinted-Shadow Rule",
+    "body": "Shadows are navy- or Signal-Blue-tinted, never neutral black. A black shadow on a blue-white page reads as dirt rather than as depth. The Signal Blue exception is narrow: glow-interactive is the same event as the blue border it sits under.",
+    "section": "elevation"
+   },
+   {
+    "name": "The No-Shadow-On-Band Rule",
+    "body": "Nothing inside a navy band takes a shadow. A shadow on a dark surface is either invisible or a glow, and glow is the anti-reference. Depth inside a band comes from navy-700 hairlines and the row hover tint.",
+    "section": "elevation"
+   },
+   {
+    "name": "The One-Round-Shape Rule",
+    "body": "Nothing but the date pill is fully round. The moment a second element takes the pill radius, the date row stops meaning 'this scrolls' and becomes just another style. The gap between 22px and 9999px is what carries the signal, and it is wider now than it was.",
+    "section": "shapes"
+   },
+   {
+    "name": "The No-Third-Radius Rule",
+    "body": "12px controls, 22px panels, one pill. The redesign concept uses 8px for its legend chips, hand-off button and map note; those take rounded.control here. Three radii plus a pill is a system nobody can hold in their head, and a 12px button beside an 8px button reads as a mistake rather than as a hierarchy.",
+    "section": "shapes"
+   },
+   {
+    "name": "The Never-Native-Disabled Rule",
+    "body": "A disabled control uses aria-disabled=\"true\", never the native disabled attribute. Native disabled removes the control from the tab order, so a keyboard user reaches the last field and then nothing. aria-disabled keeps it focusable and announced, and the press is refused in code instead of by the browser. Applies to the slot cell, the date pill and the submit button.",
+    "section": "components"
+   },
+   {
+    "name": "The Visible-Unavailable Rule",
+    "body": "Disabled cells stay visible and legibly labelled. An organiser needs to see that 18.00 is taken, not wonder why the list skips it. Elapsed slots are not booked slots: they collapse into a 'Sudah lewat (N)' group rather than rendering as nine 'Terisi' rows that make a 19.00 arrival read as sold out.",
+    "section": "components"
+   },
+   {
+    "name": "The Focus-Is-Required Rule",
+    "body": "Focus rings are restyled, never removed. 3px at 3px offset, one ring and one offset on every focusable thing, with blue-400 substituted inside a navy band. Keyboard operability is a Definition-of-Done item, not a styling preference.",
+    "section": "components"
+   },
+   {
+    "name": "The Visible-Boundary Rule",
+    "body": "When a border is a state's only visual signal it must clear 3:1 (WCAG 1.4.11). red-300 on a white field computes 1.90:1 and fails; the error state pairs a red-800 border at 8.31:1 with a red-100 fill so the signal survives both the contrast floor and colour-blindness. Any boundary on a navy band that carries a STATE must clear 3:1 too, which is why no interactive control lives inside a reading band.",
+    "section": "components"
+   },
+   {
+    "name": "The Placeholder-Is-A-Token Rule",
+    "body": "Without a placeholder rule every field inherits the user agent default — around 2.35:1 on white, which fails AA and is the most common accessibility defect in a booking form. navy-400 computes 6.94:1 while staying visibly lighter than navy-900 body text. opacity:1 is explicit because several browsers apply their own alpha. Placeholders never replace labels.",
+    "section": "components"
+   },
+   {
+    "name": "The No-Left-Accent Rule",
+    "body": "A thick coloured left border on a card or a state is the single most recognisable tell of AI-generated UI, and this project already added one and removed it once. The fix for a weak state is a heavier fill, not an accent tab. Callouts are tonal: drop the shadow and fill grey-50.",
+    "section": "components"
+   }
+  ],
+  "dos": [
+   "Do keep every reference flowing primitive to semantic to component. A hex code in a component file is a defect.",
+   "Do read the on-band semantic rows for anything that can render inside a navy band. That is where this redesign will ship its first accessibility failure.",
+   "Do express every booking status as a surface + border + text triple that passes AA at the stated ratio.",
+   "Do route every animation through src/lib/motion.ts. GSAP has no built-in prefers-reduced-motion handling, so a direct gsap.to() in a component is banned.",
+   "Do animate transform and opacity only, and reserve space before animating in. No CLS.",
+   "Do stop the hero field and the marquee when they leave the viewport, under reduced motion, and under saveData.",
+   "Do guard every outlined word with an @supports fallback and a forced-colors fallback.",
+   "Do keep the hero LCP element as text or logo, never an image and never the canvas.",
+   "Do tint shadows navy, or Signal Blue when the shadow is the same event as a Signal Blue border.",
+   "Do let the date pill be the only fully round shape in the system.",
+   "Do recompute a contrast ratio before printing it. This project has taken a P0 for two plausible, wrong figures."
+  ],
+  "donts": [
+   "Don't make the page dark, neon, glowing, or saturated. Navy BANDS are permitted under the five conditions; a navy WORLD is the thing the client ruled out by name.",
+   "Don't put a shadow, a glow, or a saturated non-blue hue inside a navy band.",
+   "Don't make the hero or the order section navy.",
+   "Don't use a light-surface primitive on a navy band — blue-600 computes 3.30:1 there and navy-400 computes 2.46:1.",
+   "Don't introduce a second skew value, or tilt anything that is not on the axis list.",
+   "Don't set outlined text below 24px, or ship color:transparent without both fallbacks. The failure mode is an invisible word, not an ugly one.",
+   "Don't render a price on the landing page. That half of the rule is permanent; /booking is the exception the client settled on 2026-08-11.",
+   "Don't invent a placeholder price on /booking either. The rate card has not been supplied, so the figure is a content placeholder. Every other missing item is inert if it ships by accident; a price is the one a visitor would act on.",
+   "Don't print Asia/Jakarta, WIB, or any Jakarta-derived time anywhere. The field is in Lombok and runs on WITA.",
+   "Don't reword, retitle, re-capitalise or shorten the Ketentuan. Ten rules, verbatim, compared character for character by check:docs.",
+   "Don't turn the slot grid into 2 or 3 columns below 640px, and don't truncate the state label to make columns fit at any width.",
+   "Don't hide unavailable slots.",
+   "Don't add a third typeface, a third radius, a second marquee, or a second eyebrow.",
+   "Don't put a kicker or eyebrow above an h2, ever. The one exception is the hero, above the h1, and it is exhausted.",
+   "Don't load fonts from a CDN link in production — next/font is load-bearing for the no-CLS guarantee.",
+   "Don't use black shadows, or add a shadow where a hairline and a band already separate two surfaces.",
+   "Don't add a second animation runtime beside GSAP, a Lottie file over 100KB, or an autoplaying video. The hero-video gate ran in Phase 1b and failed, so that clause is spent, and the one WebGL exception is spent on the hero field.",
+   "Don't animate layout properties (width, height, top, left).",
+   "Don't let a component token point at a primitive. It must route through the semantic tier, including for state colour.",
+   "Don't use a neutral grey for secondary text on a coloured surface. Tint the mute from the surface's own hue.",
+   "Don't compose a section the same way as the one before it. The alternation carries the rhythm; composition has to carry the variety.",
+   "Don't invent art direction here. It was replaced on 2026-08-12 and is written in DESIGN.md's Overview — execute it, don't reopen it.",
+   "Don't present anything in this system as client-approved until the re-approval named at the top of docs/DESIGN.md has actually happened."
+  ]
+ }
 }
