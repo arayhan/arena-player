@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { BookingEntry } from "@/modules/booking-form/booking-entry";
+import { BookingEntry } from "@/modules/booking-form/BookingEntry";
 
 // src/app/ is the composition layer and nothing else — same boundary
 // src/app/page.tsx already follows. All three ways this route can be entered

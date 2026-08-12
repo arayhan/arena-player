@@ -49,7 +49,7 @@
    * `--text-step` because the numeral was a plain filled digit with no
    * outline. The redesign makes it outlined, leaning, and load-bearing enough
    * to name after its DESIGN.md role instead of its old visual treatment.
-   * `section.tsx` was ported to read this name in the same wave. */
+   * `Section.tsx` was ported to read this name in the same wave. */
   --text-numeral: clamp(
     3.5rem,
     2rem + 8vw,
@@ -257,8 +257,8 @@
  * `<h3>` was silently a no-op — the class was emitted, matched, and lost.
  *
  * Four headings in this codebase were doing exactly that and rendering at a
- * size nobody chose: the payment card's `<h2>` in booking-form.tsx (asking for
- * --text-h3, getting --text-h2) and three `<h3>` labels in home-page.tsx
+ * size nobody chose: the payment card's `<h2>` in BookingForm.tsx (asking for
+ * --text-h3, getting --text-h2) and three `<h3>` labels in HomePage.tsx
  * (asking for --text-sm, getting --text-h3). Nothing errored; the type was
  * just wrong. Moving these into `base` restores the ordinary expectation that
  * a utility class overrides a tag default, which is what every author here
@@ -332,7 +332,7 @@
 }
 
 /* Tailwind v4 dropped `button { cursor: pointer }` from Preflight, and the
- * consequence is not uniform — it is a disagreement. `slot-cell.tsx` opts back
+ * consequence is not uniform — it is a disagreement. `SlotCell.tsx` opts back
  * in by hand, so the slot grid shows the hand while the date pill, the "Sudah
  * lewat" disclosure, both "Coba lagi" buttons and the /booking submit show the
  * arrow. Anchors keep the hand from the user agent, which is why the CTAs feel

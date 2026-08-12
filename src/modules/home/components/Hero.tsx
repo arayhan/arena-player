@@ -11,7 +11,7 @@ import { useMotion } from "@/lib/motion";
 // and it is already painted. Removing the WebGL moment is deleting this import,
 // the <HeroCanvas /> below, and one file. That deletability is a condition of
 // the permission, not a nicety.
-const HeroCanvas = dynamic(() => import("./hero-canvas"), { ssr: false });
+const HeroCanvas = dynamic(() => import("./HeroCanvas"), { ssr: false });
 
 /**
  * The hero — DESIGN.md's "velocity" redesign, 2026-08-12.

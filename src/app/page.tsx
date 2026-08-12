@@ -1,4 +1,4 @@
-import { HomePage } from "@/modules/home/home-page";
+import { HomePage } from "@/modules/home/HomePage";
 
 // src/app/ is the composition layer and nothing else. The page lives in
 // src/modules/home/ because that is the surface it renders, and because

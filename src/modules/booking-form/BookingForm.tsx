@@ -35,7 +35,7 @@ const PROOF_ERROR_MESSAGE: Record<ProofProblem, string> = {
   too_large: "Ukuran file maksimal 2MB",
 };
 
-// Duplicated rather than imported from booking-entry.tsx on purpose, same
+// Duplicated rather than imported from BookingEntry.tsx on purpose, same
 // reasoning that file already states: feature modules never import each
 // other, and this three-word date formatter is presentation, not shared
 // vocabulary — it does not belong in src/domain/ next to slots and dates.

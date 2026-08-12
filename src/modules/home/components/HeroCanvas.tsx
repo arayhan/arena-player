@@ -15,7 +15,7 @@ import { useEffect, useRef } from "react";
  *   - disabled under `prefers-reduced-motion` and under `saveData`
  *   - ≤ 40KB gzip for the lazy chunk
  *   - removable in one commit: nothing imports from this file except the
- *     `next/dynamic` call in hero.tsx
+ *     `next/dynamic` call in Hero.tsx
  *
  * NO THREE.JS, NO OGL, NO LIBRARY AT ALL. three.js is ~150KB gzip — larger
  * than the entire remaining budget on `/` and 3.75× the 40KB cap. This is a

@@ -1,6 +1,6 @@
-import { Hero } from "./components/hero";
-import { OrderSection } from "./components/order-section";
-import { Section } from "./components/section";
+import { Hero } from "./components/Hero";
+import { OrderSection } from "./components/OrderSection";
+import { Section } from "./components/Section";
 import { WHATSAPP_NUMBER } from "./home.constants";
 import { KETENTUAN, KETENTUAN_TITLE } from "./home.content";
 

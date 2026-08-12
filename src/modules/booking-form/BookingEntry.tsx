@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
 
-import { BookingForm } from "./booking-form";
+import { BookingForm } from "./BookingForm";
 import { readBookingParams } from "./booking-form.params";
 
 export interface BookingEntryProps {
@@ -19,7 +19,7 @@ export interface BookingEntryProps {
 
 // Shared by both non-happy-path notices so the two buttons are pixel-for-pixel
 // the same control, styled off the same CTA used in the footer's closing CTA
-// (home-page.tsx) — one destination, one visual language for "go pick a slot".
+// (HomePage.tsx) — one destination, one visual language for "go pick a slot".
 const CTA_CLASS =
   "mt-8 inline-flex h-12 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]";
 
@@ -89,7 +89,7 @@ function UnusableNotice() {
   return (
     <div className={PANEL_CLASS}>
       {/* Sized off --text-h2, not the global h1 (--text-display). See the
-          matching comment on BookingForm's own <h1> in booking-form.tsx for
+          matching comment on BookingForm's own <h1> in BookingForm.tsx for
           the full reasoning — duplicated rather than shared per this file's
           own convention of not importing small presentational decisions
           across these two files. Short version: this route's h1 is a single

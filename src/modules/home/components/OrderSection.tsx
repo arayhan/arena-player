@@ -9,8 +9,8 @@ import { useMotion } from "@/lib/motion";
 import { WHATSAPP_NUMBER } from "../home.constants";
 import { useAvailability } from "../home.queries";
 import { countAvailable, longestFreeRun, partitionSlots, whatsappLink } from "../order.utils";
-import { DatePills } from "./date-pills";
-import { SlotCell } from "./slot-cell";
+import { DatePills } from "./DatePills";
+import { SlotCell } from "./SlotCell";
 
 /**
  * The order section — the product.
@@ -36,7 +36,7 @@ import { SlotCell } from "./slot-cell";
  * DESIGN.md's Order Section spec) narrows the panel on wide screens — nothing
  * here has to change when that lands elsewhere. That composition, and the
  * three-row legend it seats beside the panel, are NOT built here: both belong
- * to the page-level layout (home-page.tsx), which is out of this file's scope
+ * to the page-level layout (HomePage.tsx), which is out of this file's scope
  * this pass.
  */
 export function OrderSection() {
@@ -241,7 +241,7 @@ export function OrderSection() {
                 the panel can be below that — the single-column rule was never
                 about taste, and completing the redesign's stacked SlotCell
                 layout is what keeps it satisfied down to 320px: see the width
-                note in slot-cell.tsx. */}
+                note in SlotCell.tsx. */}
             <div
               role="group"
               aria-label="Pilih jam"
