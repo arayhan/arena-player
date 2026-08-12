@@ -123,6 +123,8 @@
   --text-body:clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
   --text-eyebrow:12px;
   --text-label:15px;   /* NEW - the button label role. Four call sites share it */
+  --text-closing:clamp(2.5rem, 1rem + 8vw, 7rem);
+  --text-rule-numeral:24px;  /* FIXED at the outline floor - a clamp would dip under it */  /* NEW as a ROLE. It was already this value here; DESIGN.md just had no name for it */   /* NEW - the button label role. Four call sites share it */
   --text-sm:14px;
   --text-xs:12px;
 
@@ -454,7 +456,7 @@ th{font-family:var(--font-display);font-stretch:125%;font-weight:700;color:var(-
 @media(hover:hover) and (pointer:fine){
   .rule:hover{background:rgb(37 99 235 / .08);transform:translateX(14px)}
 }
-.rule__n{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:24px;
+.rule__n{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:var(--text-rule-numeral);
   line-height:1;transform:skewX(var(--skew));
   --ol-c:var(--rule-numeral);--ol-w:1px}
 .rule__t{margin:0;color:var(--band-fg);max-width:72ch;font-size:var(--text-body)}
@@ -787,7 +789,7 @@ th{font-family:var(--font-display);font-stretch:125%;font-weight:700;color:var(-
    redesign concept's own closing clamp is one step down and fits: 46px at
    375px, where the same word measures 306px. The concept's value ships. */
 .closing__h{font-family:var(--font-display);font-stretch:125%;font-weight:900;
-  font-size:clamp(2.5rem, 1rem + 8vw, 7rem);line-height:.95;letter-spacing:-.03em;
+  font-size:var(--text-closing);line-height:.95;letter-spacing:-.03em;
   text-transform:uppercase;margin:0 0 var(--space-12);color:var(--band-fg)}
 .closing__h .ol{--ol-c:var(--band-fg);--ol-w:2px}
 

@@ -57,15 +57,30 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex w-full max-w-[var(--container-max)] items-center justify-between gap-4 px-[var(--space-section-x)]">
-        {/* The same mark the hero uses, and NOT `priority` for the same reason
-            it is not there either: the LCP element is the hero headline, and a
-            preloaded logo can take that slot. Explicit width and height keep
-            it off the CLS budget regardless. */}
+        {/* NOT `priority`: the LCP element is the hero headline, and a
+            preloaded logo can take that slot. Explicit width and height keep it
+            off the CLS budget regardless.
+
+            `sizes` IS NOT OPTIONAL HERE, AND LEAVING IT OFF COST 81.7KB.
+            `width={1042}` describes the SOURCE file, not the rendered box —
+            this mark paints at 32px tall, roughly 66px wide. Without `sizes`,
+            `next/image` cannot know that and generates the largest candidate in
+            the device list: measured in a production Lighthouse run, the header
+            requested `/_next/image?url=%2Flogo-mark.png&w=3840&q=75` and pulled
+            **81.7KB** — the second-heaviest asset on the page, for an element
+            the size of a fingernail.
+
+            Declaring the real painted width lets the srcset resolver pick a
+            candidate near it instead. It is a one-attribute fix for a sixth of
+            the page's transfer weight, and nothing in the build would ever have
+            reported it: `check:budget` measures JavaScript and cannot see an
+            image at all. */}
         <Image
           src="/logo-mark.png"
           alt="Arena Player"
           width={1042}
           height={502}
+          sizes="80px"
           className="h-8 w-auto md:h-9"
         />
 

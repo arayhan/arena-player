@@ -21,6 +21,12 @@
         "value": "cascadia code",
         "createdAt": "2026-08-08T10:47:02.800Z",
         "reason": "Monospace fallback for code samples inside DESIGN.html itself. The product renders no code, so DESIGN.md declares no mono token and none should be added."
+      },
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "createdAt": "2026-08-12T15:32:06.861Z",
+        "reason": "Chosen for Indonesian, not for neutrality: Plus Jakarta Sans was drawn for Jakarta city branding and its apertures are more open than Inter's, which is the property that matters for a team captain reading Indonesian at speed on a mid-range Android in an in-app browser. The finding is factually correct and is recorded in DESIGN.md's typography section alongside the measurement that chose the pair. Replaced the removed 'inter' ignore, whose stated reasons (client commitment, Inter-derived measurements) both evaporated on 2026-08-12."
       }
     ]
   }

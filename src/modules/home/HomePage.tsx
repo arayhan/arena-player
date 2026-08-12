@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 
 import { Hero } from "./components/Hero";
+import { KetentuanRows } from "./components/KetentuanRows";
+import { LocationBlock } from "./components/LocationBlock";
 import { OrderSection } from "./components/OrderSection";
+import { ClosingCTA } from "./components/ClosingCTA";
 import { Section } from "./components/Section";
+import { ProgressBar } from "./components/ProgressBar";
 import { SiteHeader } from "./components/SiteHeader";
-import { WHATSAPP_NUMBER } from "./home.constants";
-import { KETENTUAN, KETENTUAN_TITLE } from "./home.content";
+import { SlotLegend } from "./components/SlotLegend";
 
 /**
  * ONE WORD OF A HEADING, IN THE ACCENT COLOUR — DESIGN.md's Section head.
@@ -58,6 +61,7 @@ function Accent({ children, band = false }: { children: ReactNode; band?: boolea
 export function HomePage() {
   return (
     <main className="flex-1">
+      <ProgressBar />
       <SiteHeader />
 
       <Hero />
@@ -74,7 +78,24 @@ export function HomePage() {
         }
         lede="Pilih tanggal, lalu pilih jam yang masih kosong."
       >
-        <OrderSection />
+        {/* TWO COLUMNS ABOVE 980px, `0.9fr 1.1fr` — DESIGN.md's Order section.
+            ONE COLUMN BELOW IT, AND THE PANEL COMES FIRST. That order is not a
+            stacking accident: the two-scroll rule is about reaching the GRID,
+            not the paragraph that introduces it, so on a phone the legend
+            follows the thing it explains rather than delaying it.
+
+            `min-[980px]:` rather than a named breakpoint because 980 is not one
+            of Tailwind's, and DESIGN.md picks it for a measured reason — it is
+            where the panel is still wide enough to hold two slot columns after
+            giving a third of the row away. */}
+        <div className="grid gap-8 min-[980px]:grid-cols-[1.1fr_0.9fr] min-[980px]:items-start min-[980px]:gap-12">
+          <div className="min-[980px]:order-2">
+            <SlotLegend />
+          </div>
+          <div className="min-[980px]:order-1">
+            <OrderSection />
+          </div>
+        </div>
       </Section>
 
       {/* THE FIRST NAVY BAND. DESIGN.md's Section head table puts Ketentuan on
@@ -82,13 +103,9 @@ export function HomePage() {
           that the old hairline keyline is gone — a hairline plus a band would
           be two devices doing one job.
 
-          THE TEN-ROW TREATMENT IS NOT BUILT YET. DESIGN.md's Ketentuan rule row
-          specifies full-width rows in an `84px 1fr` grid with outlined numerals
-          and a hover that slides along the axis; that is the next turn. What
-          this turn does is stop the list rendering as a WHITE CARD sitting on
-          the band, which would be the "large dark card" defect wearing its
-          inverse: the container goes transparent and its hairline moves to the
-          on-band token. */}
+          The bordered panel that stood here is gone with the list inside it:
+          a rounded card sitting ON a band is the "large dark card" defect
+          wearing its inverse. `KetentuanRows` renders full-bleed rows. */}
       <Section
         id="ketentuan"
         step="02"
@@ -100,27 +117,7 @@ export function HomePage() {
         }
         lede="Sepuluh aturan main, apa adanya dari pihak lapangan."
       >
-        <div className="rounded-[var(--radius-panel)] border border-[var(--color-border-on-band)] p-4 md:p-6">
-          <h3
-            lang="id"
-            className="text-[length:var(--text-sm)] tracking-[0.08em] text-[color:var(--color-fg-muted-on-band)] uppercase"
-          >
-            {KETENTUAN_TITLE}
-          </h3>
-          {/* An ordered list, because the rules ARE numbered and the client
-              refers to them by number. A <ul> with rendered digits would look
-              identical and read wrong to a screen reader. */}
-          <ol
-            lang="id"
-            className="mt-4 grid list-decimal gap-3 pl-5 marker:font-semibold marker:text-[var(--color-interactive-on-band)] md:grid-cols-2 md:gap-x-8"
-          >
-            {KETENTUAN.map((rule) => (
-              <li key={rule} className="max-w-[52ch] pl-1">
-                {rule}
-              </li>
-            ))}
-          </ol>
-        </div>
+        <KetentuanRows />
       </Section>
 
       {/* THE LEDE NO LONGER CLAIMS "parkir luas". Nobody supplied that, and it
@@ -138,92 +135,35 @@ export function HomePage() {
         }
         lede="Satu lapangan, satu nomor WhatsApp."
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* TODO(content): address + maps coords. Deliberately rendered as a
-              VISIBLE GAP rather than as filler text or a grey map tile.
-              Product Principle 7: a placeholder must look like a placeholder,
-              because the honest failure mode is an obvious hole the client
-              fills — never plausible-looking invented detail that ships
-              unnoticed. An address nobody checked sends a customer to the
-              wrong field, and a map pin is worse: it is followed without
-              being read. */}
-          <div className="rounded-[14px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-4">
-            <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
-              Alamat
-            </h3>
-            <p
-              lang="id"
-              className="mt-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
-            >
-              Alamat dan titik Google Maps menyusul — menunggu data dari pihak lapangan.
-            </p>
-          </div>
-
-          <div className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
-            <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
-              Kontak
-            </h3>
-            <p
-              lang="id"
-              className="mt-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
-            >
-              Pertanyaan di luar pemesanan bisa langsung lewat WhatsApp.
-            </p>
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
-              lang="id"
-              className="mt-4 inline-flex h-12 items-center justify-center rounded-[10px] border border-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-accent-strong)] hover:bg-[var(--color-bg-subtle)]"
-            >
-              Tanya Admin
-            </a>
-          </div>
-        </div>
+        <LocationBlock />
       </Section>
 
-      {/* Not a Section: the footer closes the page rather than continuing the
-          assembly, so it takes no ordinal. Numbering it would be counting for
-          its own sake — the same reason the hero has no ordinal either. */}
-      <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg)]">
-        {/* The closing CTA returns to #order, NOT to /booking. The site has one
-            destination and the visitor has not chosen a slot yet — sending them
-            to a form they cannot fill would be the second destination this
-            whole flow was designed to avoid. */}
-        <div className="mx-auto w-full max-w-[1100px] px-4 py-16 md:py-24">
-          <h2 lang="id" className="max-w-[18ch]">
-            Lapangan kosong hari ini?
-          </h2>
-          <p lang="id" className="mt-4 max-w-[46ch] text-[color:var(--color-fg-muted)]">
-            Cek jadwalnya sekarang, pilih jamnya, sisanya lewat WhatsApp.
-          </p>
-          <a
-            href="#order"
-            lang="id"
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]"
-          >
-            Lihat Jadwal
-          </a>
-        </div>
+      {/* THE PAGE ENDS ON A BAND, and the light footer that used to sit here
+          is gone. DESIGN.md's component inventory has no Footer section at
+          all: the page's ending is the Closing CTA, and a light strip after a
+          navy band was an unspecced sixth section that undid the ending the
+          band creates.
 
-        <div className="border-t border-[var(--color-border)]">
-          <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-3 px-4 py-8 md:flex-row md:items-center md:justify-between">
-            <span
-              aria-label="Arena Player"
-              role="img"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] type-display text-sm font-black text-[var(--color-fg-inverse)]"
-            >
-              AP
-            </span>
-            {/* No prices, no invented address, no social links nobody gave us.
-                A footer padded with plausible-looking filler is the same defect
-                as an invented address, just quieter. */}
-            <p
-              lang="id"
-              className="text-[length:var(--text-sm)] text-[color:var(--color-fg-muted)]"
-            >
-              Arena Player · Lapangan mini soccer
-            </p>
-          </div>
-        </div>
+          Three stale values went with it, none of which any check would have
+          caught: `max-w-[1100px]` from before the container widened to 1280px,
+          `rounded-[10px]` from before the control radius became 12px, and an
+          `AP` text monogram that should have been retired the day the client's
+          real mark landed and instead survived in the one place nobody looked.
+
+          The one line worth keeping from it — who this is — moved inside the
+          band. */}
+      <ClosingCTA />
+
+      <footer className="bg-[var(--color-band)] pb-[var(--space-section-y)] text-center">
+        {/* No prices, no invented address, no social links nobody gave us. A
+            footer padded with plausible-looking filler is the same defect as an
+            invented address, just quieter. */}
+        <p
+          lang="id"
+          className="mx-auto w-full max-w-[var(--container-max)] px-[var(--space-section-x)] text-[length:var(--text-sm)] text-[color:var(--color-fg-muted-on-band)]"
+        >
+          Arena Player · Lapangan mini soccer
+        </p>
       </footer>
     </main>
   );

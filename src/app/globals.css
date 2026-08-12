@@ -84,6 +84,35 @@
    * reading as a control and starts reading as a heading. */
   --text-label: 0.9375rem;
 
+  /* NEW 2026-08-12. The closing band's heading, and it is a SEPARATE SCALE
+   * because  does not fit the words it has to set.
+   *
+   * DESIGN.md says the closing heading is "display-scale", and that spec
+   * collides with the binding constraint this same document states forty
+   * lines earlier: the hero headline's longest word is five characters
+   * BECAUSE display type at 375px only has 343px to work with. The closing
+   * heading's longest word is "MENUNGGU." at nine. Measured at
+   * : 334.9px at a 320px viewport against a 288px content
+   * box, and the page scrolled sideways by 7px.
+   *
+   * DESIGN.html had already solved this and nobody had noticed — its
+   *  carries its own clamp rather than the display token, which
+   * is exactly why the design detector kept reporting 2.5rem as off-ramp. It
+   * was a real, deliberate, undocumented scale. This makes it a role. */
+  --text-closing: clamp(2.5rem, 1rem + 8vw, 7rem);
+
+  /* NEW 2026-08-12. The Ketentuan rule numeral, FIXED at the outline floor.
+   * DESIGN.md's Outline-Needs-A-Floor Rule sets 24px as the smallest size any
+   * outlined text may take — below it the stroke eats the counters and the
+   * glyph stops being a letter. The rule row is the one place in the system
+   * that sits exactly on that floor, which is why the value is not fluid: a
+   * clamp would put it under the floor at some viewport.
+   *
+   * It is a token rather than a literal because the same 24px appears in two
+   * implementations — the component and DESIGN.html's prototype — and a number
+   * duplicated across a spec and its build is a number that drifts. */
+  --text-rule-numeral: 1.5rem;
+
   /* --- Radius. Rounded further at the client's request, 2026-08-12. ------ */
   /* The pill stays the ONLY fully-round shape — that is what still makes a
    * row of date pills read as horizontally scrollable without an arrow or a

@@ -72,7 +72,7 @@ export function KetentuanRows() {
                 // 24px IS THE FLOOR THE OUTLINE RULE SETS — DESIGN.md: "this
                 // is the one place the system sits exactly on it." No smaller
                 // outlined text exists anywhere in the system.
-                "text-[24px]",
+                "text-[length:var(--text-rule-numeral)]",
                 // THE OUTLINE-NEEDS-A-FLOOR RULE'S THREE-BRANCH PATTERN,
                 // Section.tsx's precedent, with this row's own token
                 // (`--color-interactive-on-band`, blue-400 on-band) and its

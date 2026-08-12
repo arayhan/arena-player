@@ -50,12 +50,23 @@ typography:
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.22em"
+  ruleNumeral:
+    fontFamily: Saira
+    fontSize: 24px
+    fontWeight: 900
+    lineHeight: 1
   label:
     fontFamily: Saira
     fontSize: 15px
     fontWeight: 800
     lineHeight: 1
     letterSpacing: "0.06em"
+  closing:
+    fontFamily: Saira
+    fontSize: "clamp(2.5rem, 1rem + 8vw, 7rem)"
+    fontWeight: 900
+    lineHeight: 0.95
+    letterSpacing: "-0.03em"
   body:
     fontFamily: Plus Jakarta Sans
     fontSize: "clamp(1rem, 0.96rem + 0.19vw, 1.125rem)"
@@ -578,6 +589,9 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 - **Numeral** (Saira 900, 56→144px fluid, 0.8, skewed `-8deg`, **outlined**): the section ordinal. `aria-hidden` — it is a compositional device, not content.
 - **H2** (Saira 800, 28→56px fluid, 1.05, `-0.01em`, **uppercase**): section headings. One word per heading may take the accent colour; the rest is the surface's foreground.
 - **H3** (Saira 500, 20→32px fluid, 1.25): sub-headings. **No longer the slot time** — see the slot cell.
+- **Closing** (Saira 900, 40→112px fluid, 0.95, `-0.03em`, **uppercase**): the closing band's heading, and nothing else. Smaller than `display` on purpose — see the Closing CTA.
+- **Rule numeral** (Saira 900, 24px fixed, 1, outlined at 1px, skewed): the Ketentuan rule rows, and nothing else. Fixed rather than fluid because 24px IS the Outline-Needs-A-Floor Rule's floor — a clamp would dip under it at some viewport.
+- **Label** (Saira 800, 15px fixed, 1, `0.06em`, uppercase): button labels, and nothing else. Four call sites share it.
 - **Eyebrow** (Saira 600, 12px fixed, 1, `0.22em`, uppercase): the hero eyebrow, and nothing else. See [The One-Eyebrow Rule](#where-the-eyebrow-lives--the-ban-narrowed-it-did-not-go).
 - **Body** (Plus Jakarta Sans 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
 - **Sm** (Plus Jakarta Sans 400, 14px fixed, 1.5): state labels, helper text, field labels.
@@ -815,7 +829,9 @@ The metadata list is `Alamat`, `Jam operasional` and `WhatsApp`. **Operating hou
 
 ### Closing CTA
 
-Navy band, centred, no numeral. The heading is display-scale with `Menunggu.` outlined at 2px in `blue-50`, and one primary button beneath it in `blue-600` — the on-dark primary fill, because a `navy-900` button on a `navy-900` band is invisible. Its hover wipe inverts to white with `navy-900` text.
+Navy band, centred, no numeral. The heading takes the `closing` role with `Menunggu.` outlined at 2px in `blue-50`, and one primary button beneath it in `blue-600` — the on-dark primary fill, because a `navy-900` button on a `navy-900` band is invisible. Its hover wipe inverts to white with `navy-900` text.
+
+**This line said "display-scale" until 2026-08-12, and it contradicted the binding constraint stated four hundred lines above it.** The hero headline's longest word is five characters BECAUSE display type at 375px has only 343px to work with. This heading's longest word is "MENUNGGU." at nine. Measured at `--text-display`: **334.9px at a 320px viewport against a 288px content box**, and the page scrolled sideways by 7px. The `closing` role clamps 40→112px instead, where the same word measures 272.1px at 320px and 300.9px at 375px. **The scale was not invented to fix this** — [DESIGN.html](DESIGN.html)'s `.closing__h` has carried `clamp(2.5rem, 1rem + 8vw, 7rem)` since the redesign, which is precisely why the design detector kept reporting 2.5rem as off the ramp. It was a real decision nobody had written down.
 
 This is the only centred composition on the page, which is what makes it read as an ending rather than as a sixth section.
 
