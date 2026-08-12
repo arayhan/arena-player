@@ -149,7 +149,14 @@ export default function HeroCanvas() {
     observer.observe(canvas);
 
     let frame = 0;
-    let running = true;
+    // Starts FALSE, not true. The hero is almost always on screen at mount
+    // (it is the first thing on the page), but "almost always" is not
+    // "always" — a deep link to #ketentuan or #lokasi can mount this
+    // component scrolled fully out of view, and starting the loop
+    // unconditionally here would burn a frame budget on a canvas nobody is
+    // looking at until the IntersectionObserver below gets its first
+    // callback. The observer decides when the loop actually starts.
+    let running = false;
     const start = performance.now();
 
     const draw = (now: number) => {
@@ -159,27 +166,58 @@ export default function HeroCanvas() {
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       frame = requestAnimationFrame(draw);
     };
-    frame = requestAnimationFrame(draw);
+
+    // THE OFF-SCREEN-IS-OFF RULE (DESIGN.md, added in the 2026-08-12
+    // redesign). This loop and the marquee are the only two continuously
+    // running animations on the page, and the two things that can burn CPU
+    // while the visitor is reading something else. `visible` tracks the
+    // IntersectionObserver below; `running` is the actual rAF state, and the
+    // two are combined rather than merged into one flag because a tab that
+    // goes hidden while the hero happens to be off-screen must not restart
+    // the loop the moment the hero scrolls back into view of a still-hidden
+    // tab. Two uncapped rAF loops on a mid-range Android is named in
+    // DESIGN.md as the likeliest way this page fails a Lighthouse gate it
+    // would otherwise pass.
+    let visible = false;
+
+    const startLoop = () => {
+      if (running) return;
+      running = true;
+      frame = requestAnimationFrame(draw);
+    };
+    const stopLoop = () => {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(frame);
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry?.isIntersecting ?? false;
+        if (visible && !document.hidden) startLoop();
+        else stopLoop();
+      },
+      // A small negative-free threshold — the loop only needs to be off
+      // while NOTHING of the hero is on screen, not while it is merely
+      // partially scrolled.
+      { threshold: 0 },
+    );
+    io.observe(canvas);
 
     // Stop when the tab is hidden. A gradient nobody is looking at is pure
     // battery cost on a phone, and this audience is mid-conversation in
     // another app more often than not.
     const onVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(frame);
-      } else if (!running) {
-        running = true;
-        frame = requestAnimationFrame(draw);
-      }
+      if (document.hidden) stopLoop();
+      else if (visible) startLoop();
     };
     document.addEventListener("visibilitychange", onVisibility);
 
     canvas.style.opacity = "1";
 
     return () => {
-      running = false;
-      cancelAnimationFrame(frame);
+      stopLoop();
+      io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       observer.disconnect();
       gl.deleteBuffer(buffer);

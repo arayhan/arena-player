@@ -1,68 +1,134 @@
 @import "tailwindcss";
 
-/* THE TOKENS, WRITTEN IN PHASE 2 TASK 1 — the block globals.css has been
- * holding open since Phase 1a.
+/* THE TOKENS — the implementation of docs/DESIGN.md's frontmatter, which is
+ * the normative source. `pnpm check:docs` asserts the two agree.
  *
- * docs/DESIGN.md's frontmatter is the normative source and this is its
- * implementation. The values below are transcribed from it, not invented here,
- * and `pnpm check:docs` asserts the two agree. Phase 1a deliberately left this
- * empty: copying tokens before the art direction was decided would have made a
- * second source of truth for values that were still moving.
+ * Rewritten 2026-08-12 for the "velocity" redesign (DESIGN.md's north star:
+ * the page leans on the logo's own axis). See DESIGN.md's "What changed on
+ * 2026-08-12" section for the full diff against the pre-redesign values this
+ * file used to hold. THIS PASS TOUCHES TOKENS ONLY — no component under src/
+ * was edited, so several new and renamed tokens below have no consumer yet.
+ * That is expected, not a defect; each one says so where it applies.
  *
- * THREE LAYERS, AND THE MIDDLE ONE IS THE POINT. DESIGN.md's own step 02 says a
- * component must never reach past its layer to a raw primitive: it breaks
+ * THREE LAYERS, AND THE MIDDLE ONE IS THE POINT. DESIGN.md's own step 02 says
+ * a component must never reach past its layer to a raw primitive: it breaks
  * silently on a re-theme, looking identical the day it is written. Primitives
- * name what a value IS. Semantics name what it is FOR. Components name where it
- * is USED. */
+ * name what a value IS. Semantics name what it is FOR. Components name where
+ * it is USED. */
 
 @theme {
   /* --- Layer 1: primitives. Raw values, named for what they are. --------- */
-  --color-navy-900: #011a43; /* sampled from the client's logo */
-  --color-navy-700: #0a2e6b;
-  --color-navy-400: #4a5a78; /* 6.94:1 on white, 6.38:1 on blue-50 */
-  --color-blue-600: #2563eb; /* 5.17:1 on white */
-  --color-blue-700: #1d4ed8;
-  --color-blue-50: #eff6ff;
-  --color-white: #ffffff;
+  --color-navy-900: #011a43; /* sampled from the client's logo. The darkest value in the system and the only one that reads as "the brand" */
+  --color-navy-700: #0a2e6b; /* pressed/hover depth on navy surfaces, and the hairline BETWEEN rows inside a navy band. Computed: 1.31:1 against navy-900 — deliberately below 3:1, because it is structure, not a state signal. Never used for text */
+  --color-navy-400: #4a5a78; /* 6.94:1 on white, 6.38:1 on blue-50 (computed). Captions on LIGHT surfaces only */
+  --color-navy-200: #9fb2ce; /* NEW. 7.91:1 on navy-900 (computed) — ON-DARK ONLY. Secondary text/captions inside a navy band. Untested and not cleared on any light surface; do not reach for it there */
+  --color-blue-700: #1d4ed8; /* active/pressed state of a blue affordance */
+  --color-blue-600: #2563eb; /* 5.17:1 on white (computed). Every interactive affordance on a LIGHT surface */
+  --color-blue-400: #60a5fa; /* NEW. 6.72:1 on navy-900 (computed) — ON-DARK ONLY. Computes 2.54:1 on white (also computed), which fails AA outright: THIS TOKEN MUST NEVER REACH A LIGHT SURFACE. It is not a lighter blue-600, it is a different contrast problem */
+  --color-blue-100: #dbeafe; /* NEW. Gradient terminal only — the hero shader fallback, the map placeholder. Never a text colour, never a state */
+  --color-blue-50: #eff6ff; /* the page ground, and the hover wash on white plates */
+  --color-white: #ffffff; /* 17.07:1 on navy-900 (computed). The plate surface — panels, cards, slot cells */
   --color-grey-50: #f9fafb;
   --color-grey-200: #e5e7eb;
   --color-amber-100: #fef3c7;
   --color-amber-300: #fcd34d;
-  --color-amber-800: #92400e; /* 6.37:1 on amber-100 */
+  --color-amber-800: #92400e; /* 6.37:1 on amber-100 (computed) */
   --color-red-100: #fee2e2;
   --color-red-300: #fca5a5;
-  --color-red-800: #991b1b; /* 6.80:1 on red-100, 8.31:1 on white */
+  --color-red-800: #991b1b; /* 6.80:1 on red-100, 8.31:1 on white (both computed) */
 
-  /* --- Type. Fluid 1.25 at 375px growing to 1.5 at 1440px, no steps. ----- */
-  --text-display: clamp(2rem, 1.12rem + 3.76vw, 4.5rem);
-  --text-h2: clamp(1.625rem, 1.14rem + 2.07vw, 3rem);
-  --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem);
-  --text-body: clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
-  /* sm and xs are FIXED. Shrinking a caption below 14px on a phone is an
-   * accessibility failure; growing it on desktop stops it reading as
-   * secondary. */
+  /* --- Type. Font-size only — weight, leading and tracking for the tagged
+   * roles (display, h2, h3) are applied at the component layer below, same
+   * pattern as before the redesign. --------------------------------------- */
+  --text-display: clamp(
+    3rem,
+    1rem + 11vw,
+    9.5rem
+  ); /* 48px -> 152px. Roughly doubled in the redesign; the hero headline only */
+  /* NEW NAME for the section-numeral role — this file used to call it
+   * `--text-step` because the numeral was a plain filled digit with no
+   * outline. The redesign makes it outlined, leaning, and load-bearing enough
+   * to name after its DESIGN.md role instead of its old visual treatment.
+   * `section.tsx` still reads `--text-step` and will not find this token —
+   * that is a reportable break, not a fix made here. */
+  --text-numeral: clamp(
+    3.5rem,
+    2rem + 8vw,
+    9rem
+  ); /* 56px -> 144px, 0.8 leading, skewed --skew, outlined. aria-hidden compositional device, not content */
+  --text-h2: clamp(1.75rem, 1rem + 3.4vw, 3.5rem); /* 28px -> 56px, section headings */
+  --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem); /* unchanged by the redesign */
+  /* sm, xs and eyebrow are FIXED. Shrinking a caption below 14px on a phone is
+   * an accessibility failure; growing it on desktop stops it reading as
+   * secondary. The eyebrow has a further reason: at 0.22em tracking a fluid
+   * size would change its own line length at every viewport, and it has to
+   * hold one line at 375px. */
   --text-sm: 0.875rem;
   --text-xs: 0.75rem;
-  /* The section numeral. The art direction's load-bearing device: an oversized
-   * ordinal so a visitor always knows where they are on the page. */
-  --text-step: clamp(3rem, 2rem + 4.3vw, 6rem);
+  /* NEW. Same pixel size as --text-xs (12px) by coincidence, not a reference
+   * to it — DESIGN.md gives the eyebrow its own frontmatter role because it
+   * carries its own tracking (0.22em) and weight (600) where it is used, and
+   * because the two are free to diverge later. There is exactly ONE eyebrow
+   * in the whole system: the hero, above the h1. A second usage is the
+   * banned kicker-above-heading pattern, not a variation. */
+  --text-eyebrow: 0.75rem;
 
-  /* --- Radius. Rounded at the client's request, 2026-08-11. -------------- */
-  /* The pill stays the ONLY fully-round shape, which is what still makes a row
-   * of date pills read as horizontally scrollable without an arrow or a fade.
-   * 10px and 14px are unmistakably rounded while leaving 999px meaning
-   * something. */
-  --radius-control: 10px;
-  --radius-panel: 14px;
-  --radius-pill: 9999px;
+  /* --- Radius. Rounded further at the client's request, 2026-08-12. ------ */
+  /* The pill stays the ONLY fully-round shape — that is what still makes a
+   * row of date pills read as horizontally scrollable without an arrow or a
+   * fade. Both other radii grew in the redesign because the order panel is
+   * now a single large floating object (holding the date row, the slot grid
+   * and the hand-off bar together) rather than a card in a stack: at the old
+   * 14px, a panel that wide read as a rectangle with the corners filed off. */
+  --radius-control: 12px; /* was 10px */
+  --radius-panel: 22px; /* was 14px */
+  --radius-pill: 9999px; /* unchanged */
 
-  /* --- Depth. Navy-tinted only; black shadows read as dirt on blue-white. */
-  --shadow-sm: 0 1px 2px rgb(1 26 67 / 0.06);
-  --shadow-md: 0 4px 12px rgb(1 26 67 / 0.08);
+  /* --- Depth. Navy-tinted, except the one accent-tinted exception below. */
+  --shadow-sm: 0 1px 2px rgb(1 26 67 / 0.06); /* resting cards */
+  --shadow-md: 0 4px 12px rgb(1 26 67 / 0.08); /* raised or hovered surfaces */
+  /* NEW. The order panel ONLY — one usage on the whole page, and a second
+   * usage is a defect. shadow-md is edge definition; it does not read as a
+   * single object at panel width. This is a wide, very soft, heavily
+   * negative-spread navy shadow instead. */
+  --shadow-lg: 0 24px 70px -30px rgb(1 26 67 / 0.25);
+  /* NEW. rgb(37 99 235) is --color-blue-600, not navy. Hovered AVAILABLE slot
+   * cells only — this is the second signal on the SAME event as the blue
+   * border underneath it, not a separate lighting effect, which is why it
+   * breaks the Tinted-Shadow Rule on purpose rather than by oversight. Never
+   * appears on a disabled cell. */
+  --glow-interactive: 0 10px 30px -12px rgb(37 99 235 / 0.4);
 
   /* --- Motion. Every effect routes through src/lib/motion.ts. ------------ */
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* unchanged — scroll reveal, hero entrances */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* unchanged */
+
+  /* --- Axis. NEW in the redesign — the whole page leans on these two. ---- */
+  /* THE one skew value in the system: section numerals, rule numerals, the
+   * hero eyebrow rule, the button hover wipe, the marquee band. A second skew
+   * value anywhere is a defect, not a variation. Reduced from the logo mark's
+   * own ~20deg tilt — at 20deg an uppercase Orbitron numeral at 144px
+   * overhangs its own column by 40px+ and collides with the heading beside it
+   * below 900px. -8deg is the mark's direction, sampled and reduced until it
+   * survives 375px. */
+  --skew: -8deg;
+  /* The matching gradient axis — the hero shader fallback, the map
+   * placeholder. Not the same value as --skew on purpose: a linear-gradient
+   * angle and a transform skew answer different geometric questions, and
+   * forcing them to share a number is a coincidence dressed as a rule. */
+  --diag: 168deg;
+
+  /* --- Layout. NEW as tokens — the redesign changed these but no component
+   * currently reads them (they are Tailwind arbitrary values inline, e.g.
+   * `max-w-[1100px]`, `py-12 md:py-24`). Adopting these tokens in the
+   * components that hardcode the old numbers is a follow-up, not done here. */
+  --container-max: 1280px; /* was 1100px. Widened so the two-column sections (order, location) leave the panel wide enough for a 3-column slot grid on desktop */
+  /* Replaces the old fixed 48/64/96/128 section rhythm with one fluid value
+   * used by every section, light or navy — a stepped rhythm under a fluid
+   * type scale changes the whitespace-to-type ratio at every width. */
+  --space-section-y: clamp(96px, 12vw, 160px);
+  --space-section-x: clamp(16px, 4vw, 48px);
+  --space-head-gap: clamp(48px, 6vw, 80px); /* a section's heading block to its body content */
 }
 
 /* --- Layer 2: semantics. What each part is FOR. --------------------------
@@ -73,6 +139,10 @@
   --color-page: var(--color-blue-50);
   --color-bg: var(--color-white);
   --color-bg-subtle: var(--color-grey-50);
+  /* NEW. The full-bleed navy band surface — the punctuation mark, never the
+   * page ground. `<body>` never takes this; a band is always a bounded
+   * section with a light one before or after it. */
+  --color-band: var(--color-navy-900);
   --color-fg: var(--color-navy-900);
   --color-fg-muted: var(--color-navy-400);
   --color-fg-inverse: var(--color-white);
@@ -80,11 +150,44 @@
   --color-interactive-pressed: var(--color-blue-700);
   --color-wash: var(--color-blue-50);
   --color-border: var(--color-grey-200);
-  --color-keyline: var(--color-navy-900);
   --color-focus: var(--color-blue-600);
   --color-accent-strong: var(--color-navy-900);
-  --color-accent-strong-hover: var(--color-navy-700);
+  /* CHANGED — was --color-navy-700. Its hover, and the wipe now travels along
+   * --skew instead of a plain colour swap; the darker navy-700 hover from the
+   * old system is gone. */
+  --color-accent-strong-hover: var(--color-blue-600);
   --color-disabled-bg: var(--color-grey-200);
+
+  /* THE ON-BAND ROW, SIX ENTRIES. Every colour decision on this page has two
+   * answers — a light one and a navy one — and a component that can render
+   * inside a band but only reads the light-surface tokens above will ship at
+   * 2.46:1 with no visible failure in a light-only screenshot. That already
+   * happened once: the pre-redesign concept used --color-blue-600 and
+   * --color-navy-400 inside the Ketentuan band, which computed 3.30:1 and
+   * 2.46:1 against navy-900 (both re-computed above at the primitive
+   * definitions of blue-400 and navy-200). These six rows are the fix, and
+   * they are the redesign's single largest new source of defects if a later
+   * component skips them. */
+  --color-fg-on-band: var(--color-blue-50); /* body/heading text inside a band */
+  --color-fg-muted-on-band: var(--color-navy-200); /* secondary text/captions inside a band */
+  --color-interactive-on-band: var(
+    --color-blue-400
+  ); /* links, accent words, rule numerals inside a band */
+  --color-border-on-band: var(--color-navy-700); /* hairlines inside a band */
+  --color-focus-on-band: var(--color-blue-400); /* focus ring inside a band */
+  /* --color-band, above, is the sixth. */
+
+  /* --color-wash and --color-page are the SAME primitive on purpose, and that
+   * is a trap rather than an economy: a hover that tints toward blue-50 reads
+   * as "lifts toward blue" on paper and renders as invisible when the element
+   * sits directly on the page ground, because the two colours are identical.
+   * Anything hovering directly on --color-page needs a second signal — a
+   * border change or a shadow — not this token alone. It works as written
+   * wherever the hovering element sits on a --color-bg (white) plate instead,
+   * which is where the date row and slot grid live. */
+  /* NEW. Terminal stop of both gradients in the system (hero fallback, map
+   * placeholder). Never a text colour, never a state. */
+  --color-gradient-end: var(--color-blue-100);
 
   /* State needs its own semantic tier or every component showing a state
    * reaches for a raw hue and a re-theme misses all of them. */
@@ -97,15 +200,14 @@
   /* Success is the one state with no hue of its own, and that is the point:
    * DESIGN.md's semantic table says it "carries on weight and copy, never on
    * the interactive blue", because blue-600 means "you can act on this" and a
-   * confirmed booking is the one thing there is nothing left to do about. The
-   * row was the only one of the table's twenty-one missing from this file, and
-   * the success panel had reached for `--color-interactive` in its absence. */
+   * confirmed booking is the one thing there is nothing left to do about. */
   --color-success-fg: var(--color-navy-900);
 }
 
-/* No prefers-color-scheme block. DESIGN.md commits to one world: "Light,
- * blue-and-white booking interface for a mini soccer field — the deliberate
- * inverse of the dark-neon local benchmark." A dark mode would undo the single
+/* No prefers-color-scheme block. DESIGN.md commits to one world: light,
+ * blue-and-white, the deliberate inverse of the dark-neon local benchmark.
+ * The redesign adds full-bleed navy BANDS but the page ground never becomes
+ * navy, so this commitment is unchanged. A dark mode would undo the single
  * strongest decision in the design, and the client named the dark original as
  * the thing to be the opposite of.
  *
@@ -128,9 +230,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Orbitron takes tighter leading than Inter or it reads as loose: 1.1 for
- * display, 1.25 for headings, 1.6 for body. Never apply body leading to
- * Orbitron. */
+/* Orbitron takes tighter leading than Inter or it reads as loose: 0.95 for
+ * display, 1.05 for h2, 1.25 for h3, 1.6 for body. Never apply body leading to
+ * Orbitron. Display went BELOW 1 in the redesign — at 152px an uppercase
+ * Orbitron line has no descenders to clear, and 1.1 (the pre-redesign value)
+ * leaves a visible gutter between the headline's three lines that reads as
+ * three separate headings instead of one three-beat sentence.
+ *
+ * display and h2 are also uppercase now — DESIGN.md's Uppercase-Is-Display-
+ * Only Rule: display, numeral, h2 and eyebrow are uppercase; body, sm and xs
+ * never are, and h3 stays sentence case as a sub-heading. The specific
+ * outlined-word treatment (`KIRIM.`, one word of an h2) is a component-level
+ * concern — `color: transparent` plus `-webkit-text-stroke` on a single span
+ * — and is not applied blanket here. */
 h1,
 h2,
 h3 {
@@ -141,13 +253,16 @@ h3 {
 h1 {
   font-size: var(--text-display);
   font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
 }
 h2 {
   font-size: var(--text-h2);
-  font-weight: 700;
-  line-height: 1.25;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 h3 {
   font-size: var(--text-h3);
@@ -156,7 +271,10 @@ h3 {
 }
 
 /* Focus is restyled, never removed. Keyboard operability is a Definition-of-Done
- * item, not a styling preference. */
+ * item, not a styling preference. Left as 2px/2px: this pass is tokens only,
+ * and the ring is accessibility behaviour rather than a look value — see the
+ * hand-off note in this file's engineering report for the 3px/3px DESIGN.md
+ * now documents. */
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;

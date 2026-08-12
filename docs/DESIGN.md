@@ -707,9 +707,12 @@ Two columns above 980px — copy and legend left, the panel right, at `0.9fr 1.1
 
 **One column on a phone. Two from 640px. Three from 1180px.** The single-column rule was never about taste, and the grid does not overturn it — it applies it where the measurement actually binds.
 
-"Menunggu Konfirmasi" is 20 characters and needs 146px. A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. So **below 640px the grid stays one full-width column.**
+"Menunggu Konfirmasi" is 20 characters and needs **133px**.
 
-**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 146px.
+> **The 146px this section carried until 2026-08-12 was measured against the pre-redesign 14px state label; the redesign sets it at 13px, and re-measuring with Orbitron actually loaded gives 133px.** Both breakpoint justifications below were computed from the stale figure. They still hold — 133px is _smaller_, so every column that cleared 146px clears this too — but the number a future decision is built on is now the measured one. Re-measure rather than reuse if the label size moves again.
+> A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. So **below 640px the grid stays one full-width column.**
+
+**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 133px.
 
 The state label sits **under** the time inside every cell at every width — the redesign made the stacked layout universal rather than a desktop variant, because it is what keeps all 20 characters at any column count and it puts the Orbitron time on its own line where it reads as the thing being chosen.
 
@@ -788,7 +791,10 @@ This is the only centred composition on the page, which is what makes it read as
 
 - **Shape:** `rounded.control`, 56px tall, comfortably above the 44px tap minimum.
 - **Primary:** `navy-900` fill, white text, 34px horizontal padding, uppercase Orbitron 800 at 15px with `0.06em`.
-- **Primary hover:** a `blue-600` wipe travels in **along the axis** — `translateX(-101%) skewX(-12deg)` to `translateX(0)` over 350ms — and the button lifts 3px. The arrow glyph advances 5px. The wipe is a pseudo-element under the label, so the text never moves relative to its own box.
+- **Primary hover:** a `blue-600` wipe travels in **along the axis** — `translateX(-101%) skewX(var(--skew))` to `translateX(0)` over 350ms — and the button lifts 3px.
+
+  > **This line said `skewX(-12deg)` until 2026-08-12 and contradicted the axis rule four hundred lines above it**, which states there is exactly one skew value in the system and that a second is a defect rather than a variation. `-12deg` was a transcription from the prototype, not a decision. The token is the value; nothing may hard-code an angle beside it. The arrow glyph advances 5px. The wipe is a pseudo-element under the label, so the text never moves relative to its own box.
+
 - **Primary active:** `blue-700`.
 - **Primary on a navy band:** `blue-600` fill, white text (**5.17:1**), wiping to white with `navy-900` text.
 - **Secondary:** transparent fill, 2px `navy-900` border, navy text. Hover fills `navy-900` and inverts the text.
