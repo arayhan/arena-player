@@ -267,7 +267,7 @@ Outlined type carries a hard implementation rule, because its failure mode is no
 
 **4. Type scale — fluid, and much larger at the top.** A `clamp()` scale with no breakpoint jumps anywhere. The display size roughly doubled in the redesign: 48px at 375px growing to 152px at 1440px, at `0.95` leading and `-0.03em` tracking, uppercase. The `3rem` floor is a measurement, not a taste: `PILIH JAM.` at Orbitron 900 and 48px occupies about 324px, and the content box at 375px is 343px. **That is the binding number in the whole type system** — it is why the hero headline's longest word is five characters, and why a copy change there is a layout change.
 
-`sm` and `xs` remain **fixed** and do not scale, because shrinking a caption below 14px on a phone is an accessibility failure and growing it on desktop stops it reading as secondary.
+`sm` and `xs` remain **fixed** and do not scale, because shrinking a caption below 12px on a phone is an accessibility failure and growing it on desktop stops it reading as secondary. (This sentence said "below 14px" until 2026-08-12, which contradicted `xs` being 12px itself. The named [Fixed-Small Rule](#hierarchy) always said 12px; this copy and the one in `globals.css` were the stale pair.)
 
 **5. Spacing rhythm — 4px base, one fluid section rhythm.** Components use 4/8/12/16/24 for interior padding. Section rhythm is now a **single fluid value**, `clamp(96px, 12vw, 160px)`, used by every section on the page, with the head-to-body gap at `clamp(48px, 6vw, 80px)`. Both ends of both clamps are numbers from the spacing scale. **A section gap that is not that clamp is a mistake, not a judgement call** — the previous fixed 48/64/96/128 rule is replaced, because a stepped rhythm under a fluid type scale means the whitespace-to-type ratio changes at every width.
 
@@ -715,18 +715,18 @@ Two columns above 980px — copy and legend left, the panel right, at `0.9fr 1.1
 
 **One column on a phone. Two from 640px. Three from 1180px.** The single-column rule was never about taste, and the grid does not overturn it — it applies it where the measurement actually binds.
 
-"Menunggu Konfirmasi" is 20 characters and needs **133px**.
+"Menunggu Konfirmasi" is 20 characters and needs **145.5px**.
 
-> **The 146px this section carried until 2026-08-12 was measured against the pre-redesign 14px state label; the redesign sets it at 13px, and re-measuring with Orbitron actually loaded gives 133px.** Both breakpoint justifications below were computed from the stale figure. They still hold — 133px is _smaller_, so every column that cleared 146px clears this too — but the number a future decision is built on is now the measured one. Re-measure rather than reuse if the label size moves again.
+> **This figure has now moved twice in one day, which is the argument for measuring it rather than quoting it.** It read 146px while the state label was the pre-redesign 14px, but that number was estimated with Orbitron not yet loaded. The redesign briefly set the label to a hard-coded 13px and the measured width was 133px. The label is now back on the `sm` step at 14px — a real token rather than a literal — and the measured width is **145.5px** (Inter 14px, font loaded, `getBoundingClientRect` on the live string). Every breakpoint justification below still holds: the tightest column in the system leaves 222px of content width at a 320px viewport. Re-measure rather than reuse if the label size moves again.
 > A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. So **below 640px the grid stays one full-width column.**
 
-**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 133px.
+**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 145.5px.
 
 The state label sits **under** the time inside every cell at every width — the redesign made the stacked layout universal rather than a desktop variant, because it is what keeps all 20 characters at any column count and it puts the Orbitron time on its own line where it reads as the thing being chosen.
 
 - **Layout:** time above, state below, 14px/16px padding, 64px minimum height, `rounded.control`, 1.5px border.
 - **Time:** Orbitron 700 at 16px, `0.02em`. It is no longer the `h3` role — an `h3` inside a grid of nine is nine sub-headings, and the time is a label on a control.
-- **State:** Inter at 13px.
+- **State:** the `sm` role — Inter 400 at 14px. A token, not a literal. It was a hard-coded 13px between the redesign and 2026-08-12, which is a step this ramp does not have; and the `xs` step below it is already spoken for by the free-run badge that sits directly under this label, so putting the state there would make the cell's primary content the same size as its secondary affordance and leave colour as the only separator. `sm` is the role the [Hierarchy](#hierarchy) assigns to state labels.
 - **Available:** white fill, 1.5px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
 - **Hover:** fills `blue-50` **and takes `glow-interactive`**. Available cells only, and pointer-fine only.
 - **Selected:** `blue-600` fill and border, white text, state label **full white**, label "Dipilih".

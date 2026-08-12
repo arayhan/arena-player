@@ -188,7 +188,7 @@
   /* FULL WHITE, NOT WHITE AT 85%, AND THIS IS A DELIBERATE DEPARTURE FROM
      DESIGN.md's SLOT CELL SECTION. White at 85% over blue-600 composites to
      rgb(222,232,252) and computes 4.20:1 against the fill — below the 4.5:1 AA
-     bar for 13px text. This page already took a P0 for the identical mistake on
+     bar for 14px text. This page already took a P0 for the identical mistake on
      the pill's day label and fixed it the same way. The label separates by
      size and face, not by transparency. Flagged in DESIGN.md's own terms:
      "no status label may fall below AA". */
@@ -509,7 +509,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
    would be worse than the variance. Revisit if the display face ever changes. */
 .slot__time{font-family:var(--font-display);font-weight:700;font-size:16px;
   letter-spacing:.02em;white-space:nowrap;color:inherit}
-.slot__state{font-size:13px;color:var(--slot-state-fg)}
+.slot__state{font-size:var(--text-sm);color:var(--slot-state-fg)}
 /* The free-run affordance. A quiet third line, never a coloured chip: the state
    label is what the cell exists to carry. Shown on the FIRST slot of the day's
    longest run only, and only when that run is 3+ slots. At most one per page —
@@ -1301,11 +1301,11 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         <p class="lede">
           <strong>One column on a phone. Two from 640px. Three from 1180px.</strong> The
           constraint is one number: <span lang="id">“Menunggu Konfirmasi”</span> is
-          <strong>20 characters</strong> and renders <strong>133px</strong> wide at the cell's
-          13px Inter — measured, and down from 146px only because the redesign dropped the
-          state label from 14px. At 375px a 3-column grid gives about 106px per cell, roughly
-          71px of it inside the padding, so the label cannot fit at all; the phone keeps a
-          single full-width column, where 133px sits inside a 343px row with room to spare.
+          <strong>20 characters</strong> and renders <strong>145.5px</strong> wide at the cell's
+          14px Inter — measured with the font loaded, not estimated. At 375px a 3-column grid
+          gives about 106px per cell, roughly 71px of it inside the padding, so the label
+          cannot fit at all; the phone keeps a single full-width column, where 145.5px sits
+          inside a 343px row with room to spare.
           <strong>Click an available slot, then click it again to deselect.</strong>
         </p>
       </div>
@@ -1337,7 +1337,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         1280px two-column layout above 980px and full width below it. At a 640px viewport the
         panel is roughly 570px, so two columns give about 280px each and the 20-character label
         fits with room to spare. Three columns wait until 1180px, where each cell still clears
-        133px comfortably. The state label sits <strong>under</strong> the time at every width, which is
+        145.5px comfortably. The state label sits <strong>under</strong> the time at every width, which is
         what keeps all 20 characters at any column count.
       </p>
       <p class="note stack-4">
@@ -1352,7 +1352,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         a deliberate departure from <code>DESIGN.md</code>'s Slot Cell section, recomputed
         rather than copied: white at 85% over <code>blue-600</code> composites to
         <code>rgb(222,232,252)</code> and measures <strong>4.20:1</strong> against the fill,
-        below the 4.5:1 AA bar for 13px text. Full white is <strong>5.17:1</strong>. The label
+        below the 4.5:1 AA bar for 14px text. Full white is <strong>5.17:1</strong>. The label
         separates by size and face, not by transparency — this page already took a P0 for the
         identical mistake on the pill's day label.
       </p>

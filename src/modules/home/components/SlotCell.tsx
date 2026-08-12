@@ -31,8 +31,8 @@ const STATE_LABEL: Record<DisplaySlot["status"], string> = {
  * pre-redesign row layout put time and label side by side and needed ~321px
  * to hold both without truncating the 20-character label; stacked, the cell
  * only needs the WIDER of the two lines plus padding — "Menunggu Konfirmasi"
- * at 13px is DESIGN.md's re-measured 133px floor, comfortably under the
- * ~240-288px a single grid column has even at a 320px viewport. No narrower
+ * measures 145.5px at the `sm` step, against the 222px of content width a
+ * single grid column leaves even at a 320px viewport. No narrower
  * breakpoint, no truncation, no special-cased width: completing the port is
  * what closes the gap, not a new rule.
  */
@@ -114,16 +114,24 @@ export function SlotCell({
       <span className="font-[family-name:var(--font-display)] text-[16px] font-bold tracking-[0.02em] whitespace-nowrap">
         {slot}
       </span>
-      {/* State: Inter at 13px, sitting UNDER the time at every width — the
+      {/* State: the `sm` role, sitting UNDER the time at every width — the
           redesign made this universal rather than a desktop-only stack, which
           is what keeps the 20-character label intact at any column count.
+          `--text-sm`, NOT a literal. It was a hard-coded thirteen pixels
+          between the redesign and 2026-08-12, which is a step the ramp does
+          not have, and the alternative on offer — the `xs` step — is worse
+          than a literal was: the free-run
+          badge below is already `--text-xs`, so 12px would make the cell's
+          primary content the same size as its secondary affordance and leave
+          colour as the only separator. DESIGN.md assigns "state labels" to
+          `sm`, and that is what this is.
           FULL WHITE WHEN SELECTED, NEVER 85%. DESIGN.md said 85% until
           2026-08-12 and DESIGN.html had already overruled it: white at 85%
           over blue-600 composites to rgb(222,232,252) and computes 4.19:1
-          against the fill, under AA, and at 13px there is no large-text
+          against the fill, under AA, and at 14px there is still no large-text
           exemption. Full white is 5.17:1. The label separates from the time
           by size and face, not by transparency. */}
-      <span className="text-[13px] whitespace-nowrap">{label}</span>
+      <span className="text-[length:var(--text-sm)] whitespace-nowrap">{label}</span>
 
       {/* A quiet second line, not a coloured chip. The state label is what the
           cell exists to carry, and a badge that competes with it would trade

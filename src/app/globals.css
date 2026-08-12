@@ -57,11 +57,14 @@
   ); /* 56px -> 144px, 0.8 leading, skewed --skew, outlined. aria-hidden compositional device, not content */
   --text-h2: clamp(1.75rem, 1rem + 3.4vw, 3.5rem); /* 28px -> 56px, section headings */
   --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem); /* unchanged by the redesign */
-  /* sm, xs and eyebrow are FIXED. Shrinking a caption below 14px on a phone is
+  /* sm, xs and eyebrow are FIXED. Shrinking a caption below 12px on a phone is
    * an accessibility failure; growing it on desktop stops it reading as
-   * secondary. The eyebrow has a further reason: at 0.22em tracking a fluid
-   * size would change its own line length at every viewport, and it has to
-   * hold one line at 375px. */
+   * secondary. (This said "below 14px" until 2026-08-12 — a floor --text-xs
+   * itself sat under, which made the rule unsatisfiable by its own tokens.
+   * DESIGN.md's named Fixed-Small Rule always said 12px; this comment and one
+   * paragraph in DESIGN.md were the stale pair.) The eyebrow has a further
+   * reason: at 0.22em tracking a fluid size would change its own line length
+   * at every viewport, and it has to hold one line at 375px. */
   --text-sm: 0.875rem;
   --text-xs: 0.75rem;
   /* NEW. Same pixel size as --text-xs (12px) by coincidence, not a reference
