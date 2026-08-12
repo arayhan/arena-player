@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useRef, useState } from "react";
 
 import { cn } from "@/lib/cn";
@@ -100,22 +99,21 @@ export function Hero() {
       <HeroCanvas />
 
       <div ref={rootRef} className="relative mx-auto w-full max-w-[1100px] px-4">
-        {/* The real mark, supplied by the client 2026-08-11 — the AP monogram
-            placeholder that stood here is gone.
+        {/* THE SOLID MARK THAT STOOD HERE IS GONE, AND THE HEADER IS WHY.
+            It was correct while the page had no header: the brand had to appear
+            somewhere above the fold. Now `SiteHeader` carries it, fixed, ~100px
+            higher — and the two rendered stacked, which reads as a duplication
+            bug rather than as emphasis. Caught in a 375px screenshot, not in
+            code review.
 
-            NOT `priority`, and that is deliberate. The LCP element is the
-            headline below: text, server-rendered, in a self-hosted font. A
-            preloaded 1042×502 logo would compete for that slot and could take
-            it, which would trade the cheapest, most reliable LCP there is for
-            an image. Explicit width and height keep it off the CLS budget
-            regardless. */}
-        <Image
-          src="/logo-mark.png"
-          alt="Arena Player"
-          width={1042}
-          height={502}
-          className="h-10 w-auto md:h-12"
-        />
+            DESIGN.md's Hero stacking order asks for the mark here in one form
+            only: "the client mark at 7% opacity with a slow scroll parallax",
+            `aria-hidden`, decoration rather than identification. That is a
+            motion piece and is deliberately not built yet — it needs the
+            user's choice on parallax distance first, and DESIGN.md leaves the
+            speed unspecified. So the hero shows no mark at all this turn,
+            which is honest: the brand still appears above the fold, once, in
+            the header. */}
 
         {/* THE ONE EYEBROW. Two parts: an `aria-hidden` 34×2px rule skewed on
             the system's one axis, and the fact itself, which is real content

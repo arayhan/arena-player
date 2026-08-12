@@ -874,12 +874,14 @@ The direction was replaced wholesale. This section exists so a later session can
 | 8px radius on chips, hand-off button and map note       | `rounded.control`                                         | No third radius                                                           |
 | No free-run badge; legend has three rows and no elapsed | Badge ships; legend stays three rows                      | The badge is the one place design serves the client's own metric          |
 
-**Still owed, and not done in this pass:**
+**Still owed — corrected 2026-08-12, because three of the four items below had already been done and this list was telling the next session otherwise.**
 
-- **Client re-approval.** The client approved the light-only direction on 2026-08-11. They have not seen this one.
-- **[DESIGN.html](DESIGN.html)** still renders the superseded direction.
-- **[`.impeccable/design.json`](../.impeccable/design.json)** still carries the old `shadows` array (two entries), `breakpoints` (`container-max: 1100px`, `tablet: 720px`) and `typographyMeta` (no `numeral`, no `eyebrow`). Its `semanticLayer.map` is missing every on-band row.
-- **Code.** Nothing under `src/` was touched. `/` and `/booking` still implement the superseded direction, and this document is deliberately ahead of them.
+- **Client re-approval.** The client approved the light-only direction on 2026-08-11. They have not seen this one. **This is the only item still outstanding**, and it is the one no amount of work here closes.
+- ~~**[DESIGN.html](DESIGN.html)** still renders the superseded direction.~~ **Done.** Its own header reads `REGENERATED 2026-08-12 for the "velocity" art direction`, and it carries `--skew`, `--diag` and the on-band variables. This mattered more than the others: DESIGN.html is what the client would be sent for the re-approval above, and this line said it was stale.
+- ~~**[`.impeccable/design.json`](../.impeccable/design.json)** carries the old shadows, `container-max: 1100px` and no on-band rows.~~ **Done.** The sidecar holds no `1100px` and 16 on-band references. It is now merely _older_ than this file, which is a refresh (`/impeccable document`), not a rewrite.
+- ~~**Code.** Nothing under `src/` was touched.~~ **Largely done.** The token layer, `Section`, `Hero`, `HeroCanvas`, `OrderSection`, `SlotCell`, `DatePills`, `SiteHeader` and `HomePage` are all velocity. What remains on `/` is named where it belongs: the Ketentuan ten-row band treatment, the location section's map placeholder, the closing CTA band, the slot legend, the two-column order composition, and the three motion pieces (marquee, parallax mark, progress bar).
+
+**A list of what is owed is load-bearing, and a stale one costs more than no list.** Every bullet above was true when written and three stopped being true within hours, while the document kept asserting them. Delete an item the moment it lands rather than at the end of the phase.
 
 ## Do's and Don'ts
 

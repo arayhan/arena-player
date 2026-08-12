@@ -1,30 +1,65 @@
+import type { ReactNode } from "react";
+
 import { Hero } from "./components/Hero";
 import { OrderSection } from "./components/OrderSection";
 import { Section } from "./components/Section";
+import { SiteHeader } from "./components/SiteHeader";
 import { WHATSAPP_NUMBER } from "./home.constants";
 import { KETENTUAN, KETENTUAN_TITLE } from "./home.content";
 
 /**
- * The landing page shell — Phase 2 task 1.
+ * ONE WORD OF A HEADING, IN THE ACCENT COLOUR — DESIGN.md's Section head.
  *
- * LAYOUT ONLY. Every section below is a labelled empty room: the page frame,
- * the numbered-step rhythm, and the responsive behaviour are real; the content
- * is not. The PRD builds them in a deliberate order — order section first,
- * hero third — because the order section carries all of the state and
- * data-fetching risk and building it first gives it the most iteration time
- * instead of the least.
+ * It takes a `band` prop rather than inheriting, because the accent is the one
+ * colour with two answers that a reader cannot infer from context: `blue-600`
+ * on light is 5.17:1 and 3.30:1 on navy, while `blue-400` is 6.72:1 on navy and
+ * **2.54:1 on white**. Getting it backwards fails silently in both directions,
+ * so the surface is stated at every call site instead of being remembered.
+ */
+function Accent({ children, band = false }: { children: ReactNode; band?: boolean }) {
+  return (
+    <span
+      className={
+        band
+          ? "text-[color:var(--color-interactive-on-band)]"
+          : "text-[color:var(--color-interactive)]"
+      }
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * The landing page — the file that COMPOSES `/`, and the last one the velocity
+ * redesign reached.
  *
- * SECTION ORDER ON THE PAGE IS NOT BUILD ORDER. A visitor reads hero → order →
- * ketentuan → lokasi → footer. Task 2 fills the order section, task 3 the
- * hero, and so on.
+ * `Hero`, `Section`, `OrderSection`, `SlotCell` and `DatePills` were ported
+ * first and this was not, which is why the page spent a day looking half
+ * redesigned: every element was velocity and the thing arranging them was not.
  *
- * The hero carries no ordinal. It opens the page rather than continuing a
- * sequence, and numbering it 00 would be counting for its own sake — the
- * assembly starts at the thing the visitor came to do.
+ * THE PAGE'S RHYTHM IS THE LIGHT/NAVY ALTERNATION, not a hairline between
+ * sections. DESIGN.md's Section head table assigns the surfaces: 01 order on
+ * light, 02 Ketentuan on a navy band, 03 location back on the ground, and a
+ * navy closing band. The hairline keyline that used to separate steps is gone
+ * because a hairline plus a band is two devices doing one job.
+ *
+ * The hero carries no ordinal, and neither will the closing band. The hero
+ * opens the page rather than continuing a sequence; the closing is a call to
+ * action, and numbering it would imply a fourth thing to read.
+ *
+ * STILL TO COME, so nobody reads their absence as a decision: the Ketentuan's
+ * ten-row band treatment and the Location section's map placeholder, then the
+ * navy Closing CTA that replaces the light footer below; then the slot-state
+ * legend, the two-column order composition, and the motion pieces (marquee,
+ * parallax mark, progress bar) which need the user's choice before any of them
+ * is written.
  */
 export function HomePage() {
   return (
     <main className="flex-1">
+      <SiteHeader />
+
       <Hero />
 
       {/* THE ANCHOR IS #order, NOT #booking. /booking is a route, and an anchor
@@ -32,19 +67,44 @@ export function HomePage() {
       <Section
         id="order"
         step="01"
-        title="Pesan Lapangan"
+        title={
+          <>
+            Jadwal <Accent>Hari Ini</Accent>, Bukan Janji
+          </>
+        }
         lede="Pilih tanggal, lalu pilih jam yang masih kosong."
       >
         <OrderSection />
       </Section>
 
+      {/* THE FIRST NAVY BAND. DESIGN.md's Section head table puts Ketentuan on
+          navy, and the band is what separates one section from the next now
+          that the old hairline keyline is gone — a hairline plus a band would
+          be two devices doing one job.
+
+          THE TEN-ROW TREATMENT IS NOT BUILT YET. DESIGN.md's Ketentuan rule row
+          specifies full-width rows in an `84px 1fr` grid with outlined numerals
+          and a hover that slides along the axis; that is the next turn. What
+          this turn does is stop the list rendering as a WHITE CARD sitting on
+          the band, which would be the "large dark card" defect wearing its
+          inverse: the container goes transparent and its hairline moves to the
+          on-band token. */}
       <Section
+        id="ketentuan"
         step="02"
-        title="Ketentuan"
+        band
+        title={
+          <>
+            Ketentuan <Accent band>Arena</Accent>
+          </>
+        }
         lede="Sepuluh aturan main, apa adanya dari pihak lapangan."
       >
-        <div className="rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
-          <h3 lang="id" className="text-[length:var(--text-sm)] tracking-[0.08em] uppercase">
+        <div className="rounded-[var(--radius-panel)] border border-[var(--color-border-on-band)] p-4 md:p-6">
+          <h3
+            lang="id"
+            className="text-[length:var(--text-sm)] tracking-[0.08em] text-[color:var(--color-fg-muted-on-band)] uppercase"
+          >
             {KETENTUAN_TITLE}
           </h3>
           {/* An ordered list, because the rules ARE numbered and the client
@@ -52,7 +112,7 @@ export function HomePage() {
               identical and read wrong to a screen reader. */}
           <ol
             lang="id"
-            className="mt-4 grid list-decimal gap-3 pl-5 marker:font-semibold marker:text-[var(--color-interactive)] md:grid-cols-2 md:gap-x-8"
+            className="mt-4 grid list-decimal gap-3 pl-5 marker:font-semibold marker:text-[var(--color-interactive-on-band)] md:grid-cols-2 md:gap-x-8"
           >
             {KETENTUAN.map((rule) => (
               <li key={rule} className="max-w-[52ch] pl-1">
@@ -63,7 +123,21 @@ export function HomePage() {
         </div>
       </Section>
 
-      <Section step="03" title="Lokasi & Kontak" lede="Mudah dijangkau, parkir luas.">
+      {/* THE LEDE NO LONGER CLAIMS "parkir luas". Nobody supplied that, and it
+          is a checkable fact about a place whose street address is still an
+          outstanding placeholder below — the same class of invention as a
+          made-up street name, only quieter because it sounds like copy rather
+          than data. */}
+      <Section
+        id="lokasi"
+        step="03"
+        title={
+          <>
+            Datang & <Accent>Main</Accent>
+          </>
+        }
+        lede="Satu lapangan, satu nomor WhatsApp."
+      >
         <div className="grid gap-4 md:grid-cols-2">
           {/* TODO(content): address + maps coords. Deliberately rendered as a
               VISIBLE GAP rather than as filler text or a grey map tile.

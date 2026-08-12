@@ -38,6 +38,7 @@ export function Section({
   lede,
   children,
   className,
+  band = false,
 }: {
   /** Anchor target. `#order` is linked from both CTAs and must not change. */
   id?: string;
@@ -47,10 +48,34 @@ export function Section({
    * been introduced would be counting for its own sake.
    */
   step?: string;
-  title: string;
+  /**
+   * `ReactNode`, not `string`, because DESIGN.md's Section head allows ONE word
+   * of the heading to take the accent colour. The caller wraps that word; this
+   * component does not parse the string looking for it, because "which word"
+   * is an editorial decision per heading and a heuristic would get it wrong the
+   * first time a heading had two candidates.
+   */
+  title: ReactNode;
   lede?: ReactNode;
   children?: ReactNode;
   className?: string;
+  /**
+   * Renders the section as a FULL-BLEED NAVY BAND.
+   *
+   * DESIGN.md's On-Band Rule calls this "the redesign's single largest new
+   * source of defects", and names the reason: every colour decision on this
+   * page has two answers, and a component that renders inside a band while
+   * reading only the light-surface tokens ships at 2.46:1 with nothing visibly
+   * wrong in a screenshot. That already happened once — the pre-redesign
+   * concept put `blue-600` and `navy-400` inside the Ketentuan band, which
+   * computed 3.30:1 and 2.46:1 against navy-900.
+   *
+   * So this flag switches the SEMANTIC LAYER, not a list of colours: surface,
+   * foreground, muted foreground and the numeral's stroke all move to their
+   * on-band counterparts together. A caller that needs an accent inside a band
+   * reaches for `--color-interactive-on-band`, never `--color-interactive`.
+   */
+  band?: boolean;
 }) {
   return (
     <section
@@ -64,6 +89,20 @@ export function Section({
         // keyline that used to separate steps, are both retired — see the
         // file header.
         "scroll-mt-4 py-[var(--space-section-y)]",
+        // FULL-BLEED, NO RADIUS, NO MARGIN, NO INSET CARD — DESIGN.md's Band
+        // Rule, and it is written as a prohibition because the tempting version
+        // is the wrong one: a navy section that is a rounded rectangle floating
+        // on the page ground is a large dark card, which reads as an ad unit.
+        // The band goes edge to edge; the container INSIDE it still respects
+        // the maximum, which is what keeps the type measure honest.
+        //
+        // `scroll-mt-4` is deliberately kept rather than grown to clear the
+        // fixed header: the header is transparent at rest and materialises on
+        // scroll, so an anchor jump lands with the header opaque over the first
+        // ~62px of the band. That is a real overlap and it is handled by the
+        // scroll padding on `html` rather than per-section, so every anchor on
+        // the page gets the same treatment instead of three of four.
+        band && "bg-[var(--color-band)] text-[var(--color-fg-on-band)]",
         className,
       )}
     >
@@ -122,15 +161,19 @@ export function Section({
                 //
                 // 1. No stroke support: this base rule is the fallback — the
                 //    numeral stays a solid `grey-200` fill (DESIGN.md's
-                //    Numbered-Step Rule: "grey-200 on light sections", the
-                //    only section background this component currently
-                //    renders on).
-                "text-[color:var(--color-border)]",
+                //    Numbered-Step Rule: "grey-200 on light sections", and
+                //    `navy-700` on a band, which is the same hairline token
+                //    each surface already uses).
+                band
+                  ? "text-[color:var(--color-border-on-band)]"
+                  : "text-[color:var(--color-border)]",
                 // 2. Stroke supported: swap to transparent-fill + stroke,
                 //    1.5px per DESIGN.md's outline stroke-width table (section
                 //    numerals). Gated on the exact query DESIGN.md specifies.
                 "supports-[-webkit-text-stroke:1px_currentColor]:text-transparent",
-                "supports-[-webkit-text-stroke:1px_currentColor]:[-webkit-text-stroke:1.5px_var(--color-border)]",
+                band
+                  ? "supports-[-webkit-text-stroke:1px_currentColor]:[-webkit-text-stroke:1.5px_var(--color-border-on-band)]"
+                  : "supports-[-webkit-text-stroke:1px_currentColor]:[-webkit-text-stroke:1.5px_var(--color-border)]",
                 // 3. Forced colours (Windows High Contrast): stroke is not
                 //    honoured there, so drop it and fill solid with the
                 //    system's own text colour. `!` wins over the @supports
@@ -150,7 +193,23 @@ export function Section({
             {lede ? (
               // Body copy caps at 60–68ch. Past that the eye loses the line
               // return, which matters most on the widest screens.
-              <p className="mt-4 max-w-[64ch] text-[color:var(--color-fg-muted)]">{lede}</p>
+              //
+              // The muted foreground has two answers and this is the whole
+              // point of the band variant: `navy-400` measures 2.46:1 against
+              // navy-900, so reusing the light-surface token here is the
+              // documented failure. `navy-200` is 7.91:1 and is on-dark ONLY —
+              // it has never been cleared on a light surface, so it must not
+              // travel back the other way.
+              <p
+                className={cn(
+                  "mt-4 max-w-[64ch]",
+                  band
+                    ? "text-[color:var(--color-fg-muted-on-band)]"
+                    : "text-[color:var(--color-fg-muted)]",
+                )}
+              >
+                {lede}
+              </p>
             ) : null}
           </div>
 

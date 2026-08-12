@@ -223,6 +223,22 @@
   color-scheme: light;
 }
 
+/* THE HEADER IS FIXED, SO EVERY ANCHOR JUMP OWES IT ITS OWN HEIGHT.
+ *
+ * `SiteHeader` is 80px tall — 18px padding top and bottom around a 44px CTA —
+ * and it is `position: fixed`, so it is out of flow and an untreated `#lokasi`
+ * jump lands with the section's heading underneath it. Declared once here on
+ * the scroll container rather than as a `scroll-mt` on each section, because
+ * per-section is exactly how three of four anchors end up correct and the
+ * fourth does not. Sections keep their own small `scroll-mt` on top of this
+ * for breathing room.
+ *
+ * This also covers the anchors the hero's CTAs use, which are the two that
+ * actually get clicked. */
+html {
+  scroll-padding-top: 80px;
+}
+
 /* THE ONE PLACE THE TYPE SCALE IS OVERRIDDEN, AND IT IS 39px WIDE.
  *
  * Below 360px the Numbered-Step Rule's geometry runs out of room. Measured at
