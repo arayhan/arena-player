@@ -354,7 +354,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--color-focus);outlin
    slack -- and it only shows inside the Alur frames, which are narrower. */
 .slot__time{font-family:var(--font-display);font-weight:500;letter-spacing:.01em;white-space:nowrap}
 .slot__state{font-size:var(--text-sm);white-space:nowrap}
-.slot:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--slot-hover-bg)}
+/* THE FILL ALONE IS INVISIBLE, AND THIS PAGE IS WHERE THAT WAS MISSED.
+   --slot-hover-bg resolves to --color-wash, which is blue-50 — the SAME value
+   as --color-page. Measured on the built product: white to rgb(239,246,255)
+   against a body of rgb(239,246,255). The cell does not lift, it dissolves
+   into the band and leaves the blue keyline floating.
+   shadow-md is the system's own word for "raised or hovered surface", already
+   declared above, so the second signal costs no new token. */
+.slot:hover:not([aria-disabled=true]):not([aria-pressed=true]){background:var(--slot-hover-bg);
+  box-shadow:var(--shadow-md)}
 .slot[aria-pressed=true]{background:var(--slot-selected-bg);
   border-color:var(--slot-selected-bg);color:var(--slot-selected-fg)}
 .slot[data-state=pending]{background:var(--slot-pending-bg);border-color:var(--slot-pending-border);

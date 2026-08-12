@@ -355,7 +355,8 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 
 | Semantic                                        | Primitive                     | Purpose                                                           |
 | ----------------------------------------------- | ----------------------------- | ----------------------------------------------------------------- |
-| `--color-bg`                                    | `white`                       | Page background                                                   |
+| `--color-page`                                  | `blue-50`                     | **The page ground.** The instruction-page blue everything sits on |
+| `--color-bg`                                    | `white`                       | The plates content sits on — cards, panels, slot cells            |
 | `--color-bg-subtle`                             | `grey-50`                     | Alternating section bands                                         |
 | `--color-fg`                                    | `navy-900`                    | Body and heading text                                             |
 | `--color-fg-muted`                              | `navy-400`                    | Secondary text, captions                                          |
@@ -364,13 +365,16 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 | `--color-border`                                | `grey-200`                    | Hairlines                                                         |
 | `--color-focus`                                 | `blue-600`                    | Focus ring                                                        |
 | `--color-fg-inverse`                            | `white`                       | Text on a filled dark surface                                     |
-| `--color-wash`                                  | `blue-50`                     | The hover tint                                                    |
+| `--color-wash`                                  | `blue-50`                     | The hover tint — **the same value as `--color-page`, see below**  |
+| `--color-keyline`                               | `navy-900`                    | The rule between assembly steps                                   |
 | `--color-accent-strong`                         | `navy-900`                    | Heaviest actionable surface — primary button, secondary border    |
 | `--color-accent-strong-hover`                   | `navy-700`                    | Its hover                                                         |
 | `--color-disabled-bg`                           | `grey-200`                    | Disabled fill                                                     |
 | `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple                                                |
 | `--color-danger-surface` / `-line` / `-strong`  | `red-100` / `-300` / `-800`   | The booked triple, and the error boundary                         |
 | `--color-success-fg`                            | `navy-900`                    | Success carries on weight and copy, never on the interactive blue |
+
+**`--color-wash` and `--color-page` are the same blue, and that is a trap this document set.** Until 2026-08-11 the table above had no `--color-page` row at all: it labelled `--color-bg`/white as "Page background", which is what the plates are, not what the page is. So a hover that tints to `blue-50` reads as "lifts toward blue" on paper and renders as **exactly the band behind it** — measured, white to `rgb(239,246,255)` on a body of `rgb(239,246,255)`. The slot cell and the date pill both shipped with no perceptible hover because of it. Anything hovering on the page ground needs a **second** signal — a border change, or `shadow-md` — and the fault was the missing row, not the components.
 
 **State colour needs its own semantic tier.** Without one, every component showing a state
 reaches for a raw hue, and a re-theme silently misses all of them. That is not hypothetical: it
@@ -470,7 +474,7 @@ This is the same rule the slot cell and the date pill already follow, and the su
 - **Layout, phone:** time left, state right, 16px padding, 56px minimum height, 10px radius.
 - **Layout, ≥768px:** time above, state below, same padding and radius; the cell grows rather than the label shrinking.
 - **Available:** white fill, 1px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
-- **Hover:** fills `blue-50`. Available cells only.
+- **Hover:** fills `blue-50` **and takes `shadow-md`**. Available cells only. The fill alone is invisible — `blue-50` is the page ground, so the surface does not lift, it dissolves into the band and leaves the blue keyline floating. `shadow-md` is the system's own vocabulary for "raised or hovered surface" and needs no new token.
 - **Selected:** `blue-600` fill, white text, label "Dipilih".
 - **Pending:** the amber triple, label "Menunggu Konfirmasi", `aria-disabled="true"`, `not-allowed`.
 - **Booked:** the red triple, label "Terisi", `aria-disabled="true"`, `not-allowed`.
