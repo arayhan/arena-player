@@ -169,7 +169,31 @@ export function BookingForm({ date, slot }: BookingFormProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 lang="id" className="max-w-[24ch]">
+      {/* DESIGN.md's `display` role is written for the hero: one headline, three
+          short lines, one word per line, measured against "PILIH JAM." (its
+          longest word is 5 characters). "Lengkapi Pemesanan" is two 8-9 letter
+          Indonesian words with no line to itself to control, so at display
+          scale (48px -> 152px) it overflowed the 375px viewport (measured:
+          320px 61px over, 375px 49px over, 414px 41px over). This is a form
+          page, not the hero — it has exactly one heading and no sibling h1
+          content, which functionally makes it a single section rather than a
+          multi-line display statement. DESIGN.md's `h2` role is written for
+          exactly that: "section headings" at a fluid 28px -> 56px, and is the
+          closest defined scale to what a lone form-page heading needs. There
+          is no form-heading scale in DESIGN.md.
+
+          Only the size is overridden — weight, leading, tracking and uppercase
+          still come from the global <h1> rule, because only the size caused
+          the overflow.
+
+          This class works because globals.css's heading rules now live in
+          `@layer base`. They did not until this fix, and while they sat
+          unlayered they outranked every Tailwind utility no matter its
+          specificity: the payment card's `<h2 id="payment-heading">` below
+          asked for --text-h3 and rendered at h2's size, as did three <h3>
+          labels on the landing page. The class was emitted, matched, and lost,
+          with nothing to show for it. */}
+      <h1 lang="id" className="max-w-[24ch] text-[length:var(--text-h2)]">
         Lengkapi Pemesanan
       </h1>
 

@@ -221,13 +221,34 @@
   color-scheme: light;
 }
 
-body {
-  background: var(--color-page);
-  color: var(--color-fg);
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: var(--text-body);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+/* IN `@layer base`, NOT UNLAYERED — and this is a correctness fix, not tidying.
+ *
+ * An unlayered rule beats EVERY layered rule regardless of specificity, and
+ * Tailwind puts all of its utilities in `@layer utilities`. So while these tag
+ * rules sat outside a layer, a `text-[length:var(--text-sm)]` class on an
+ * `<h3>` was silently a no-op — the class was emitted, matched, and lost.
+ *
+ * Four headings in this codebase were doing exactly that and rendering at a
+ * size nobody chose: the payment card's `<h2>` in booking-form.tsx (asking for
+ * --text-h3, getting --text-h2) and three `<h3>` labels in home-page.tsx
+ * (asking for --text-sm, getting --text-h3). Nothing errored; the type was
+ * just wrong. Moving these into `base` restores the ordinary expectation that
+ * a utility class overrides a tag default, which is what every author here
+ * already assumed.
+ *
+ * Preflight is in `base` too — ours wins inside the layer by source order,
+ * because `@import "tailwindcss"` is line 1. `:focus-visible` and the
+ * cursor-pointer restoration below stay UNLAYERED deliberately: those two are
+ * meant to outrank utilities, which is the exact property being removed here. */
+@layer base {
+  body {
+    background: var(--color-page);
+    color: var(--color-fg);
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: var(--text-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 /* Orbitron takes tighter leading than Inter or it reads as loose: 0.95 for
@@ -243,31 +264,33 @@ body {
  * outlined-word treatment (`KIRIM.`, one word of an h2) is a component-level
  * concern — `color: transparent` plus `-webkit-text-stroke` on a single span
  * — and is not applied blanket here. */
-h1,
-h2,
-h3 {
-  font-family: var(--font-display), system-ui, sans-serif;
-  margin: 0;
-  text-wrap: balance;
-}
-h1 {
-  font-size: var(--text-display);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-}
-h2 {
-  font-size: var(--text-h2);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-h3 {
-  font-size: var(--text-h3);
-  font-weight: 500;
-  line-height: 1.25;
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--text-display);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  h2 {
+    font-size: var(--text-h2);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  h3 {
+    font-size: var(--text-h3);
+    font-weight: 500;
+    line-height: 1.25;
+  }
 }
 
 /* Focus is restyled, never removed. Keyboard operability is a Definition-of-Done

@@ -88,7 +88,17 @@ export function BookingEntry({ date, time }: BookingEntryProps) {
 function UnusableNotice() {
   return (
     <div className={PANEL_CLASS}>
-      <h1 lang="id" className="max-w-[20ch]">
+      {/* Sized off --text-h2, not the global h1 (--text-display). See the
+          matching comment on BookingForm's own <h1> in booking-form.tsx for
+          the full reasoning — duplicated rather than shared per this file's
+          own convention of not importing small presentational decisions
+          across these two files. Short version: this route's h1 is a single
+          page-level heading with no sibling display content, DESIGN.md's
+          display scale is measured against the hero's one-word-per-line
+          headline and overflows 375px on multi-word Indonesian titles, and
+          h2's 28px->56px "section heading" role is the closest defined scale.
+          Only font-size is borrowed; weight/leading/tracking/case stay h1's. */}
+      <h1 lang="id" className="max-w-[20ch] text-[length:var(--text-h2)]">
         Tautan Booking Tidak Valid
       </h1>
       <p lang="id" className="mt-4 max-w-[60ch] text-[color:var(--color-fg-muted)]">
@@ -111,7 +121,9 @@ function UnusableNotice() {
 function ExpiredNotice({ date, slot }: { date: string; slot: TimeSlot }) {
   return (
     <div className={PANEL_CLASS}>
-      <h1 lang="id" className="max-w-[24ch]">
+      {/* Sized off --text-h2 — see the comment on UnusableNotice's <h1>
+          above for the reasoning. */}
+      <h1 lang="id" className="max-w-[24ch] text-[length:var(--text-h2)]">
         Tautan Booking Ini Sudah Kedaluwarsa
       </h1>
       <p lang="id" className="mt-4 max-w-[60ch] text-[color:var(--color-fg-muted)]">
