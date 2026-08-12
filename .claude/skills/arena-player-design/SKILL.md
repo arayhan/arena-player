@@ -9,7 +9,7 @@ Two docs, not one. [docs/DESIGN.md](../../../docs/DESIGN.md) is the visual syste
 
 ## Direction — mostly NOT decided yet
 
-**Locked, and safe to build on:** light and blue-white, the deliberate inverse of the dark-neon benchmark the client named. Navy `#011A43` sampled from their logo. Orbitron display over Inter body. Whitespace as a material.
+**Locked, and safe to build on:** light and blue-white, the deliberate inverse of the dark-neon benchmark the client named. Navy `#011A43` sampled from their logo. Saira (wdth 125) display over Plus Jakarta Sans body — changed 2026-08-12, see DESIGN.md. Whitespace as a material.
 
 **Not decided:** the art direction itself — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely. That is **Phase 1b task 1**, and `DESIGN.md` records its north star as deliberately unset until then.
 

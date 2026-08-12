@@ -122,7 +122,7 @@ export function Hero() {
             viewport, and it has to hold one line at 375px. */}
         <p
           lang="id"
-          className="mt-8 flex items-center gap-3 font-[family-name:var(--font-display)] text-[length:var(--text-eyebrow)] font-semibold tracking-[0.22em] text-[var(--color-interactive)] uppercase"
+          className="mt-8 flex items-center gap-3 type-display text-[length:var(--text-eyebrow)] font-semibold tracking-[0.22em] text-[var(--color-interactive)] uppercase"
         >
           <span
             aria-hidden="true"
@@ -181,7 +181,7 @@ export function Hero() {
             lang="id"
             onMouseEnter={() => setScrambling(true)}
             onMouseLeave={() => setScrambling(false)}
-            className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-[34px] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong-hover)]"
+            className="group inline-flex h-14 w-full items-center justify-center gap-2 rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-[34px] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong-hover)]"
           >
             <span ref={ctaRef} data-label="Pesan Lapangan">
               Pesan Lapangan
@@ -202,7 +202,7 @@ export function Hero() {
           <a
             href="#lokasi"
             lang="id"
-            className="inline-flex h-14 w-full items-center justify-center rounded-[var(--radius-control)] border-2 border-[var(--color-accent-strong)] px-[30px] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[0.06em] text-[var(--color-accent-strong)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong)] hover:text-[var(--color-fg-inverse)]"
+            className="inline-flex h-14 w-full items-center justify-center rounded-[var(--radius-control)] border-2 border-[var(--color-accent-strong)] px-[30px] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-accent-strong)] uppercase transition-colors min-[420px]:w-auto hover:bg-[var(--color-accent-strong)] hover:text-[var(--color-fg-inverse)]"
           >
             Lihat Lokasi
           </a>

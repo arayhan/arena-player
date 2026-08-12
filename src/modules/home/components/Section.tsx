@@ -124,25 +124,25 @@ export function Section({
             // clipped every line on the right, and adding `min-w-0` to the item
             // changed nothing, because the item was never the constraint.
             // A FIXED NUMERAL TRACK, NOT `auto`. `auto` sizes the column to the
-            // ordinal's intrinsic width, and Orbitron ships no `tnum` feature —
-            // so `tabular-nums` below is a silent no-op and "1" measures far
-            // narrower than "0", "2" or "3". Measured at 1280px: the heading of
-            // step 01 started at x=141 and steps 02 and 03 at x=179, a 38px jog
-            // in the one column the whole art direction asks the visitor to
-            // read down. The spine of the page has to be a straight line.
+            // ordinal's intrinsic width, so a page of "01", "02", "03" would
+            // start each heading at a different x — measured at 1280px under
+            // `auto`: x=141, x=179, x=179, a 38px jog in the one column the
+            // whole art direction asks the visitor to read down. The spine of
+            // the page has to be a straight line.
             //
-            // 1.7em of the numeral's OWN font-size covers two digits at
-            // Orbitron's widest (a "0" measures ~0.83em), and it is expressed
-            // against `--text-numeral` (renamed from `--text-step` in the
-            // redesign's token pass) so the track scales with the clamp
-            // instead of being pinned to one viewport.
+            // 1.7 SURVIVED THE TYPEFACE CHANGE, RE-DERIVED RATHER THAN
+            // ASSUMED. It was set against Orbitron, whose widest digit measures
+            // ~0.83em. Saira ExtraExpanded is narrower — widest digit "8" at
+            // 0.788em, widest two-digit pair "08" at 1.55em — but the numeral
+            // is also SKEWED, and `skewX` widens the box by roughly
+            // `tan(8deg) x line-box height`. Measured at 1280px: numeral
+            // 134.4px, worst-case pair 208.3px of ink plus ~15px of skew
+            // against a 228.5px track. It fits with about 5px to spare, and
+            // 1.65 would clip. So the constant stays, on new evidence.
             //
-            // AT EVERY WIDTH, INCLUDING 375px, AND THE PHONE IS THE CHEAP CASE
-            // RATHER THAN THE EXPENSIVE ONE. Measured at 375px before the fix:
-            // headings sat at x=91, 112, 112 — so TWO OF THREE were already
-            // where the fixed track puts all three (x=114), and only step 01
-            // moves, by 23px. All three still set on one line and the page
-            // still does not scroll sideways.
+            // Expressed against `--text-numeral` rather than a pixel value so
+            // the track scales with the clamp instead of being pinned to one
+            // viewport.
             step ? "grid-cols-[calc(var(--text-numeral)*1.7)_minmax(0,1fr)]" : "grid-cols-1",
           )}
         >
@@ -150,8 +150,16 @@ export function Section({
             <span
               aria-hidden="true"
               className={cn(
-                "font-[family-name:var(--font-display)] font-black leading-[0.8]",
+                "type-display font-black leading-[0.8]",
                 "inline-block origin-bottom [transform:skewX(var(--skew))]",
+                // `tabular-nums` DOES SOMETHING NOW. Under Orbitron it was a
+                // silent no-op — that face ships no `tnum` feature, which this
+                // project measured and recorded rather than trusting. Saira
+                // ships it: tested at 100px, "111" and "888" measure 136.2px
+                // and 236.4px proportionally and both measure 214.8px with
+                // `tabular-nums` on. The ordinals are all two digits, so the
+                // effect here is small; it matters on the slot times, which is
+                // where it is now actually used.
                 "[font-variant-numeric:tabular-nums] select-none",
                 "text-[length:var(--text-numeral)]",
                 // OUTLINE-NEEDS-A-FLOOR RULE (DESIGN.md). `color: transparent`

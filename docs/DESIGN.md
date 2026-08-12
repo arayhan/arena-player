@@ -23,45 +23,51 @@ colors:
   red-800: "#991B1B"
 typography:
   display:
-    fontFamily: Orbitron
+    fontFamily: Saira
     fontSize: "clamp(3rem, 1rem + 11vw, 9.5rem)"
     fontWeight: 900
     lineHeight: 0.95
     letterSpacing: "-0.03em"
   numeral:
-    fontFamily: Orbitron
+    fontFamily: Saira
     fontSize: "clamp(3.5rem, 2rem + 8vw, 9rem)"
     fontWeight: 900
     lineHeight: 0.8
   h2:
-    fontFamily: Orbitron
+    fontFamily: Saira
     fontSize: "clamp(1.75rem, 1rem + 3.4vw, 3.5rem)"
     fontWeight: 800
     lineHeight: 1.05
     letterSpacing: "-0.01em"
   h3:
-    fontFamily: Orbitron
+    fontFamily: Saira
     fontSize: "clamp(1.25rem, 0.99rem + 1.13vw, 2rem)"
     fontWeight: 500
     lineHeight: 1.25
   eyebrow:
-    fontFamily: Orbitron
+    fontFamily: Saira
     fontSize: 12px
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "0.22em"
+  label:
+    fontFamily: Saira
+    fontSize: 15px
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "0.06em"
   body:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: "clamp(1rem, 0.96rem + 0.19vw, 1.125rem)"
     fontWeight: 400
     lineHeight: 1.6
   sm:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
   xs:
-    fontFamily: Inter
+    fontFamily: Plus Jakarta Sans
     fontSize: 12px
     fontWeight: 400
     lineHeight: 1.5
@@ -240,7 +246,7 @@ Two tokens carry it, and every leaning element reads from them rather than resta
 | `--skew` | `-8deg`  | Section numerals, rule numerals, the hero eyebrow rule, the button wipe, the marquee band |
 | `--diag` | `168deg` | Gradient axis — the hero shader fallback, the map placeholder                             |
 
-`-8deg` rather than the mark's own 20°: at 20° an uppercase Orbitron numeral at 144px overhangs its own column by more than 40px and collides with the heading beside it at every width below 900px. The axis is the mark's _direction_, sampled and reduced until it survives 375px. **A second skew value anywhere in the system is a defect**, not a variation.
+`-8deg` rather than the mark's own 20°: at 20° an uppercase display numeral at 144px overhangs its own column by more than 40px and collides with the heading beside it at every width below 900px. The axis is the mark's _direction_, sampled and reduced until it survives 375px. **A second skew value anywhere in the system is a defect**, not a variation.
 
 **The fusion rule — every colour carries both its world role and its product meaning.** The two never conflict, because where they would, product meaning wins:
 
@@ -265,7 +271,7 @@ Outlined type carries a hard implementation rule, because its failure mode is no
 
 **3. Light world, navy punctuation.** The page ground is `blue-50` and the product's own surfaces are white. Navy arrives as **full-bleed bands** that punctuate that world — never as the world itself. Which sections may be navy, and why this does not break the client's anti-reference, is the whole of [The anti-reference, re-read](#the-anti-reference-re-read--what-changed-and-what-did-not).
 
-**4. Type scale — fluid, and much larger at the top.** A `clamp()` scale with no breakpoint jumps anywhere. The display size roughly doubled in the redesign: 48px at 375px growing to 152px at 1440px, at `0.95` leading and `-0.03em` tracking, uppercase. The `3rem` floor is a measurement, not a taste: `PILIH JAM.` at Orbitron 900 and 48px occupies about 324px, and the content box at 375px is 343px. **That is the binding number in the whole type system** — it is why the hero headline's longest word is five characters, and why a copy change there is a layout change.
+**4. Type scale — fluid, and much larger at the top.** A `clamp()` scale with no breakpoint jumps anywhere. The display size roughly doubled in the redesign: 48px at 375px growing to 152px at 1440px, at `0.95` leading and `-0.03em` tracking, uppercase. The `3rem` floor is a measurement, not a taste: `PILIH JAM.` at the display face, 900, and the 57.25px the clamp actually produces at 375px occupies **323px** against a 343px content box. (It read 324px "at 48px" until 2026-08-12 — 48px is the clamp floor, not its value at 375px, and the figure has now been re-measured in Saira with the font loaded.) **That is the binding number in the whole type system** — it is why the hero headline's longest word is five characters, and why a copy change there is a layout change.
 
 `sm` and `xs` remain **fixed** and do not scale, because shrinking a caption below 12px on a phone is an accessibility failure and growing it on desktop stops it reading as secondary. (This sentence said "below 14px" until 2026-08-12, which contradicted `xs` being 12px itself. The named [Fixed-Small Rule](#hierarchy) always said 12px; this copy and the one in `globals.css` were the stale pair.)
 
@@ -275,7 +281,7 @@ Outlined type carries a hard implementation rule, because its failure mode is no
 
 - **No second skew value, and nothing tilts that is not on the list.** The list is in the axis table above. A tilted card, a tilted photo, a tilted button is a different design.
 - **No section may be composed the same way as its neighbour.** The light/navy alternation gives the rhythm; the composition still has to give the variety. Five sections improvising five visual ideas is the failure this direction exists to prevent, but so is five sections that are one idea five times.
-- **No third typeface.** Orbitron and Inter only.
+- **No third typeface.** Saira and Plus Jakarta Sans only.
 - **Nothing else becomes fully round.** The date pill is the only `9999px` shape and its roundness is what signals "this row scrolls".
 - **No decorative colour.** Every hue outside the neutrals carries a meaning from the fusion table above.
 - **No glow.** Navy bands take no bloom, no neon rim, no saturated halo. That is the specific thing the client ruled out by name, and it is what a dark band tempts a designer into.
@@ -328,7 +334,7 @@ Read once from `docs/references/benchmark-bataskotapoint.png`, a full-page deskt
 - **The rules are three near-identical dark cards** with keywords highlighted inline in green, red and yellow. Dense, low-contrast, and unscannable — and Arena Player's Ketentuan is ten verbatim rules, which is more content in the same trap. The answer here is the [numbered rule row](#ketentuan-rule-row): ten full-width rows, each with its own leaning outlined numeral, on a navy band that makes reading the point of the section.
 - **The map is a dead grey rectangle** in the capture, i.e. an unloaded embed shipped as the final state. Location has to survive its own loading state here.
 
-The system's personality comes from a deliberate tension: Orbitron is a wide, geometric, athletic display face, and it sits on rounded geometry and generous white space, leaning eight degrees. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added.
+The system's personality comes from a deliberate tension: the display face is a wide, geometric, athletic display face, and it sits on rounded geometry and generous white space, leaning eight degrees. That combination is what keeps a booking utility from reading as a generic form, without a single decorative flourish being added.
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
@@ -350,17 +356,28 @@ The previous rule was **"don't put a kicker or eyebrow above a heading"**, state
 
 **The section numeral is not an eyebrow either**, and it never was: it is oversized, outlined, leaning, `aria-hidden`, and sits **beside** the heading on the baseline rather than above it. A small uppercase numeral stacked over a heading would be the banned pattern wearing a number.
 
-### Settled — Inter stays, and here is why
+### Reopened and replaced — both faces changed on 2026-08-12
 
-The design detector flagged it and the flag was correct: **Inter is one of a handful of faces that every AI-generated interface converges on**, so it contributes nothing to the personality this system credits to Orbitron. The display face carries the identity alone.
+This section used to be titled "Settled — Inter stays, and here is why", and it argued the case for keeping Orbitron and Inter. **That case lost, and the reasons are worth keeping rather than deleting**, because two of the three were good and one of them is what made the replacement safe.
 
-**Kept anyway, deliberately.** Three reasons, in order of weight:
+The user asked for **NV Dune Hero** as the display face. It was not used: 1001fonts states, verbatim, _"This demo font is free for PERSONAL USE"_ and _"ONLY FOR PERSONAL USE!!!"_. This is a paid client project, so shipping it would put the **client** in breach, not the studio. The brief behind the ask — wide, expanded, geometric, athletic — was honoured with a face that can be licensed.
 
-1. It is a **stated client commitment** — [PRODUCT.md](PRODUCT.md) records "Orbitron for display type, Inter for body" as given, not chosen.
-2. **"Invisible" is the right brief for body type here.** The reader is a team captain deciding fast for eight to twelve people on a 375px Android. Body type that draws attention to itself is working against the outcome.
-3. **Every printed number in this system was computed against Inter's metrics** — the 60–68ch measure, the 14px and 12px fixed sizes, the state-label ratios. Swapping the face invalidates all of them at once, and this document's credibility rests on those numbers being checkable.
+**The substitute was chosen by measurement, not by resemblance.** The binding number is the one this document already names: `PILIH JAM.` has to fit the 343px content box at 375px. Probed in a browser with all three faces loaded, at the size the clamp actually produces:
 
-**The redesign concept dropped Inter for a system stack, and that is a prototyping artefact, not a direction.** Its `--font-body` is `ui-sans-serif, system-ui, …` because only Orbitron was embedded in the single-file prototype. Inter ships. The identity is carried by Orbitron, by the axis, by the outline, and by the light-with-navy world — **not** by body type.
+| Face                                 | `PILIH JAM.` @57.25px    | `KETENTUAN` @28.75px |
+| ------------------------------------ | ------------------------ | -------------------- |
+| **the box / the 320px column**       | **343**                  | **174.1**            |
+| Archivo Expanded (`wdth` 125)        | **384.6 — over by 42px** | 234.1                |
+| **Saira ExtraExpanded (`wdth` 125)** | **323.0**                | **194.0**            |
+| Orbitron (the incumbent)             | 323.4                    | 203.7                |
+
+Archivo breaks the binding number outright. Saira lands **within 0.4px** of the face it replaces on it, and is **9.7px narrower** on `KETENTUAN`. Body: `Menunggu Konfirmasi` measures **143.3px** in Plus Jakarta Sans at 14px against Inter's 145.5px.
+
+**The old third reason was the real one, and it was paid rather than dismissed.** "Every printed number was computed against Inter's metrics" was correct, and every one of them was re-measured on the swap rather than scaled: the headline width, the numeral track multiplier, the Sub-360 Floor's premise, the state-label width, and the slot-time pair. The numbers in this document are measurements again, not inheritances.
+
+**Two things the swap fixed that were not the point of it.** Orbitron shipped no `tnum` feature, so `tabular-nums` on the slot times was a measured no-op and the fix was reverted — nine times whose width depended on their digits (127px vs 120px). Saira ships it; all nine now measure 124.7px. And Orbitron was loaded at 500/700/900 while the system asks for 600 and 800, so those two weights were being synthesised by the browser; both faces are now variable and ship their full ranges.
+
+**Plus Jakarta Sans is not a neutral pick.** It was drawn for Indonesian city branding, and its apertures are more open than Inter's — which is the right property for a team captain reading Indonesian at speed on a mid-range Android. "Invisible" is still the brief for body type; this is a face that is invisible in the right language.
 
 ### Client directive — minimal form, rich behaviour
 
@@ -444,7 +461,7 @@ The client asked for four things: creative button micro-interactions ("misal scr
 
 Consequences, all of them deliberate:
 
-- The **LCP element is the Orbitron headline plus the logo** — text, which is the cheapest and most reliable LCP there is. The field behind it is `aria-hidden`, non-blocking, and **must never become the LCP element**.
+- The **LCP element is the display headline plus the logo** — text, which is the cheapest and most reliable LCP there is. The field behind it is `aria-hidden`, non-blocking, and **must never become the LCP element**.
 - The **"no autoplaying video" guardrail in [CLAUDE.md](../CLAUDE.md) stays as written, unamended.**
 - `/remotion-create` is reserved for **off-site** assets — an Instagram Reel, a social preview — which cost the landing page nothing.
 
@@ -457,7 +474,7 @@ Consequences, all of them deliberate:
 - **Light world, navy punctuation** — a light `blue-50`/white ground with bounded full-bleed navy bands, never a dark world and never a glow
 - **Everything leans on one axis**, `-8deg`, sampled from the client's mark and reduced until it survives 375px
 - **Outline is the second weight** — stroked type instead of a second face, a second colour, or a highlight box
-- Oversized uppercase Orbitron display against Inter body; no third face
+- Oversized uppercase Saira display against Plus Jakarta Sans body; no third face
 - Rounded throughout — 12px controls, 22px panels; exactly one **fully** round shape, and it means something
 - Status is a colour _triple_, never a single hue
 - Navy-tinted shadows only; black shadows read as dirt on a blue-white page
@@ -548,27 +565,31 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 
 ## Typography
 
-**Display Font:** Orbitron (fallback `system-ui, sans-serif`)
-**Body Font:** Inter (fallback `system-ui, sans-serif`)
+**Display Font:** Saira at the expanded width, `wdth` 125 (fallback `system-ui, sans-serif`)
+**Body Font:** Plus Jakarta Sans (fallback `system-ui, sans-serif`)
 
-**Character:** Orbitron is wide, geometric, and athletic — it does the entire job of making a booking utility feel like sport. Inter carries everything that has to be read rather than seen. There is no third face, and adding one would dilute the only strong voice in the system.
+**Character:** Saira at `wdth` 125 is wide, geometric, and athletic — it does the entire job of making a booking utility feel like sport, and the width axis is the whole reason it is here rather than the default cut. Plus Jakarta Sans carries everything that has to be read rather than seen, and it was drawn for Indonesian. There is no third face, and adding one would dilute the only strong voice in the system.
+
+**The width is not optional.** `--font-display` names a family; the expanded look lives on a separate `font-stretch` property, so a display usage that sets the family and forgets the width silently renders an ordinary grotesque. The `.type-display` utility pairs them, and it is the only correct way to reach the display face.
 
 ### Hierarchy
 
-- **Display** (Orbitron 900, 48→152px fluid, 0.95, `-0.03em`, **uppercase**): the hero headline only. The single largest gesture on the page.
-- **Numeral** (Orbitron 900, 56→144px fluid, 0.8, skewed `-8deg`, **outlined**): the section ordinal. `aria-hidden` — it is a compositional device, not content.
-- **H2** (Orbitron 800, 28→56px fluid, 1.05, `-0.01em`, **uppercase**): section headings. One word per heading may take the accent colour; the rest is the surface's foreground.
-- **H3** (Orbitron 500, 20→32px fluid, 1.25): sub-headings. **No longer the slot time** — see the slot cell.
-- **Eyebrow** (Orbitron 600, 12px fixed, 1, `0.22em`, uppercase): the hero eyebrow, and nothing else. See [The One-Eyebrow Rule](#where-the-eyebrow-lives--the-ban-narrowed-it-did-not-go).
-- **Body** (Inter 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
-- **Sm** (Inter 400, 14px fixed, 1.5): state labels, helper text, field labels.
-- **Xs** (Inter 400, 12px fixed, 1.5): captions and metadata.
+- **Display** (Saira 900, 48→152px fluid, 0.95, `-0.03em`, **uppercase**): the hero headline only. The single largest gesture on the page.
+- **Numeral** (Saira 900, 56→144px fluid, 0.8, skewed `-8deg`, **outlined**): the section ordinal. `aria-hidden` — it is a compositional device, not content.
+- **H2** (Saira 800, 28→56px fluid, 1.05, `-0.01em`, **uppercase**): section headings. One word per heading may take the accent colour; the rest is the surface's foreground.
+- **H3** (Saira 500, 20→32px fluid, 1.25): sub-headings. **No longer the slot time** — see the slot cell.
+- **Eyebrow** (Saira 600, 12px fixed, 1, `0.22em`, uppercase): the hero eyebrow, and nothing else. See [The One-Eyebrow Rule](#where-the-eyebrow-lives--the-ban-narrowed-it-did-not-go).
+- **Body** (Plus Jakarta Sans 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
+- **Sm** (Plus Jakarta Sans 400, 14px fixed, 1.5): state labels, helper text, field labels.
+- **Xs** (Plus Jakarta Sans 400, 12px fixed, 1.5): captions and metadata.
 
 **The Fluid-Not-Stepped Rule.** There are no breakpoint jumps anywhere in the type system — restrained where space is scarce, oversized where there is room for it. One exception exists, below, and it is 39 pixels wide.
 
 **The Sub-360 Floor.** Below `360px`, and only there, `h2` is pinned to **24px**. Everything at 360px and above is the clamp above, untouched.
 
-The reason is geometry, not taste. At 320px the section content box is 288px; the [numeral track](#the-numbered-step-rule) takes 97.9px and the gutter 16px, leaving the heading column **174px**. Two headings do not fit that at 28px — "KETENTUAN" measures 198px and "PESAN LAPANGAN" 182px — and "KETENTUAN" is a single word, so wrapping cannot absorb it. The page scrolled sideways by 8px.
+The reason is geometry, not taste. At 320px the section content box is 288px; the [numeral track](#the-numbered-step-rule) takes 97.9px and the gutter 16px, leaving the heading column **174.1px**. "KETENTUAN" is a single unbreakable word, so wrapping cannot absorb it, and it does not fit that column at the clamp's own value there. The page scrolled sideways by 8px.
+
+**Re-tested after the 2026-08-12 typeface change, and still needed.** Saira is narrower than the Orbitron this rule was written against — "KETENTUAN" went from 203.7px to **194px** at 28.75px — so the honest question was whether the rule had stopped having a reason. It has not: at 320px the clamp's middle term computes 26.88px, where "KETENTUAN" measures **181.7px** against the 174.1px column, still over by 7.6px. At the 24px floor it measures **162px** and fits. The numbers moved; the conclusion did not.
 
 **A lower `clamp()` floor cannot deliver this**, which is worth writing down because it is the obvious fix and it fails silently. At 320px the clamp's _middle_ term is what governs: drop the floor to 1.5rem and `1rem + 3.4vw` still computes 26.88px there. Steepening the middle term to reach 24px at 320px drags every width from 375px to 738px off the approved scale. The floor is the only part of the curve that moves without moving 375px, and a floor only binds where the viewport is narrow enough to reach it — hence a media query rather than a second scale. The frontmatter keeps the one canonical clamp.
 
@@ -576,7 +597,7 @@ This is a floor under a device class the scale was never measured against, not a
 
 **The Fixed-Small Rule.** `sm`, `xs` and `eyebrow` deliberately do not scale. Shrinking a caption below 12px on mobile is an accessibility failure, and growing it on desktop makes it stop reading as secondary. The eyebrow is fixed for a further reason: at `0.22em` tracking a fluid size would change the eyebrow's own line length at every viewport, and it has to hold on one line at 375px.
 
-**The Tight-Display Rule.** Orbitron takes tighter leading than Inter or it reads as loose: 0.95 for display, 1.05 for section headings, 1.25 for sub-headings, 1.6 for body. Never apply body leading to Orbitron. The display value went _below_ 1 in the redesign because at 152px an uppercase Orbitron line has no descenders to clear and 1.1 leaves a visible gutter between the three headline lines that reads as three separate headings.
+**The Tight-Display Rule.** Saira takes tighter leading than Plus Jakarta Sans or it reads as loose: 0.95 for display, 1.05 for section headings, 1.25 for sub-headings, 1.6 for body. Never apply body leading to the display face. The display value went _below_ 1 in the redesign because at 152px an uppercase Orbitron line has no descenders to clear and 1.1 leaves a visible gutter between the three headline lines that reads as three separate headings.
 
 **The Uppercase-Is-Display-Only Rule.** `display`, `numeral`, `h2` and `eyebrow` are uppercase. Body, `sm` and `xs` never are. Uppercase Indonesian body text is measurably slower to read and the Ketentuan is the longest reading on the page.
 
@@ -678,7 +699,7 @@ Full `100svh`, with the generative field behind and the marquee band across the 
 
 ### Marquee
 
-Full-width `navy-900` band skewed `-1.2deg` and pulled up over the hero's lower edge, `blue-50` text in Orbitron 700 at `0.18em` tracking, with `blue-600` `///` separators. `aria-hidden`, translated on the X axis only, halted off-screen and under reduced motion.
+Full-width `navy-900` band skewed `-1.2deg` and pulled up over the hero's lower edge, `blue-50` text in the display face at 700 and `0.18em` tracking, with `blue-600` `///` separators. `aria-hidden`, translated on the X axis only, halted off-screen and under reduced motion.
 
 **The `-1.2deg` is not a second axis value.** It is the same lean read at band scale: a full-width band skewed `-8deg` would drop its corner more than 100px below the fold at 1280px. The band's _edge_ leans; the _content on it_ does not, so the type stays horizontal and legible.
 
@@ -715,18 +736,18 @@ Two columns above 980px — copy and legend left, the panel right, at `0.9fr 1.1
 
 **One column on a phone. Two from 640px. Three from 1180px.** The single-column rule was never about taste, and the grid does not overturn it — it applies it where the measurement actually binds.
 
-"Menunggu Konfirmasi" is 20 characters and needs **145.5px**.
+"Menunggu Konfirmasi" is 20 characters and needs **143.3px**.
 
-> **This figure has now moved twice in one day, which is the argument for measuring it rather than quoting it.** It read 146px while the state label was the pre-redesign 14px, but that number was estimated with Orbitron not yet loaded. The redesign briefly set the label to a hard-coded 13px and the measured width was 133px. The label is now back on the `sm` step at 14px — a real token rather than a literal — and the measured width is **145.5px** (Inter 14px, font loaded, `getBoundingClientRect` on the live string). Every breakpoint justification below still holds: the tightest column in the system leaves 222px of content width at a 320px viewport. Re-measure rather than reuse if the label size moves again.
+> **This figure has moved four times, which is the whole argument for measuring it rather than quoting it.** 146px was an estimate taken before the fonts had loaded. 133px was measured while the label sat at a hard-coded 13px. 145.5px was measured once it went back onto the `sm` step at 14px in Inter. **143.3px** is the current value, measured in Plus Jakarta Sans at 14px with the font loaded, `getBoundingClientRect` on the live string. Each move made it smaller, so every breakpoint justification below has held throughout: the tightest column in the system leaves 222px of content width at a 320px viewport. Re-measure rather than reuse if either the label size or the body face moves again.
 > A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit at all; 2-column forces truncation. So **below 640px the grid stays one full-width column.**
 
-**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 145.5px.
+**The breakpoints moved down from 768px because the grid no longer measures the viewport.** It measures the panel, which is `1.1fr` of a 1280px two-column layout above 980px and full width below it. At a 640px viewport the panel is the content width, roughly 570px, so two columns give about 280px each and the 20-character label fits with room to spare. Three columns wait until 1180px, where the panel is wide enough that each cell still clears 143.3px.
 
 The state label sits **under** the time inside every cell at every width — the redesign made the stacked layout universal rather than a desktop variant, because it is what keeps all 20 characters at any column count and it puts the Orbitron time on its own line where it reads as the thing being chosen.
 
 - **Layout:** time above, state below, 14px/16px padding, 64px minimum height, `rounded.control`, 1.5px border.
-- **Time:** Orbitron 700 at 16px, `0.02em`. It is no longer the `h3` role — an `h3` inside a grid of nine is nine sub-headings, and the time is a label on a control.
-- **State:** the `sm` role — Inter 400 at 14px. A token, not a literal. It was a hard-coded 13px between the redesign and 2026-08-12, which is a step this ramp does not have; and the `xs` step below it is already spoken for by the free-run badge that sits directly under this label, so putting the state there would make the cell's primary content the same size as its secondary affordance and leave colour as the only separator. `sm` is the role the [Hierarchy](#hierarchy) assigns to state labels.
+- **Time:** the display face at 700, 16px, `0.02em`, **tabular numerals**. It is no longer the `h3` role — an `h3` inside a grid of nine is nine sub-headings, and the time is a label on a control.
+- **State:** the `sm` role — Plus Jakarta Sans 400 at 14px. A token, not a literal. It was a hard-coded 13px between the redesign and 2026-08-12, which is a step this ramp does not have; and the `xs` step below it is already spoken for by the free-run badge that sits directly under this label, so putting the state there would make the cell's primary content the same size as its secondary affordance and leave colour as the only separator. `sm` is the role the [Hierarchy](#hierarchy) assigns to state labels.
 - **Available:** white fill, 1.5px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
 - **Hover:** fills `blue-50` **and takes `glow-interactive`**. Available cells only, and pointer-fine only.
 - **Selected:** `blue-600` fill and border, white text, state label **full white**, label "Dipilih".
@@ -778,7 +799,7 @@ The row scrolls horizontally with its scrollbar hidden and `overscroll-behavior-
 
 Ten full-width rows on the navy band, divided by 1px `navy-700` hairlines above and below each, in an `84px 1fr` grid.
 
-- **Numeral:** `01`–`10`, Orbitron 900 at 24px, outlined at 1px in `blue-400`, skewed on the axis. 24px is the floor the outline rule sets, and this is the one place the system sits exactly on it.
+- **Numeral:** `01`–`10`, the display face at 900 and 24px, outlined at 1px in `blue-400`, skewed on the axis. 24px is the floor the outline rule sets, and this is the one place the system sits exactly on it.
 - **Text:** `blue-50`, `body`, capped at 72ch. **Verbatim from [PRD.md](PRD.md) — never reworded, never tidied, never re-capitalised.** `check:docs` compares it character for character.
 - **Hover:** the row tints toward `navy-700` and slides 14px along the axis over 250ms. Pointer-fine only; a touch device gets no hover state.
 
@@ -801,7 +822,7 @@ This is the only centred composition on the page, which is what makes it read as
 ### Buttons
 
 - **Shape:** `rounded.control`, 56px tall, comfortably above the 44px tap minimum.
-- **Primary:** `navy-900` fill, white text, 34px horizontal padding, uppercase Orbitron 800 at 15px with `0.06em`.
+- **Primary:** `navy-900` fill, white text, 34px horizontal padding, the `label` role — uppercase display face, 800, 15px, `0.06em`. It is a token now: the ramp gained `label` on 2026-08-12 because this size is used at four call sites and the Hierarchy had no step for it, which the design detector was right to keep reporting.
 - **Primary hover:** a `blue-600` wipe travels in **along the axis** — `translateX(-101%) skewX(var(--skew))` to `translateX(0)` over 350ms — and the button lifts 3px.
 
   > **This line said `skewX(-12deg)` until 2026-08-12 and contradicted the axis rule four hundred lines above it**, which states there is exactly one skew value in the system and that a second is a defect rather than a variation. `-12deg` was a transcription from the prototype, not a decision. The token is the value; nothing may hard-code an angle beside it. The arrow glyph advances 5px. The wipe is a pseudo-element under the label, so the text never moves relative to its own box.
@@ -857,7 +878,7 @@ The direction was replaced wholesale. This section exists so a later session can
 | Slot columns at 768px / 1024px                                | 640px / 1180px, measured against the panel rather than the viewport     |
 | Focus ring 2px at 2px offset                                  | 3px at 3px offset                                                       |
 
-**Survived unchanged, because it is behaviour and constraint rather than look:** the four slot states including `elapsed` and its collapsed group; the `aria-pressed` / `aria-disabled` patterns and the never-native-disabled rule; the status triples and every contrast floor; the free-run affordance; the two-scroll rule; the no-price rule; the verbatim Ketentuan; the performance budget; the motion-through-`src/lib/motion.ts` rule; the hero-video gate's failure; Orbitron and Inter; and every colour primitive that already existed.
+**Survived unchanged, because it is behaviour and constraint rather than look:** the four slot states including `elapsed` and its collapsed group; the `aria-pressed` / `aria-disabled` patterns and the never-native-disabled rule; the status triples and every contrast floor; the free-run affordance; the two-scroll rule; the no-price rule; the verbatim Ketentuan; the performance budget; the motion-through-`src/lib/motion.ts` rule; the hero-video gate's failure; and every colour primitive that already existed.
 
 **Where the concept contradicted product truth, and what ships instead:**
 

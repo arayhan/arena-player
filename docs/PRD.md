@@ -167,7 +167,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 - **react-hook-form** for `/booking` — the form has a file upload, per-field errors, `aria-describedby` wiring, and focus-on-submit, all of which are fiddly to hand-roll correctly
 - **zustand** for client state. Note the scope: server state is TanStack Query's, the two selections could be `useState`, and cross-page state travels via `/booking?date=…&time=…` query params. Keep the store small — if it starts duplicating server data or URL state, that is the signal it has outgrown its purpose
 - **Settled in Phase 1a task 1**: date handling is `date-fns` v4 + `@date-fns/tz`, icons are `react-icons`. Both are costed in the budget table in [architecture.md](architecture.md), and `react-icons` is provisional on step 02 measuring that its barrel actually tree-shakes — the fallback is written down there
-- Fonts: Orbitron (next/font/google) for display/headings, a clean sans (e.g. Inter) for body
+- Fonts: Saira at `wdth` 125 (next/font/google) for display/headings, Plus Jakarta Sans for body — changed 2026-08-12, see DESIGN.md
 - No auth at all in this repo (the admin app, which is where auth belongs, lives in a separate repo)
 
 Full architecture, database, and design-system detail lives in [architecture.md](architecture.md), [database.md](database.md), and [DESIGN.md](DESIGN.md) — this PRD is the product spec, those are the implementation contracts.
@@ -299,7 +299,7 @@ Animation level: HEAVY, but mobile-performant:
 - Parallax layers in hero and section backgrounds
 - Marquee strip (e.g. "ARENA PLAYER — MINI SOCCER — BOOK NOW —" repeating) between sections — stays CSS `@keyframes`, GSAP does not replace it
 - Micro-interactions: magnetic/hover states on CTAs, slot cells animating on state change, smooth scroll
-- Orbitron for display type, oversized typographic moments, whitespace as a design element
+- Saira at the expanded width for display type, oversized typographic moments, whitespace as a design element
 
 Hard performance guardrails:
 

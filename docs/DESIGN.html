@@ -46,7 +46,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@125,100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
 
 <style>
 /* ============================================================
@@ -122,6 +122,7 @@
   --text-h3:clamp(1.25rem, 0.99rem + 1.13vw, 2rem);  /* 20 → 32px  */
   --text-body:clamp(1rem, 0.96rem + 0.19vw, 1.125rem);
   --text-eyebrow:12px;
+  --text-label:15px;   /* NEW - the button label role. Four call sites share it */
   --text-sm:14px;
   --text-xs:12px;
 
@@ -129,8 +130,8 @@
      to set its own chrome in Archivo so specimens read as "the product's
      faces". The redesign made the page the prototype, so a third face on it is
      the third face the system forbids. It is gone. */
-  --font-display:'Orbitron',system-ui,sans-serif;
-  --font-body:'Inter',system-ui,sans-serif;
+  --font-display:'Saira',system-ui,sans-serif;
+  --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
 
   --space-1:4px;   --space-2:8px;   --space-3:12px;  --space-4:16px;
   --space-6:24px;  --space-8:32px;  --space-12:48px; --space-16:64px;
@@ -275,14 +276,14 @@ body{
 }
 img{max-width:100%;height:auto}
 
-/* THE TIGHT-DISPLAY RULE. Orbitron takes tighter leading than Inter or it
+/* THE TIGHT-DISPLAY RULE. Saira takes tighter leading than Plus Jakarta Sans or it
    reads as loose. 0.95 went below 1 because at 152px an uppercase line has no
    descenders to clear and 1.1 opens a gutter that reads as separate headings. */
-h1{font-family:var(--font-display);font-weight:900;font-size:var(--text-display);
+h1{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:var(--text-display);
   line-height:.95;letter-spacing:-.03em;text-transform:uppercase;margin:0}
-h2{font-family:var(--font-display);font-weight:800;font-size:var(--text-h2);
+h2{font-family:var(--font-display);font-stretch:125%;font-weight:800;font-size:var(--text-h2);
   line-height:1.05;letter-spacing:-.01em;text-transform:uppercase;margin:0}
-h3{font-family:var(--font-display);font-weight:500;font-size:var(--text-h3);
+h3{font-family:var(--font-display);font-stretch:125%;font-weight:500;font-size:var(--text-h3);
   line-height:1.25;margin:0}
 
 /* THE SUB-360 FLOOR. The one breakpoint jump in the whole type system, and it
@@ -329,7 +330,7 @@ a{color:var(--color-interactive)}
    stroke is deliberately below text contrast because the numeral is
    aria-hidden decoration; a numeral that competes with its own heading has
    inverted the hierarchy. The heading beside it carries the meaning. */
-.sec__n{font-family:var(--font-display);font-weight:900;font-size:var(--text-numeral);
+.sec__n{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:var(--text-numeral);
   line-height:.8;flex:none;transform:skewX(var(--skew));
   --ol-c:var(--numeral-stroke);--ol-w:1.5px}
 .band .sec__n{--ol-c:var(--numeral-stroke-on-band)}
@@ -378,7 +379,7 @@ a{color:var(--color-interactive)}
 @media(min-width:900px){.cols-3{grid-template-columns:repeat(3,1fr)}}
 .spec-label{color:var(--color-fg-muted);font-family:ui-monospace,monospace;
   font-size:var(--text-xs);margin:var(--space-1) 0 0}
-.sub-h{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;
+.sub-h{font-family:var(--font-display);font-stretch:125%;font-size:var(--text-sm);font-weight:700;
   text-transform:uppercase;letter-spacing:.06em}
 
 /* THE ONE-EYEBROW RULE. Exactly one eyebrow on the page, above the h1, never
@@ -387,7 +388,7 @@ a{color:var(--color-interactive)}
    12px because at .22em tracking a fluid size changes its own line length at
    every viewport, and it has to hold on one line at 375px. */
 .eyebrow{display:inline-flex;align-items:center;gap:var(--space-3);
-  font-family:var(--font-display);font-weight:600;font-size:var(--text-eyebrow);
+  font-family:var(--font-display);font-stretch:125%;font-weight:600;font-size:var(--text-eyebrow);
   line-height:1;letter-spacing:.22em;text-transform:uppercase;
   color:var(--color-interactive);margin:0 0 var(--space-6)}
 .eyebrow::before{content:"";width:34px;height:2px;background:currentColor;
@@ -398,7 +399,7 @@ table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
 .table-scroll{overflow-x:auto;overscroll-behavior-x:contain}
 th,td{text-align:left;padding:var(--space-2) var(--space-3);
   border-bottom:1px solid var(--color-border);vertical-align:top}
-th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
+th{font-family:var(--font-display);font-stretch:125%;font-weight:700;color:var(--color-fg-muted);
   font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em}
 
 /* --- progress bar ----------------------------------------------- */
@@ -429,7 +430,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 .part__chip{height:52px}
 .part__meta{padding:var(--space-2) var(--space-3);font-size:var(--text-xs);
   line-height:1.45;border-top:1px solid var(--plate-border)}
-.part__name{font-family:var(--font-display);font-weight:700;display:block;
+.part__name{font-family:var(--font-display);font-stretch:125%;font-weight:700;display:block;
   font-size:var(--text-xs);letter-spacing:.02em}
 .part__val{color:var(--color-fg-muted);font-family:ui-monospace,monospace;
   overflow-wrap:anywhere}
@@ -439,7 +440,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
   flex-wrap:wrap;gap:var(--space-2) var(--space-4);font-size:var(--text-sm)}
 .toc a{text-decoration:none;border-bottom:2px solid transparent}
 .toc a:hover{border-bottom-color:var(--color-interactive)}
-.toc b{font-family:var(--font-display);font-variant-numeric:tabular-nums;
+.toc b{font-family:var(--font-display);font-stretch:125%;font-variant-numeric:tabular-nums;
   color:var(--color-fg-muted);font-weight:700;margin-right:var(--space-1)}
 
 /* --- the numbered rule row (the Ketentuan treatment) -------------- */
@@ -453,7 +454,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 @media(hover:hover) and (pointer:fine){
   .rule:hover{background:rgb(37 99 235 / .08);transform:translateX(14px)}
 }
-.rule__n{font-family:var(--font-display);font-weight:900;font-size:24px;
+.rule__n{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:24px;
   line-height:1;transform:skewX(var(--skew));
   --ol-c:var(--rule-numeral);--ol-w:1px}
 .rule__t{margin:0;color:var(--band-fg);max-width:72ch;font-size:var(--text-body)}
@@ -463,7 +464,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 .axis-demo{display:flex;flex-wrap:wrap;gap:var(--space-8);align-items:flex-end}
 .axis-rule{width:120px;height:4px;background:var(--color-interactive);
   transform:skewX(var(--skew))}
-.axis-word{font-family:var(--font-display);font-weight:900;font-size:48px;
+.axis-word{font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:48px;
   line-height:1;text-transform:uppercase}
 .axis-word--lean{transform:skewX(var(--skew));display:inline-block}
 .diag{height:120px;border-radius:var(--radius-panel);border:1px solid var(--color-border);
@@ -476,7 +477,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 .marquee{background:var(--color-band);color:var(--band-fg);overflow:hidden;
   padding:var(--space-4) 0;transform:skewY(-1.2deg);margin:var(--space-8) 0}
 .marquee__track{display:flex;gap:var(--space-12);white-space:nowrap;
-  font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);
+  font-family:var(--font-display);font-stretch:125%;font-weight:700;font-size:var(--text-sm);
   letter-spacing:.18em;text-transform:uppercase;padding:0 var(--space-4);
   overflow:hidden}
 .marquee__track em{font-style:normal;color:var(--accent-word-on-band)}
@@ -492,7 +493,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 @media(min-width:1180px){.slot-grid{grid-template-columns:repeat(3,1fr)}}
 /* TIME ABOVE, STATE BELOW, AT EVERY WIDTH. The stacked layout became universal
    in the redesign: it is what keeps all 20 characters of "Menunggu Konfirmasi"
-   at any column count, and it puts the Orbitron time on its own line where it
+   at any column count, and it puts the display-face time on its own line where it
    reads as the thing being chosen. */
 .slot{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);
   width:100%;min-height:var(--slot-min-height);padding:14px 16px;
@@ -503,12 +504,16 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
     border-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-fast) var(--ease-out)}
-/* NO tabular-nums HERE, AND THAT IS MEASURED, NOT AN OVERSIGHT. Orbitron does
-   not ship a tnum feature, so the property silently does nothing on this face.
-   Leaving a no-op in place with a comment claiming it solved a width variance
-   would be worse than the variance. Revisit if the display face ever changes. */
-.slot__time{font-family:var(--font-display);font-weight:700;font-size:16px;
-  letter-spacing:.02em;white-space:nowrap;color:inherit}
+/* TABULAR NUMS, AND THIS IS THE MEASUREMENT CHANGING ITS OWN ANSWER. Nine slot
+   times share one grid, so their width must not depend on which digits they
+   contain — under Orbitron "18.00 - 20.00" came to 127px and "10.00 - 12.00" to
+   120px. tabular-nums was tried then and measured as a NO-OP, because Orbitron
+   ships no tnum feature, and the fix was reverted rather than left in place with
+   a comment claiming it worked. Saira ships it: at 100px "111" and "888" measure
+   136.2px and 236.4px proportionally, and both 214.8px with the feature on. All
+   nine times now measure 124.7px. */
+.slot__time{font-family:var(--font-display);font-stretch:125%;font-weight:700;font-size:16px;
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;white-space:nowrap;color:inherit}
 .slot__state{font-size:var(--text-sm);color:var(--slot-state-fg)}
 /* The free-run affordance. A quiet third line, never a coloured chip: the state
    label is what the cell exists to carry. Shown on the FIRST slot of the day's
@@ -566,7 +571,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
   transition:background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out)}
 .pill__day{display:block;font-size:var(--text-xs);color:var(--color-fg-muted)}
-.pill__date{display:block;font-family:var(--font-display);font-weight:700;
+.pill__date{display:block;font-family:var(--font-display);font-stretch:125%;font-weight:700;
   font-size:var(--text-sm)}
 .pill:hover:not([aria-disabled=true]):not([aria-pressed=true]){
   background:var(--pill-hover-bg);border-color:var(--color-interactive);
@@ -582,7 +587,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 /* --- buttons --------------------------------------------------------- */
 .btn{position:relative;display:inline-flex;align-items:center;gap:var(--space-3);
   min-height:var(--button-height);padding:0 34px;border-radius:var(--radius-control);
-  font-family:var(--font-display);font-weight:800;font-size:15px;letter-spacing:.06em;
+  font-family:var(--font-display);font-stretch:125%;font-weight:800;font-size:var(--text-label);letter-spacing:.06em;
   text-transform:uppercase;cursor:pointer;border:none;overflow:hidden;
   transition:transform 250ms var(--ease-out),background var(--dur-fast) var(--ease-out)}
 .btn>span{position:relative}
@@ -703,7 +708,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
    to trust across font fallbacks, so the third column waits until 1300px. */
 @media(min-width:1300px){.frames{grid-template-columns:repeat(3,375px);
   gap:var(--space-6);justify-content:space-between}}
-.frame__cap{font-family:var(--font-display);font-size:var(--text-xs);
+.frame__cap{font-family:var(--font-display);font-stretch:125%;font-size:var(--text-xs);
   font-weight:700;color:var(--color-fg-muted);margin:0 0 var(--space-2);
   text-transform:uppercase;letter-spacing:.08em}
 /* PADDING IS space-3, NOT space-4, AND THE 8px MATTERS. At a 375px viewport the
@@ -748,9 +753,9 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
    `[hidden]`. */
 .handoff[hidden]{display:none}
 .handoff__label{font-size:var(--text-sm);color:var(--handoff-meta-fg)}
-.handoff__label b{display:block;color:var(--handoff-fg);font-family:var(--font-display);
+.handoff__label b{display:block;color:var(--handoff-fg);font-family:var(--font-display);font-stretch:125%;
   font-size:16px;font-weight:700;margin-top:2px}
-.handoff__go{flex:none;font-family:var(--font-display);font-weight:700;font-size:13px;
+.handoff__go{flex:none;font-family:var(--font-display);font-stretch:125%;font-weight:700;font-size:var(--text-label);
   letter-spacing:.06em;text-transform:uppercase;text-decoration:none;
   color:var(--handoff-bg);background:var(--handoff-fg);padding:13px 18px;
   border-radius:var(--radius-control);white-space:nowrap}
@@ -762,7 +767,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
 .wa__meta{font-size:var(--text-xs);color:var(--color-fg-muted);margin:var(--space-2) 0 0}
 .summary{border:1px solid var(--color-border);border-radius:var(--radius-control);
   padding:var(--space-3);margin-bottom:var(--space-3);font-size:var(--text-sm)}
-.result__mark{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-1)}
+.result__mark{font-family:var(--font-display);font-stretch:125%;font-weight:700;margin:0 0 var(--space-1)}
 .result__mark--ok{color:var(--result-ok-fg)}
 .result__mark--error{color:var(--result-error-fg)}
 .note--error{color:var(--result-error-fg)}
@@ -781,7 +786,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
    against a 343px content box and breaks the Horizontal-Containment Rule. The
    redesign concept's own closing clamp is one step down and fits: 46px at
    375px, where the same word measures 306px. The concept's value ships. */
-.closing__h{font-family:var(--font-display);font-weight:900;
+.closing__h{font-family:var(--font-display);font-stretch:125%;font-weight:900;
   font-size:clamp(2.5rem, 1rem + 8vw, 7rem);line-height:.95;letter-spacing:-.03em;
   text-transform:uppercase;margin:0 0 var(--space-12);color:var(--band-fg)}
 .closing__h .ol{--ol-c:var(--band-fg);--ol-w:2px}
@@ -1157,7 +1162,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         </table>
       </div>
       <p class="note stack-6">
-        <strong>-8deg rather than the mark's own 20°.</strong> At 20° an uppercase Orbitron
+        <strong>-8deg rather than the mark's own 20°.</strong> At 20° an uppercase display-face
         numeral at 144px overhangs its own column by more than 40px and collides with the
         heading beside it at every width below 900px. The axis is the mark's <em>direction</em>,
         sampled and reduced until it survives 375px. It is also the cheapest identity available:
@@ -1187,7 +1192,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         in exactly four places. <strong>Nothing outlined is ever smaller than 24px</strong> —
         below that the stroke eats the counters and the glyph stops being a letter.
       </p>
-      <p class="stack-4" style="font-family:var(--font-display);font-weight:900;font-size:48px;line-height:1.05;text-transform:uppercase;margin:0">
+      <p class="stack-4" style="font-family:var(--font-display);font-stretch:125%;font-weight:900;font-size:48px;line-height:1.05;text-transform:uppercase;margin:0">
         Pilih Jam.<br><span class="ol" style="--ol-w:2px">Kirim.</span><br>Main.
       </p>
       <p class="spec-label">the hero headline · 48px here · 152px at 1440 · `KIRIM.` outlined 2px blue-600</p>
@@ -1250,18 +1255,18 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
       </div>
     </div>
     <div class="plate rv">
-      <div style="font-family:var(--font-display);font-size:var(--text-display);line-height:.95;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;overflow-wrap:anywhere" lang="id">Kirim.</div>
-      <p class="spec-label">--text-display · Orbitron 900 · 48→152px · 0.95 · -0.03em · uppercase</p>
-      <div class="ol stack-8" aria-hidden="true" style="--ol-w:1.5px;--ol-c:var(--color-border);font-family:var(--font-display);font-size:var(--text-numeral);line-height:.8;font-weight:900;transform:skewX(var(--skew));display:inline-block">07</div>
-      <p class="spec-label">--text-numeral · Orbitron 900 · 56→144px · 0.8 · skewed · outlined · aria-hidden</p>
-      <div class="stack-8" style="font-family:var(--font-display);font-size:var(--text-h2);font-weight:800;line-height:1.05;letter-spacing:-.01em;text-transform:uppercase" lang="id">Ketentuan <em style="font-style:normal;color:var(--color-interactive)">Arena</em></div>
-      <p class="spec-label">--text-h2 · Orbitron 800 · 28→56px · 1.05 · one word may take the accent</p>
-      <div class="stack-8" style="font-family:var(--font-display);font-size:var(--text-h3);font-weight:500;line-height:1.25" lang="id">Lokasi &amp; Kontak</div>
-      <p class="spec-label">--text-h3 · Orbitron 500 · 20→32px · 1.25 · no longer the slot time</p>
-      <p class="stack-8" style="font-family:var(--font-display);font-weight:600;font-size:12px;line-height:1;letter-spacing:.22em;text-transform:uppercase;color:var(--color-interactive);margin:0" lang="id">Mini Soccer · WITA · 06.00–24.00</p>
-      <p class="spec-label">--text-eyebrow · Orbitron 600 · 12px FIXED · 0.22em · the hero's, and nothing else</p>
-      <p class="stack-8" style="max-width:60ch">Body copy in Inter. Orbitron is wide and geometric, so it takes tighter leading than Inter or it reads as loose — 0.95 for display, 1.05 for section headings, 1.25 for sub-headings, 1.6 for body. Never apply body leading to Orbitron.</p>
-      <p class="spec-label">--text-body · Inter 400 · 16→18px · 1.6 · measure capped at 60–68ch</p>
+      <div style="font-family:var(--font-display);font-stretch:125%;font-size:var(--text-display);line-height:.95;font-weight:900;letter-spacing:-.03em;text-transform:uppercase;overflow-wrap:anywhere" lang="id">Kirim.</div>
+      <p class="spec-label">--text-display · Saira 900 wdth125 · 48→152px · 0.95 · -0.03em · uppercase</p>
+      <div class="ol stack-8" aria-hidden="true" style="--ol-w:1.5px;--ol-c:var(--color-border);font-family:var(--font-display);font-stretch:125%;font-size:var(--text-numeral);line-height:.8;font-weight:900;transform:skewX(var(--skew));display:inline-block">07</div>
+      <p class="spec-label">--text-numeral · Saira 900 wdth125 · 56→144px · 0.8 · skewed · outlined · aria-hidden</p>
+      <div class="stack-8" style="font-family:var(--font-display);font-stretch:125%;font-size:var(--text-h2);font-weight:800;line-height:1.05;letter-spacing:-.01em;text-transform:uppercase" lang="id">Ketentuan <em style="font-style:normal;color:var(--color-interactive)">Arena</em></div>
+      <p class="spec-label">--text-h2 · Saira 800 wdth125 · 28→56px · 1.05 · one word may take the accent</p>
+      <div class="stack-8" style="font-family:var(--font-display);font-stretch:125%;font-size:var(--text-h3);font-weight:500;line-height:1.25" lang="id">Lokasi &amp; Kontak</div>
+      <p class="spec-label">--text-h3 · Saira 500 wdth125 · 20→32px · 1.25 · no longer the slot time</p>
+      <p class="stack-8" style="font-family:var(--font-display);font-stretch:125%;font-weight:600;font-size:12px;line-height:1;letter-spacing:.22em;text-transform:uppercase;color:var(--color-interactive);margin:0" lang="id">Mini Soccer · WITA · 06.00–24.00</p>
+      <p class="spec-label">--text-eyebrow · Saira 600 wdth125 · 12px FIXED · 0.22em · the hero's, and nothing else</p>
+      <p class="stack-8" style="max-width:60ch">Body copy in Plus Jakarta Sans. Saira at wdth 125 is wide and geometric, so it takes tighter leading than the body face or it reads as loose — 0.95 for display, 1.05 for section headings, 1.25 for sub-headings, 1.6 for body. Never apply body leading to the display face.</p>
+      <p class="spec-label">--text-body · Plus Jakarta Sans 400 · 16→18px · 1.6 · measure capped at 60–68ch</p>
 
       <p class="note stack-8">
         <strong>The 3rem floor is a measurement, not a taste.</strong>
@@ -1270,9 +1275,11 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         291px — and <span lang="id">“Pilih Jam.”</span> renders <strong>323px</strong> wide
         there against a 343px content box. That is the binding number in the whole type
         system: it is why the hero headline's longest word is five characters, and why a copy
-        change there is a layout change. <em>Measured in a browser with Orbitron loaded, at
-        the size the clamp actually produces.</em> DESIGN.md states the same 324px figure but
-        labels it “at 48px”, which is the clamp's floor rather than its value at 375px.
+        change there is a layout change. <em>Measured in a browser with the display face loaded, at
+        the size the clamp actually produces.</em> Re-measured on the 2026-08-12 typeface
+        change: Saira ExtraExpanded renders it at <strong>323.0px</strong>, within 0.4px of the
+        Orbitron it replaced — which is why that face was chosen over Archivo Expanded, whose
+        384.6px would have broken this number outright.
       </p>
       <p class="note stack-4">
         <strong>Uppercase is display only.</strong> <code>display</code>,
@@ -1301,10 +1308,10 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         <p class="lede">
           <strong>One column on a phone. Two from 640px. Three from 1180px.</strong> The
           constraint is one number: <span lang="id">“Menunggu Konfirmasi”</span> is
-          <strong>20 characters</strong> and renders <strong>145.5px</strong> wide at the cell's
-          14px Inter — measured with the font loaded, not estimated. At 375px a 3-column grid
+          <strong>20 characters</strong> and renders <strong>143.3px</strong> wide at the cell's
+          14px Plus Jakarta Sans — measured with the font loaded, not estimated. At 375px a 3-column grid
           gives about 106px per cell, roughly 71px of it inside the padding, so the label
-          cannot fit at all; the phone keeps a single full-width column, where 145.5px sits
+          cannot fit at all; the phone keeps a single full-width column, where 143.3px sits
           inside a 343px row with room to spare.
           <strong>Click an available slot, then click it again to deselect.</strong>
         </p>
@@ -1337,7 +1344,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         1280px two-column layout above 980px and full width below it. At a 640px viewport the
         panel is roughly 570px, so two columns give about 280px each and the 20-character label
         fits with room to spare. Three columns wait until 1180px, where each cell still clears
-        145.5px comfortably. The state label sits <strong>under</strong> the time at every width, which is
+        143.3px comfortably. The state label sits <strong>under</strong> the time at every width, which is
         what keeps all 20 characters at any column count.
       </p>
       <p class="note stack-4">
@@ -1425,7 +1432,7 @@ th{font-family:var(--font-display);font-weight:700;color:var(--color-fg-muted);
         <code>blue-600</code> composites to <code>rgb(211,224,251)</code> and measures
         <strong>3.90:1</strong>, which fails AA for 12px text. Full white is
         <strong>5.17:1</strong>; the date stays dominant because it is larger and set in
-        Orbitron, not because the day name is faded.
+        the display face, not because the day name is faded.
       </p>
     </div>
   </div>

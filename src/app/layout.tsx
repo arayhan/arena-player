@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Orbitron } from "next/font/google";
+import { Plus_Jakarta_Sans, Saira } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -9,19 +9,40 @@ import { Providers } from "./providers";
 // the file from our own origin, and sizes the fallback so nothing shifts when
 // the real face lands. A CDN <link> gives up all three.
 //
-// Both faces are settled — Phase 1b task 1 kept them deliberately. Orbitron
-// carries the identity; Inter is chosen to be invisible, which is the right
-// brief for body type a captain reads at speed on a 375px Android.
-const orbitron = Orbitron({
+// BOTH FACES CHANGED 2026-08-12. Orbitron -> Saira at the expanded width,
+// Inter -> Plus Jakarta Sans. PRODUCT.md recorded the old pair as a client
+// commitment, so this is a decision written down there, not a swap made here.
+//
+// The display face was chosen by MEASUREMENT, not resemblance. DESIGN.md calls
+// one number "the binding number in the whole type system": `PILIH JAM.` has to
+// fit the 343px content box at 375px. Probed with all three faces loaded, at
+// the size the clamp actually produces (57.25px, not the 48px floor):
+//
+//     Archivo Expanded   384.6px   over the box by 42
+//     Saira (wdth 125)   323.0px   fits
+//     Orbitron           323.4px   fits — the incumbent
+//
+// Saira lands within 0.4px of the face it replaces on the one number that
+// constrains the headline, and measures 194px against Orbitron's 203.7px on
+// "KETENTUAN", which eases the Sub-360 Floor rather than worsening it.
+//
+// NEITHER DECLARES `weight`, AND THAT FIXES A LIVE DEFECT. Both are variable
+// fonts, so omitting `weight` ships the whole 100-900 range. Orbitron was
+// loaded at 500/700/900 while the system asks for 600 (the hero eyebrow) and
+// 800 (h2, buttons) — the browser had been synthesising those two, which is a
+// fake bold rather than the drawn weight.
+const display = Saira({
   subsets: ["latin"],
-  weight: ["500", "700", "900"],
+  // THE WIDTH AXIS IS THE POINT. Saira at its default width is an ordinary
+  // grotesque; at 125 it is the wide, geometric, athletic face this direction
+  // is built on. `axes` is only available because no `weight` is pinned.
+  axes: ["wdth"],
   variable: "--font-display",
   display: "swap",
 });
 
-const inter = Inter({
+const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   variable: "--font-body",
   display: "swap",
 });
@@ -83,7 +104,7 @@ export const metadata: Metadata = {
 // command every doc tells you to run first.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${orbitron.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="id" className={`${display.variable} ${body.variable} h-full antialiased`}>
       {/*
         This layout stays a SERVER component. Providers is the client boundary
         and holds nothing but the QueryClient and the dev mock gate, so the

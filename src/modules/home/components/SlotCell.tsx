@@ -109,9 +109,20 @@ export function SlotCell({
           "!border-[var(--color-interactive)] !bg-[var(--color-interactive)] !text-[var(--color-fg-inverse)] !transition-none",
       )}
     >
-      {/* Time: Orbitron 700 at 16px, 0.02em — no longer the h3 role. An h3
-          inside a grid of nine would be nine sub-headings. */}
-      <span className="font-[family-name:var(--font-display)] text-[16px] font-bold tracking-[0.02em] whitespace-nowrap">
+      {/* Time: the display face at 700, 16px, 0.02em — no longer the h3 role.
+          An h3 inside a grid of nine would be nine sub-headings.
+
+          TABULAR NUMERALS, AND THIS FIXES A DEFECT THAT WAS UNFIXABLE UNTIL
+          2026-08-12. Nine slot times share one grid, so their widths must not
+          depend on which digits they contain — measured under Orbitron,
+          "18.00 - 20.00" came to 127px and "10.00 - 12.00" to 120px, which is
+          what decides whether a row wraps. `tabular-nums` was tried then and
+          measured as a NO-OP: Orbitron ships no `tnum` feature, and the fix
+          was reverted rather than left in place with a comment claiming it
+          worked. Saira ships it — verified at 100px, where "111" and "888"
+          measure 136.2px and 236.4px proportionally and both 214.8px with the
+          feature on. So the fix goes back in, this time doing something. */}
+      <span className="type-display text-[16px] font-bold tracking-[0.02em] tabular-nums whitespace-nowrap">
         {slot}
       </span>
       {/* State: the `sm` role, sitting UNDER the time at every width — the

@@ -74,6 +74,15 @@
    * in the whole system: the hero, above the h1. A second usage is the
    * banned kicker-above-heading pattern, not a variation. */
   --text-eyebrow: 0.75rem;
+  /* NEW 2026-08-12. The button label, and it is a ROLE rather than a literal.
+   * DESIGN.md's Buttons section has specified 15px since the redesign while the
+   * type ramp had no 15px step, so every button was a hard-coded number and the
+   * design detector was right to keep reporting all four. Four call sites share
+   * it: the header CTA, both hero CTAs, and the hand-off bar.
+   *
+   * FIXED, like sm/xs/eyebrow. A button label that grows on desktop stops
+   * reading as a control and starts reading as a heading. */
+  --text-label: 0.9375rem;
 
   /* --- Radius. Rounded further at the client's request, 2026-08-12. ------ */
   /* The pill stays the ONLY fully-round shape — that is what still makes a
@@ -244,10 +253,17 @@ html {
  * Below 360px the Numbered-Step Rule's geometry runs out of room. Measured at
  * 320px: the section content box is 288px, the numeral track takes 97.9px
  * (`--text-numeral` resolves to 57.6px there, times the 1.7 two-digit
- * allowance) and `gap-x-4` takes 16px, leaving the heading column 174px. Two
- * headings need more than that at `--text-h2`'s own floor: "KETENTUAN" measures
- * 198px and "PESAN LAPANGAN" 182px, and the first is a single unbreakable word
- * that no amount of wrapping can absorb. The page scrolled sideways by 8px.
+ * allowance) and `gap-x-4` takes 16px, leaving the heading column 174.1px.
+ * "KETENTUAN" is a single unbreakable word that no amount of wrapping can
+ * absorb, and it does not fit that column at the clamp's own value there.
+ *
+ * RE-TESTED AFTER THE 2026-08-12 TYPEFACE CHANGE, AND STILL NEEDED. Saira
+ * ExtraExpanded is narrower than the Orbitron this rule was written against —
+ * "KETENTUAN" went from 203.7px to 194px at 28.75px — so the honest question
+ * was whether the rule had stopped having a reason. It has not: at 320px the
+ * clamp's middle term computes 26.88px, where "KETENTUAN" measures 181.7px
+ * against a 174.1px column, still over by 7.6px. At the 24px floor it measures
+ * 162px and fits with room. The numbers moved; the conclusion did not.
  *
  * WHY THIS IS NOT A LOWER `clamp()` FLOOR, which is the obvious move and does
  * not work: at 320px the clamp's MIDDLE term is what would take over. Drop the
@@ -298,12 +314,31 @@ html {
   }
 }
 
-/* Orbitron takes tighter leading than Inter or it reads as loose: 0.95 for
- * display, 1.05 for h2, 1.25 for h3, 1.6 for body. Never apply body leading to
- * Orbitron. Display went BELOW 1 in the redesign — at 152px an uppercase
- * Orbitron line has no descenders to clear, and 1.1 (the pre-redesign value)
- * leaves a visible gutter between the headline's three lines that reads as
- * three separate headings instead of one three-beat sentence.
+/* THE DISPLAY FACE CARRIES A WIDTH, AND THE CSS VARIABLE CANNOT.
+ * `--font-display` names a family; Saira's expanded look lives on its `wdth`
+ * axis, which is a separate property. So every display usage has to declare
+ * `font-stretch: 125%` too, and `.type-display` below is the one place that
+ * pairs them — the alternative was repeating it at seven call sites, where the
+ * eighth would be the one that forgets and renders an ordinary grotesque.
+ *
+ * NOT NAMED `.font-display`. Tailwind v4 generates utilities from `--font-*`
+ * theme keys, and a class colliding with a generated one fails silently.
+ *
+ * In `components`, not `base`: it has to beat the element defaults it sits
+ * beside, and still lose to a utility that deliberately overrides it. */
+@layer components {
+  .type-display {
+    font-family: var(--font-display), system-ui, sans-serif;
+    font-stretch: 125%;
+  }
+}
+
+/* Saira takes tighter leading than Plus Jakarta Sans or it reads as loose: 0.95
+ * for display, 1.05 for h2, 1.25 for h3, 1.6 for body. Never apply body leading
+ * to the display face. Display went BELOW 1 in the redesign — at 152px an
+ * uppercase display line has no descenders to clear, and 1.1 (the pre-redesign
+ * value) leaves a visible gutter between the headline's three lines that reads
+ * as three separate headings instead of one three-beat sentence.
  *
  * display and h2 are also uppercase now — DESIGN.md's Uppercase-Is-Display-
  * Only Rule: display, numeral, h2 and eyebrow are uppercase; body, sm and xs
@@ -316,6 +351,7 @@ html {
   h2,
   h3 {
     font-family: var(--font-display), system-ui, sans-serif;
+    font-stretch: 125%;
     margin: 0;
     text-wrap: balance;
   }

@@ -81,7 +81,7 @@ Recorded as given, not expanded — the visual world is not decided here.
 
 - Name: Arena Player.
 - Navy `#011A43` sampled from the client's logo; accent blue `#2563EB`.
-- Orbitron for display type, Inter for body.
+- **Superseded 2026-08-12 — the typefaces changed and this line used to be the reason they could not.** It read "Orbitron for display type, Inter for body", and both `DESIGN.md` and the design detector's suppression record cited it as a closed client commitment. The pair is now **Saira at `wdth` 125 for display, Plus Jakarta Sans for body**. The user asked for NV Dune Hero, which is licensed for personal use only and cannot ship on a commercial site; Saira honours the same brief — wide, expanded, geometric, athletic — and was chosen by measuring the headline against the 343px content box rather than by resemblance. **The client has not seen this**, and it joins the velocity direction in the re-approval that is already owed.
 - `bataskotapoint.com` is a binding reference **as an anti-reference**: the direction is explicitly its inverse — light, clean, blue-and-white, never dark neon.
 - The client asked for a **minimalist UI, but modern — with many animations, transitions, and micro-interactions.** Recorded here as stated; how the two halves reconcile, and where the motion is deliberately withheld, is resolved in [DESIGN.md](DESIGN.md).
 

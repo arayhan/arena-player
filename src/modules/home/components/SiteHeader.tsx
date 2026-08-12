@@ -76,7 +76,7 @@ export function SiteHeader() {
         <a
           href="#order"
           lang="id"
-          className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-5 font-[family-name:var(--font-display)] text-[length:var(--text-eyebrow)] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-accent-strong-hover)]"
+          className="inline-flex h-11 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-accent-strong)] px-5 type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-accent-strong-hover)]"
         >
           Pesan Lapangan
         </a>
