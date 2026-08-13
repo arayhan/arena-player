@@ -14,6 +14,7 @@ The conventions an agent cannot infer from the code. Getting one wrong here cost
 | [testing.md](testing.md)                 | Colocated tests, the command table, pinning the clock, proving a check can fail                                                   | writing or changing a test          |
 | [api-conventions.md](api-conventions.md) | Insert→catch `23505`→409, canonicalise vs reject, status codes that are not interchangeable, keeping MSW out of production        | touching a route handler or service |
 | [accessibility.md](accessibility.md)     | Labels, errors, focus, `aria-disabled` over native `disabled`, keyboard, targets                                                  | writing any markup or form control  |
+| [git-workflow.md](git-workflow.md)       | Atomic commits, the six semantic types, never signing the work, what never gets committed, worktrees for parallel work            | committing, or splitting large work |
 
 ## Where authority sits when documents disagree
 

@@ -112,19 +112,18 @@ The rules live in [`docs/rules/`](docs/rules/), one file per theme, so a session
 | writing or changing a test          | [docs/rules/testing.md](docs/rules/testing.md)                 |
 | touching a route handler or service | [docs/rules/api-conventions.md](docs/rules/api-conventions.md) |
 | writing markup or a form control    | [docs/rules/accessibility.md](docs/rules/accessibility.md)     |
+| committing, or splitting large work | [docs/rules/git-workflow.md](docs/rules/git-workflow.md)       |
 
 A hard rule below beats anything in those files. Where a rules file needs a number — a contrast ratio, a budget ceiling, a field name — it links to the owning document rather than copying the value.
 
 ## Commit conventions & DX
 
-- Conventional-Commits-flavored: `feat:`, `fix:`, `chore:`, `docs:`, `revert:`. Commit after each work step passes, not one giant commit.
+- **Commits and worktrees: [docs/rules/git-workflow.md](docs/rules/git-workflow.md)** — atomic commits, the six semantic types, and the rule that no commit is ever signed with an agent or tool name. Also what never gets committed, and when to propose splitting work across worktrees rather than interleaving it.
 - pnpm only — never commit `package-lock.json` or `yarn.lock`.
 - Never commit `.env.local`.
 - **Start Claude sessions inside `arena-player-web/`** — hooks and settings load from session root; starting one level up leaves `Stop`/`Notification`/`SubagentStop` hooks silently inactive.
-- Parallel sessions: `claude --worktree <branch-name>`.
 - **Three import rules, each enforced twice** — ESLint catches the `@/` form, `check:docs` resolves the relative form no glob can express. Nothing under `src/` imports from `src/app/` (extraction boundary). Feature modules never import each other — shared vocabulary goes in `src/domain/`. `src/domain/` imports nothing from the rest of `src/` and uses **relative** sibling imports (`./slots`), the one exception to `@/`-everywhere, so the copy resolves identically in both repos.
 - **`src/domain/` is byte-identical with `arena-player-admin` at the same path** and guarded by `pnpm check:domain` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too, which is why three of its four files have none.
-- No attribution trailers on commits.
 - **`scripts/` is for the human developer; `.claude/commands/` is for agents.** If a tool is only ever invoked by an agent, it is a slash command — a markdown prompt in `.claude/commands/`, not a `.ts` file and not a `package.json` entry. Commands hold no code: the instruction _is_ the tool, and the agent executes it with the tools it already has. Anything a human runs — or that a CI gate runs — stays in `scripts/` and stays wired to `package.json`. **Nothing needed to move when this rule landed**: all three scripts here are reached by `pnpm check` or `check:ship`, so the rule is forward-looking, not a migration somebody should later try to "finish".
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
 - **`ui-designer` owns everything a visitor can see** — components, tokens, layout, typography, motion, and `docs/DESIGN.md` — the decision and the code both. `software-engineer` owns everything behind it: route handlers, data layer, validation, tests. A form's submit path is the engineer's; the same form's markup is not.
