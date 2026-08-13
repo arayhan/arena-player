@@ -45,12 +45,18 @@ export function SiteHeader() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 py-[18px] transition-[background-color,border-color,backdrop-filter] duration-300",
+        // TWO SURFACES, NOT TWO OPACITIES — and this is a contrast fix, not a
+        // style tweak. The hero became a navy plate on 2026-08-13, so a
+        // transparent header at rest was putting a navy logo and a navy-filled
+        // CTA on navy: the button was legible only by its own hairline, and the
+        // mark was almost gone. At rest the header now reads ON-BAND; past 40px
+        // it materialises as the white bar the light sections below need.
+        //
         // THE BLUR IS PROGRESSIVE ENHANCEMENT, NOT THE MECHANISM. DESIGN.md is
         // explicit: `backdrop-filter` is unavailable or disabled on a real
-        // share of in-app webviews, and this header sits over a moving
-        // generative field. The 82% white has to separate the header from the
-        // hero on its own, so the fill is unconditional and only the blur is
-        // gated behind `@supports`.
+        // share of in-app webviews. The 82% white has to separate the header
+        // from the page on its own, so the fill is unconditional and only the
+        // blur is gated behind `@supports`.
         scrolled
           ? "border-b border-[var(--color-border)] bg-[rgb(255_255_255/0.82)] supports-[backdrop-filter:blur(1px)]:backdrop-blur-[14px]"
           : "border-b border-transparent bg-transparent",
@@ -75,13 +81,23 @@ export function SiteHeader() {
             the page's transfer weight, and nothing in the build would ever have
             reported it: `check:budget` measures JavaScript and cannot see an
             image at all. */}
+        {/* `invert` while the header sits on the navy plate. The supplied mark
+            is a dark navy lockup drawn for a light ground; on the hero it was
+            navy-on-navy and effectively invisible. Inverting is honest here
+            because the mark is a single flat colour — there is no photographic
+            content for the filter to distort — and it costs nothing at runtime.
+            It reverts the moment the header materialises over the light
+            sections. */}
         <Image
           src="/logo-mark.png"
           alt="Arena Player"
           width={1042}
           height={502}
           sizes="80px"
-          className="h-8 w-auto md:h-9"
+          className={cn(
+            "h-8 w-auto transition-[filter] duration-300 md:h-9",
+            scrolled ? "" : "brightness-0 invert",
+          )}
         />
 
         {/* 44px MINIMUM, AND DESIGN.md RECORDS THIS AS A CORRECTION TO THE
@@ -92,7 +108,7 @@ export function SiteHeader() {
             text does not shrink to fit a smaller pill. `size="sm"` is the one
             place `Button` is asked for that height instead of the 56px spec
             height — see the comment on `ButtonSize` in Button.tsx. */}
-        <Button href="#order" lang="id" size="sm">
+        <Button href="#order" lang="id" size="sm" variant={scrolled ? "primary" : "on-band"}>
           Pesan Lapangan
         </Button>
       </div>

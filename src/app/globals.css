@@ -343,12 +343,18 @@ html {
   }
 }
 
-/* THE DISPLAY FACE CARRIES A WIDTH, AND THE CSS VARIABLE CANNOT.
- * `--font-display` names a family; Saira's expanded look lives on its `wdth`
- * axis, which is a separate property. So every display usage has to declare
- * `font-stretch: 125%` too, and `.type-display` below is the one place that
- * pairs them — the alternative was repeating it at seven call sites, where the
- * eighth would be the one that forgets and renders an ordinary grotesque.
+/* THE ONE WAY TO REACH THE DISPLAY FACE.
+ *
+ * The `font-stretch: 125%` this rule used to carry is GONE with the move to
+ * Panchang. Panchang ships as separate static cuts with no width axis, so a
+ * stretch value here would ask the browser to synthesise a width — the same
+ * class of silent fake this project removed from the weight axis a day earlier,
+ * and it would render as a smeared approximation of a face that is already
+ * wide on its own.
+ *
+ * The utility stays even though it now sets a single property, because it is
+ * the one place that NAMES the display face. Seven call sites reach it through
+ * this class, so the next face change is one line here rather than a sweep.
  *
  * NOT NAMED `.font-display`. Tailwind v4 generates utilities from `--font-*`
  * theme keys, and a class colliding with a generated one fails silently.
@@ -358,11 +364,10 @@ html {
 @layer components {
   .type-display {
     font-family: var(--font-display), system-ui, sans-serif;
-    font-stretch: 125%;
   }
 }
 
-/* Saira takes tighter leading than Plus Jakarta Sans or it reads as loose: 0.95
+/* Panchang takes tighter leading than Plus Jakarta Sans or it reads as loose: 0.95
  * for display, 1.05 for h2, 1.25 for h3, 1.6 for body. Never apply body leading
  * to the display face. Display went BELOW 1 in the redesign — at 152px an
  * uppercase display line has no descenders to clear, and 1.1 (the pre-redesign
@@ -380,7 +385,6 @@ html {
   h2,
   h3 {
     font-family: var(--font-display), system-ui, sans-serif;
-    font-stretch: 125%;
     margin: 0;
     text-wrap: balance;
   }

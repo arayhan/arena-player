@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Saira } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -9,36 +10,41 @@ import { Providers } from "./providers";
 // the file from our own origin, and sizes the fallback so nothing shifts when
 // the real face lands. A CDN <link> gives up all three.
 //
-// BOTH FACES CHANGED 2026-08-12. Orbitron -> Saira at the expanded width,
-// Inter -> Plus Jakarta Sans. PRODUCT.md recorded the old pair as a client
-// commitment, so this is a decision written down there, not a swap made here.
+// THE DISPLAY FACE IS PANCHANG, SELF-HOSTED FROM FILES IN THIS REPO.
+// Chosen by the user 2026-08-13, from Fontshare, whose licence reads verbatim:
+// "All Fontshare fonts are 100% free for personal and commercial use." That was
+// checked before a byte was downloaded, because the previous font request was a
+// demo licensed for PERSONAL USE ONLY and shipping it would have put the CLIENT
+// in breach rather than the studio.
 //
-// The display face was chosen by MEASUREMENT, not resemblance. DESIGN.md calls
-// one number "the binding number in the whole type system": `PILIH JAM.` has to
-// fit the 343px content box at 375px. Probed with all three faces loaded, at
-// the size the clamp actually produces (57.25px, not the 48px floor):
+// `next/font/local`, not the Fontshare CDN. Panchang is not on Google Fonts, so
+// the three weights live in `src/app/fonts/` and Next hashes and serves them
+// from our own origin. architecture.md records `next/font` as load-bearing for
+// the no-CLS and LCP guarantees, and that survives a redesign: a CDN <link>
+// would give up the preload, the inlined face, and the sized fallback at once.
 //
-//     Archivo Expanded   384.6px   over the box by 42
-//     Saira (wdth 125)   323.0px   fits
-//     Orbitron           323.4px   fits — the incumbent
+// WHY THREE STATIC WEIGHTS RATHER THAN A VARIABLE FILE: Fontshare ships Panchang
+// as separate cuts, and the system needs exactly three — 800 for display, 700
+// for headings, 500 for numerals and slot times. Declaring only what is used
+// keeps the browser from synthesising a weight, which is what the previous face
+// was silently doing for two of its weights.
 //
-// Saira lands within 0.4px of the face it replaces on the one number that
-// constrains the headline, and measures 194px against Orbitron's 203.7px on
-// "KETENTUAN", which eases the Sub-360 Floor rather than worsening it.
-//
-// NEITHER DECLARES `weight`, AND THAT FIXES A LIVE DEFECT. Both are variable
-// fonts, so omitting `weight` ships the whole 100-900 range. Orbitron was
-// loaded at 500/700/900 while the system asks for 600 (the hero eyebrow) and
-// 800 (h2, buttons) — the browser had been synthesising those two, which is a
-// fake bold rather than the drawn weight.
-const display = Saira({
-  subsets: ["latin"],
-  // THE WIDTH AXIS IS THE POINT. Saira at its default width is an ordinary
-  // grotesque; at 125 it is the wide, geometric, athletic face this direction
-  // is built on. `axes` is only available because no `weight` is pinned.
-  axes: ["wdth"],
+// PANCHANG IS WIDE, AND THAT IS A LAYOUT FACT RATHER THAN A DEFECT. `PILIH JAM.`
+// measures 427.5px at 57.25px against the old 343px content box — the number
+// that proved the previous hero could not survive this face. The layout was
+// rebuilt around it rather than the face being shrunk to fit the layout.
+const display = localFont({
+  src: [
+    { path: "./fonts/Panchang-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/Panchang-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Panchang-800.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-display",
   display: "swap",
+  // The fallback the browser paints before Panchang lands. Named explicitly so
+  // `next/font` can size-adjust against it; left to chance, the swap is where
+  // CLS comes back.
+  fallback: ["system-ui", "sans-serif"],
 });
 
 const body = Plus_Jakarta_Sans({

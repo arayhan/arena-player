@@ -7,16 +7,24 @@ import { useMotion, type MotionApi } from "@/lib/motion";
 /**
  * The hero-foot band — DESIGN.md's Marquee section.
  *
- * Full-width `navy-900`, skewed `-1.2deg`, `blue-50` text in the display face
- * at 700 and `0.18em` tracking, `blue-600`... — DESIGN.md's own text says
- * `blue-600` separators, and that value is NOT used below. It is the same
- * class of stale value the redesign has already caught and corrected twice
- * on this page (the wipe's `skewX(-12deg)`, the slot cell's 85%-white label):
- * `blue-600` on `navy-900` computes 3.30:1, which is exactly the failure
- * DESIGN.md's own on-band token row exists to fix, and which Section.tsx and
- * KetentuanRows.tsx already avoid by reading `--color-interactive-on-band`
- * (`blue-400`, 6.72:1) instead. Flagged, not silently "fixed" — DESIGN.md's
- * prose should get the same correction on its own next pass.
+ * REBUILT 2026-08-13 FOR THE "PELAT ENAMEL" DIRECTION, and two things changed
+ * at once.
+ *
+ * IT IS FLAT. The `-1.2deg` lean is gone at the user's instruction, and so is
+ * the cancelling counter-skew that used to sit on the track — a counter-skew
+ * with nothing to counter is a compositing layer bought for a net zero.
+ *
+ * IT IS BLUE, NOT NAVY. On the previous direction the band was a navy stripe
+ * under a navy hero, which meant it only existed because of its type. The plate
+ * is navy now, so the band inverts to `blue-600` with white type: it reads as
+ * the painted stripe across an enamel sign rather than as a slightly different
+ * shade of the same field.
+ *
+ * That inversion also retires the separator problem this file used to carry.
+ * DESIGN.md specifies `blue-600` separators on a navy band, which computes
+ * 3.30:1 and is exactly the failure the on-band token row exists to prevent.
+ * With the band itself blue the question dissolves: separators take `navy-900`,
+ * the sign's own second colour.
  *
  * CONTENT IS FACTS, NEVER A SLOGAN, per DESIGN.md: "it carries facts rather
  * than slogans... so every fact in it appears somewhere reachable." Copied
@@ -133,30 +141,31 @@ export function Marquee() {
     <div
       ref={bandRef}
       aria-hidden="true"
-      className="absolute inset-x-0 bottom-0 z-10 overflow-hidden bg-[var(--color-band)] py-3 [transform:skewY(-1.2deg)]"
+      className="relative z-10 overflow-hidden border-y-[1.5px] border-[var(--color-interactive)] bg-[var(--color-interactive)] py-3"
     >
-      {/* THE BAND LEANS; THE TYPE ON IT DOES NOT. The outer element's
-          skewY(-1.2deg) shears its own box (background, edges) — the thing
-          DESIGN.md calls "the band's edge leans." This inner track carries
-          the exact opposite skewY(1.2deg), which composes with the parent's
-          to net zero shear on the rendered text: the two skewY matrices are
-          around the same axis and cancel algebraically. GSAP's `x` tween
-          below reads the computed transform on first run and preserves this
-          counter-skew while animating translateX alone — it does not
-          overwrite it, which is why the skew is set via a CSS class rather
-          than inline style GSAP could clobber. */}
+      {/* THE BAND IS FLAT. It carried `skewY(-1.2deg)` on the outer box and a
+          cancelling `skewY(1.2deg)` on this track until 2026-08-13, when the
+          user ruled the lean out. Both halves went together — a counter-skew
+          with nothing to counter is a transform that costs a compositing layer
+          and buys a net zero.
+
+          On the "pelat enamel" direction the flat band is the right answer
+          anyway rather than a concession: a painted stripe on a metal sign runs
+          parallel to the sign's own edge, and a leaning stripe would be the one
+          element on the plate pretending to have perspective. */}
       <div
         ref={trackRef}
-        className="flex w-max items-center gap-12 whitespace-nowrap type-display text-[length:var(--text-sm)] font-bold tracking-[0.18em] text-[var(--color-fg-on-band)] uppercase [transform:skewY(1.2deg)]"
+        className="type-display flex w-max items-center gap-12 text-[length:var(--text-sm)] font-bold tracking-[0.18em] whitespace-nowrap text-[var(--color-fg-inverse)] uppercase"
       >
         {DOUBLED.flatMap((item, i) => [
           <span key={`item-${i}`}>{item}</span>,
-          // The separator itself, correctly on --color-interactive-on-band —
-          // see the file header comment on why this is not --color-blue-600.
+          // Separators in navy-900, the sign's second colour, punched out of
+          // the blue stripe — see the file header on why the band inverting to
+          // blue retired the old separator-contrast problem entirely.
           // Wrapped as an expression, not raw JSX text: "///" as a literal
           // text node trips react/jsx-no-comment-textnodes, which exists to
           // catch an accidentally-unwrapped `//` comment.
-          <em key={`sep-${i}`} className="not-italic text-[var(--color-interactive-on-band)]">
+          <em key={`sep-${i}`} className="text-[var(--color-band)] not-italic">
             {"///"}
           </em>,
         ])}

@@ -2,7 +2,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "on-band";
+export type ButtonVariant = "primary" | "secondary" | "on-band" | "secondary-on-band";
 
 /**
  * `lg` (56px) is DESIGN.md's Buttons spec, used by the hero and closing CTAs.
@@ -97,6 +97,17 @@ const VARIANT: Record<ButtonVariant, VariantStyle> = {
     hoverText: "",
     kind: "outlined",
   },
+  // ADDED 2026-08-13, and it is a real gap rather than a nicety. `secondary`
+  // draws a navy-900 border and navy-900 text — on a navy-900 band that is an
+  // invisible button, the exact defect the on-band row of the semantic layer
+  // exists to prevent, and the hero is now a navy plate with two CTAs on it.
+  // It inverts the same way `secondary` does, in the band's own foreground.
+  "secondary-on-band": {
+    root: "border-2 border-[var(--color-fg-on-band)] bg-transparent text-[var(--color-fg-on-band)] transition-colors duration-300 hover:bg-[var(--color-fg-on-band)] hover:text-[var(--color-fg)]",
+    wipe: null,
+    hoverText: "",
+    kind: "outlined",
+  },
 };
 
 /**
@@ -130,7 +141,12 @@ export function Button({
     // this clips nowhere — it reintroduces horizontal page scroll, the exact
     // defect this component exists not to repeat. `isolate` keeps the wipe's
     // z-index scoped to this button rather than fighting page-level stacking.
-    "group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden",
+    // `whitespace-nowrap` is a correctness rule, not a style preference. A
+    // button whose label wraps to two lines stops reading as a control: the
+    // fixed height then either clips the second line or the pill grows and
+    // breaks the row it sits in. Caught at 375px, where the header's
+    // "PESAN LAPANGAN" broke across two lines and crowded the mark beside it.
+    "group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap",
     "rounded-[var(--radius-control)] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] uppercase",
     "transition-transform duration-300",
     HEIGHT[size],

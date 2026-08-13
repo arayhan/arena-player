@@ -1,214 +1,208 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
-import { cn } from "@/lib/cn";
 import { useMotion } from "@/lib/motion";
 
 import { Button } from "./Button";
 import { Marquee } from "./Marquee";
 
-// ssr:false and no loading state — the static fallback IS the loading state,
-// and it is already painted. Removing the WebGL moment is deleting this import,
-// the <HeroCanvas /> below, and one file. That deletability is a condition of
-// the permission, not a nicety.
-const HeroCanvas = dynamic(() => import("./HeroCanvas"), { ssr: false });
-
 /**
- * The hero — DESIGN.md's "velocity" redesign, 2026-08-12.
+ * THE HERO — "PELAT ENAMEL", the direction the 2026-08-13 roll landed on.
  *
- * THE LCP ELEMENT IS THE HEADLINE — text, server-rendered, in a self-hosted
- * font with no layout shift. Not the canvas, which is client-only and arrives
- * later; not an image, because the hero-video gate failed and there is no
- * photograph of this field that anyone has supplied. Nothing added by the
- * redesign may compete for that slot, which is why the eyebrow, the outlined
- * word and both CTAs below are all plain server-rendered text with no
- * entrance animation gating their first paint — an animation that starts an
- * element at `opacity: 0` in its initial markup would delay exactly the
- * element this file exists to protect.
+ * THESIS: this opens like the enamel plate bolted to the field gate, not like a
+ * booking product. Flat saturated fields that own the whole viewport, hard
+ * edges, hours set at plate scale. What it refuses is the arrangement this
+ * category always ships — a rounded card floating on a soft gradient over a
+ * stadium photograph.
  *
- * Capped at `100svh`, never `100vh`: in-app browsers report `vh` incorrectly
- * and a hero sized in `vh` overshoots on exactly the device this site is
- * designed for.
+ * NO 100vh CAP. The user removed that rule on 2026-08-13 as limiting, so the
+ * plate takes the height its content needs: `min-h-[100svh]`, never a fixed
+ * height. It opens above the fold on a 375px phone because the type scale was
+ * measured at that width rather than chosen on a desktop and shrunk afterwards.
  *
- * THE ONE EYEBROW IN THE WHOLE SYSTEM lives here, above the `h1`, per
- * DESIGN.md's One-Eyebrow Rule. It carries three facts the headline cannot:
- * what the venue is, which clock the page runs on, and when it is open. It
- * reads WITA, never `Asia/Jakarta` or `WIB` — the field is in Lombok and the
- * date layer pins `Asia/Makassar`.
+ * PANCHANG IS WIDE, AND THE COMPOSITION IS BUILT OUT OF THAT RATHER THAN AROUND
+ * IT. `PILIH JAM.` measures 427.5px at 57.25px — wider than the entire 343px
+ * content box at 375px. The previous hero set all three beats at ONE size, so
+ * the longest line decided the scale for the other two, which is exactly how a
+ * 427px line ends up in a 343px box. Here the three beats take THREE sizes, and
+ * they run the other way: the longest string is the smallest, the shortest is
+ * the largest. The face's width became the composition.
  */
 export function Hero() {
-  const ctaRef = useRef<HTMLSpanElement>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [scrambling, setScrambling] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const plateRef = useRef<HTMLDivElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
 
-  // The client asked for "scramble effect ketika hover". GSAP's ScrambleText
-  // is a paid Club plugin and is not installed, so the scramble is hand-driven
-  // by a tween on a proxy object — free GSAP, no extra kilobytes, and it still
-  // routes through motion.ts so reduced-motion is honoured.
+  // PARALLAX, ADDED 2026-08-13 AT THE USER'S REQUEST — and on a flat enamel
+  // plate it has to be argued for rather than sprinkled on. A painted sign has
+  // no depth, so the depth here comes from LAYERS OF SIGN: the oversized ghost
+  // numeral behind the headline drifts slower than the plate scrolls, the way a
+  // second board seen past a fence lags the fence in front of it. Nothing tilts,
+  // nothing scales, nothing blurs — those would be the 3D illusion this world
+  // does not have.
   //
-  // ctaRef targets the LABEL SPAN, not the whole anchor: the arrow glyph
-  // beside it is a separate element so scrambling the label never touches it.
+  // Routed through `motion.ts` because a direct `gsap.to()` is banned in this
+  // repo: GSAP ships no reduced-motion handling of its own, and a continuous
+  // scroll-linked transform is precisely what has to stop dead for a visitor
+  // who asked for less motion.
   useMotion(
     {
-      animate: ({ gsap }) => {
-        const el = ctaRef.current;
-        if (!el || !scrambling) return;
-        const target = el.dataset.label ?? "";
-        const glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const proxy = { progress: 0 };
+      animate: ({ gsap, ScrollTrigger }) => {
+        const mark = markRef.current;
+        const plate = plateRef.current;
+        if (!mark || !plate) return;
 
-        gsap.to(proxy, {
-          progress: 1,
-          duration: 0.45,
-          ease: "power2.out",
-          onUpdate: () => {
-            const settled = Math.floor(proxy.progress * target.length);
-            el.textContent = target
-              .split("")
-              .map((ch, i) =>
-                i < settled || ch === " " ? ch : glyphs[Math.floor(Math.random() * glyphs.length)],
-              )
-              .join("");
-          },
-          // The label MUST end exactly right. A scramble that leaves one wrong
-          // character on the primary call to action is worse than no effect,
-          // and rounding in onUpdate cannot be trusted to land on the last
-          // index.
-          onComplete: () => {
-            el.textContent = target;
+        gsap.to(mark, {
+          // A share of the plate's own height, resolved as a function so it is
+          // recomputed on refresh rather than baked at build time. A fixed
+          // pixel drift is invisible on a 1440px screen and absurd on a phone.
+          y: () => plate.offsetHeight * 0.18,
+          ease: "none",
+          scrollTrigger: {
+            trigger: plate,
+            start: "top top",
+            end: "bottom top",
+            // `scrub`, not a duration: the numeral's position is a function of
+            // scroll offset and has to track the finger exactly. A timed tween
+            // desynchronises the moment someone flicks instead of dragging.
+            scrub: true,
+            invalidateOnRefresh: true,
           },
         });
+
+        // REVEAL ON ENTER, the behaviour the user chose on 2026-08-12. One
+        // orchestrated rise for the whole column rather than scattered
+        // per-element effects: the plate is a single object arriving, and a
+        // stagger of six independent fades would read as six decisions.
+        gsap.from(plate.querySelectorAll("[data-rise]"), {
+          y: 18,
+          opacity: 0,
+          duration: 0.55,
+          ease: "power3.out",
+          stagger: 0.06,
+        });
+
+        ScrollTrigger.refresh();
       },
-      settle: () => {
-        const el = ctaRef.current;
-        if (el) el.textContent = el.dataset.label ?? "";
-      },
+      // The resting state IS the finished state. Nothing here starts hidden in
+      // the markup, so a failed GSAP fetch or a reduced-motion preference
+      // leaves a complete, readable hero rather than an empty navy plate.
+      settle: () => {},
     },
-    { scope: rootRef, deps: [scrambling] },
+    { scope: rootRef },
   );
 
   return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden border-b border-[var(--color-border)]">
-      {/* The static fallback. Painted first, stays if WebGL never arrives or
-          is refused, and is what a reduced-motion or save-data visitor keeps.
-          A fallback that depends on the thing it is a fallback for is not one.
-          The gradient axis is --diag, the same one the map placeholder uses. */}
-      <div
+    <section
+      ref={rootRef}
+      className="relative overflow-hidden border-b-[3px] border-[var(--color-interactive)] bg-[var(--color-band)]"
+    >
+      {/* THE GHOST NUMERAL — the parallax layer, `aria-hidden` decoration
+          rather than content. `24` is the only number on this plate that is not
+          a bookable time: it is the hours the field spans, 06.00 to 24.00. Sized
+          in `vw` so it stays the largest thing in the composition at every
+          width, and clipped by the section's own `overflow-hidden` so it can
+          never widen the page. */}
+      <span
+        ref={markRef}
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(var(--diag),var(--color-blue-50)_0%,var(--color-white)_45%,var(--color-blue-100)_100%)]"
-      />
-      <HeroCanvas />
+        className="type-display pointer-events-none absolute -top-[6vw] -right-[3vw] z-0 leading-[0.7] font-extrabold text-[color:var(--color-border-on-band)] opacity-70 select-none [font-size:clamp(190px,44vw,580px)]"
+      >
+        24
+      </span>
 
-      <div ref={rootRef} className="relative mx-auto w-full max-w-[1100px] px-4">
-        {/* THE SOLID MARK THAT STOOD HERE IS GONE, AND THE HEADER IS WHY.
-            It was correct while the page had no header: the brand had to appear
-            somewhere above the fold. Now `SiteHeader` carries it, fixed, ~100px
-            higher — and the two rendered stacked, which reads as a duplication
-            bug rather than as emphasis. Caught in a 375px screenshot, not in
-            code review.
+      {/* THE WEBGL FIELD IS GONE FROM THIS HERO, AND THAT IS THE DIRECTION
+          TALKING RATHER THAN THE BUDGET. "Pelat enamel" is defined by flat
+          saturated fields and zero gradients; a generative gradient behind the
+          plate is the one thing the world explicitly refuses. Rendered at 35%
+          over navy it also produced visible rectangular banding — it read as
+          compression artefacts on the sign, not as paint on metal.
 
-            DESIGN.md's Hero stacking order asks for the mark here in one form
-            only: "the client mark at 7% opacity with a slow scroll parallax",
-            `aria-hidden`, decoration rather than identification. That is a
-            motion piece and is deliberately not built yet — it needs the
-            user's choice on parallax distance first, and DESIGN.md leaves the
-            speed unspecified. So the hero shows no mark at all this turn,
-            which is honest: the brand still appears above the fold, once, in
-            the header. */}
+          architecture.md PERMITS one WebGL moment; it never required one. The
+          file stays in the repo untouched, so restoring it is an import and a
+          div if a later direction wants it. */}
 
-        {/* THE ONE EYEBROW. Two parts: an `aria-hidden` 34×2px rule skewed on
-            the system's one axis, and the fact itself, which is real content
-            and stays in reading order. Fixed size and tracking, never fluid —
-            at 0.22em a fluid size would change the line's own length at every
-            viewport, and it has to hold one line at 375px. */}
+      <div
+        ref={plateRef}
+        // `100svh` MINUS THE BAND, not `100svh` flat. The stripe is a signature
+        // element of this plate, and measured at 1440x900 a plain `100svh`
+        // column put its top edge at exactly y=900 — one pixel past the fold,
+        // so the first viewport ended on empty navy and the band was something
+        // you had to scroll to discover. Subtracting its height lands it inside
+        // the opening screen, which is where a painted stripe on a sign is.
+        className="relative z-10 mx-auto flex min-h-[calc(100svh-52px)] w-full max-w-[var(--container-max)] flex-col justify-end px-[var(--space-section-x)] pt-32 pb-0"
+      >
+        {/* THE ONE EYEBROW IN THE SYSTEM, and on this plate it reads as the
+            maker's mark stamped along the top edge: what the venue is, which
+            clock it runs on, when it opens. WITA, never WIB — the field is in
+            Lombok and the date layer pins Asia/Makassar. */}
         <p
+          data-rise
           lang="id"
-          className="mt-8 flex items-center gap-3 type-display text-[length:var(--text-eyebrow)] font-semibold tracking-[0.22em] text-[var(--color-interactive)] uppercase"
+          className="type-display flex items-center gap-3 text-[length:var(--text-eyebrow)] font-medium tracking-[0.22em] text-[color:var(--color-interactive-on-band)] uppercase"
         >
           <span
             aria-hidden="true"
-            className="inline-block h-[2px] w-[34px] shrink-0 bg-[var(--color-interactive)] [transform:skewX(var(--skew))]"
+            className="inline-block h-[2px] w-[34px] shrink-0 bg-[var(--color-interactive-on-band)]"
           />
           Mini Soccer · WITA · 06.00–24.00
         </p>
 
-        {/* Three lines, one beat each — `Pilih Jam.` / `Kirim.` / `Main.` The
-            global h1 rule already sets 48→152px uppercase Orbitron at 0.95
-            leading; this only breaks it into its three sentences and outlines
-            the middle one. No `max-w` constraint: each line is a short phrase
-            in its own block box already, so nothing here depends on wrapping. */}
-        <h1 lang="id" className="mt-4">
-          <span className="block">Pilih Jam.</span>
-          {/* THE OUTLINED WORD — DESIGN.md's Outline-Needs-A-Floor Rule, all
-              three conditions:
-                1. No-stroke fallback: the base state (no `@supports` match)
-                   is the word filled solid in the accent colour, never
-                   invisible.
-                2. `forced-colors`: Windows High Contrast Mode does not honour
-                   a text stroke, so the transparency is dropped and the word
-                   fills with the system's own `CanvasText`, `!important` so
-                   it always wins over the `@supports` branch.
-                3. Floor: the stroke is 2px, and this line is never smaller
-                   than the 48px display floor — nowhere near the 24px
-                   minimum the rule sets. */}
-          <span
-            className={cn(
-              "block text-[color:var(--color-interactive)]",
-              "supports-[-webkit-text-stroke:1px_currentColor]:text-[color:transparent]",
-              "supports-[-webkit-text-stroke:1px_currentColor]:[-webkit-text-stroke:2px_var(--color-interactive)]",
-              "forced-colors:!text-[color:CanvasText] forced-colors:[-webkit-text-stroke:0px]",
-            )}
-          >
+        {/* THREE BEATS AT THREE SIZES — the answer to Panchang's width, and the
+            one structural idea in this hero.
+
+            `KIRIM.` takes the accent colour rather than an outline. On a navy
+            plate an outlined word reads as a hollow punched through the sign,
+            and this direction is made of filled fields; the colour change does
+            the same job without contradicting the world. */}
+        <h1 data-rise lang="id" className="mt-6 text-[color:var(--color-fg-on-band)]">
+          <span className="block leading-[0.9] [font-size:clamp(38px,10vw,104px)]">Pilih Jam.</span>
+          <span className="block leading-[0.9] text-[color:var(--color-interactive-on-band)] [font-size:clamp(46px,12.4vw,128px)]">
             Kirim.
           </span>
-          <span className="block">Main.</span>
+          <span className="block leading-[0.9] [font-size:clamp(54px,14.6vw,152px)]">Main.</span>
         </h1>
 
         <p
+          data-rise
           lang="id"
-          className="mt-6 max-w-[46ch] text-[color:var(--color-fg-muted)] md:text-[length:var(--text-h3)]"
+          className="mt-7 max-w-[42ch] text-[color:var(--color-fg-muted-on-band)]"
         >
           Jadwal Arena Player tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp.
         </p>
 
-        {/* Two CTAs, side by side above ~420px and stacked below it — a phone
-            narrow enough for two 56px-tall full-width buttons to collide
-            otherwise. Filled primary, outlined secondary, both now the
-            shared `Button` — its own wipe and lift replace what used to be a
-            plain colour-transition hover here. */}
-        <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-center">
+        <div data-rise className="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
           <Button
             href="#order"
+            variant="on-band"
             lang="id"
-            onMouseEnter={() => setScrambling(true)}
-            onMouseLeave={() => setScrambling(false)}
-            // The arrow is passed as `icon`, deliberately OUTSIDE `children` —
-            // `Button` renders it as its own element so the scramble tween
-            // below, which targets only the label span via `ctaRef`, never
-            // sweeps through it and substitutes it with a random glyph
-            // mid-tween.
-            icon="→"
-            className="w-full min-[420px]:w-auto"
+            icon={<span aria-hidden="true">→</span>}
           >
-            <span ref={ctaRef} data-label="Pesan Lapangan">
-              Pesan Lapangan
-            </span>
+            Pesan Lapangan
           </Button>
-
-          <Button
-            href="#lokasi"
-            lang="id"
-            variant="secondary"
-            className="w-full min-[420px]:w-auto"
-          >
+          <Button href="#lokasi" variant="secondary-on-band" lang="id">
             Lihat Lokasi
           </Button>
         </div>
+
+        <div className="h-16" />
       </div>
 
-      <Marquee />
+      {/* THE BAND SITS FLAT ON THE PLATE'S BOTTOM EDGE, EDGE TO EDGE.
+
+          Flat because the user ruled out the skew on 2026-08-13, and on an
+          enamel plate that is the right answer anyway: a painted stripe on a
+          metal sign runs parallel to the sign's own edge.
+
+          OUTSIDE the container rather than inside it with a negative margin.
+          The negative-margin version only reached the container's padding, so
+          on a 1440px screen the stripe stopped dead at the 1280px maximum with
+          navy either side — a painted band that does not touch both edges of
+          its sign reads as a mistake, not as a margin. */}
+      <div className="relative z-10">
+        <Marquee />
+      </div>
     </section>
   );
 }
