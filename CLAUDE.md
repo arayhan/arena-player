@@ -74,7 +74,8 @@ Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL 
 arena-player-web/
 ├── CLAUDE.md
 ├── docs/            # PRODUCT, PRD, architecture, database, DESIGN, PROGRESS.md (current phase), progress-archive/, tasks/
-├── .claude/         # agents, skills, hooks, settings
+├── .claude/         # agents, skills, hooks, settings, rules/ (coding rules),
+│                    # commands/ (agent-only tooling as slash commands)
 ├── db/migrations/   # SQL, run manually — outside src/ because nothing imports it
 ├── src/
 │   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/.
@@ -94,10 +95,24 @@ arena-player-web/
 │   ├── lib/         # polish for installed libraries, flat — cn, motion (lazy GSAP), query-client
 │   ├── utils/       # web-only helpers — error.ts, formatter.ts
 │   └── mocks/       # MSW handlers implementing the API contract
-└── scripts/         # check-setup.test.ts — live Neon + R2 preflight, Phase 4
+└── scripts/         # human-facing tooling only, wired to package.json.
+                     # Agent-only tooling goes in .claude/commands/ instead
 ```
 
 Full detail: [docs/architecture.md](docs/architecture.md).
+
+## Coding rules
+
+The rules live in `.claude/rules/`, one file per theme, so a session loads only what it needs. [docs/dev-rules.md](docs/dev-rules.md) is the index; these are the files.
+
+| Read before                         | File                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| writing any code                    | [.claude/rules/code-style.md](.claude/rules/code-style.md)           |
+| writing or changing a test          | [.claude/rules/testing.md](.claude/rules/testing.md)                 |
+| touching a route handler or service | [.claude/rules/api-conventions.md](.claude/rules/api-conventions.md) |
+| writing markup or a form control    | [.claude/rules/accessibility.md](.claude/rules/accessibility.md)     |
+
+A hard rule below beats anything in those files. Where a rules file needs a number — a contrast ratio, a budget ceiling, a field name — it links to the owning document rather than copying the value.
 
 ## Commit conventions & DX
 
@@ -109,6 +124,7 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - **Three import rules, each enforced twice** — ESLint catches the `@/` form, `check:docs` resolves the relative form no glob can express. Nothing under `src/` imports from `src/app/` (extraction boundary). Feature modules never import each other — shared vocabulary goes in `src/domain/`. `src/domain/` imports nothing from the rest of `src/` and uses **relative** sibling imports (`./slots`), the one exception to `@/`-everywhere, so the copy resolves identically in both repos.
 - **`src/domain/` is byte-identical with `arena-player-admin` at the same path** and guarded by `pnpm check:domain` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too, which is why three of its four files have none.
 - No attribution trailers on commits.
+- **`scripts/` is for the human developer; `.claude/commands/` is for agents.** If a tool is only ever invoked by an agent, it is a slash command — a markdown prompt in `.claude/commands/`, not a `.ts` file and not a `package.json` entry. Commands hold no code: the instruction _is_ the tool, and the agent executes it with the tools it already has. Anything a human runs — or that a CI gate runs — stays in `scripts/` and stays wired to `package.json`. **Nothing needed to move when this rule landed**: all three scripts here are reached by `pnpm check` or `check:ship`, so the rule is forward-looking, not a migration somebody should later try to "finish".
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
 - **`ui-designer` owns everything a visitor can see** — components, tokens, layout, typography, motion, and `docs/DESIGN.md` — the decision and the code both. `software-engineer` owns everything behind it: route handlers, data layer, validation, tests. A form's submit path is the engineer's; the same form's markup is not.
 

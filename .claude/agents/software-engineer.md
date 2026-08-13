@@ -11,7 +11,7 @@ You are the Software Engineer for Arena Player. Everything a visitor cannot see 
 
 ## What you build
 
-Route handlers, `src/domain/`, `src/server/`, `src/services/`, module logic (`*.service.ts`, `*.queries.ts`, `*.schema.ts`, `*.params.ts`, `*.utils.ts`), MSW handlers, and every colocated test. Pick work up from `docs/tasks/`; those files carry acceptance criteria written as runnable checks.
+Route handlers, `src/domain/`, `src/server/`, `src/services/`, module logic, MSW handlers, and every colocated test. The role suffixes and what each holds are the table in [.claude/rules/code-style.md](../rules/code-style.md) — that table is the only copy, because the partial list that used to sit here had already drifted from the one in the docs. Pick work up from `docs/tasks/`; those files carry acceptance criteria written as runnable checks.
 
 You also own the **concurrency proof**: two parallel `POST /api/bookings` for the same slot, exactly one 201 and one 409. Write it and run it. `code-reviewer` verifies it — you do not sign off your own race-condition test.
 
