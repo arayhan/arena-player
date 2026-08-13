@@ -117,16 +117,16 @@ export function LocationBlock() {
             nothing here is invented the way an address or a map pin position
             would be.
 
-            THE COPY ITSELF HAS NEVER BEEN APPROVED BY THE USER. DESIGN.md
-            specifies the TREATMENT ("stacked uppercase display lines with the
-            middle line outlined") and not the words, unlike the hero and
-            closing headings whose text is fixed in the doc. ARENA / PLAYER /
-            LOMBOK was chosen by an agent on 2026-08-12 and flagged for a
-            confirm-or-override pass that has not happened. It is carried
-            forward here rather than replaced, because swapping one unapproved
-            invention for another is not progress — but the scale below is
-            bound to "LOMBOK" specifically, so approving different copy means
-            re-deriving `--text-location` against the new longest word.
+            THE COPY IS NOW CONFIRMED. DESIGN.md specifies the TREATMENT
+            ("stacked uppercase display lines with the middle line outlined")
+            and not the words, so ARENA / PLAYER / LOMBOK was chosen by an
+            agent on 2026-08-12 and carried an in-file flag saying no one had
+            approved it. The client confirmed both the business name and the
+            region on 2026-08-13 and the flag is gone; the words stand.
+
+            The scale below is still bound to "LOMBOK" specifically, so any
+            future copy change means re-deriving `--text-location` against the
+            new longest word — that constraint outlives the approval.
 
             `--text-location`, NOT `--text-display`. The hero's clamp reaches
             152px for a headline whose longest word is five characters and whose

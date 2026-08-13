@@ -6,9 +6,13 @@ import { BookingEntry } from "@/modules/booking-form/BookingEntry";
 // src/app/page.tsx already follows. All three ways this route can be entered
 // (valid, unusable, expired) are decided in the module, not here.
 export const metadata: Metadata = {
-  title: "Formulir Booking — Arena Player",
+  // A PASTED LINK IN A GROUP CHAT IS A STATED TRAFFIC PATH for this route —
+  // visitors arrive here through WhatsApp, not through the landing page — so
+  // the region has to survive in the metadata rather than only in the page a
+  // visitor may never have seen.
+  title: "Formulir Booking — Arena Player Lombok",
   description:
-    "Lengkapi data tim dan unggah bukti transfer DP untuk booking lapangan Arena Player.",
+    "Lengkapi data tim dan unggah bukti transfer DP untuk booking lapangan mini soccer Arena Player di Lombok.",
 };
 
 // searchParams is typed explicitly rather than through the generated

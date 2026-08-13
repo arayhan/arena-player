@@ -117,7 +117,8 @@ export function ClosingCTA() {
         </h2>
 
         <p lang="id" className="mt-6 max-w-[46ch] text-[color:var(--color-fg-muted-on-band)]">
-          Cek jadwalnya sekarang, pilih jamnya, sisanya lewat WhatsApp.
+          Satu lapangan mini soccer di Lombok, jadwalnya terbuka. Pilih jamnya, sisanya lewat
+          WhatsApp.
         </p>
 
         {/* BACK TO #order, NOT TO /booking. The site has one destination and

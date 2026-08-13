@@ -34,6 +34,13 @@ import { useMotion, type MotionApi } from "@/lib/motion";
  * window (`src/domain/dates.ts`'s `BOOKING_WINDOW_DAYS`).
  */
 const ITEMS = [
+  // "LOMBOK" IS THE SEVENTH ITEM AND THE ONE ADDITION TO THE PROTOTYPE'S
+  // TRACK. It passes the facts-not-slogans rule the comment above states —
+  // it is where the field is, the same class of fact as the slot count and
+  // the timezone standing beside it, and it is reachable elsewhere on the
+  // page (the location block's third display line). A tagline would not
+  // qualify no matter how short.
+  "LOMBOK",
   "9 SLOT / HARI",
   "06.00 — 24.00",
   "WITA",
@@ -44,7 +51,7 @@ const ITEMS = [
 
 // The track holds ITEMS twice back to back (see the render below), so
 // translating by exactly one copy's measured width loops seamlessly — the
-// visible band is always a full, unclipped repeat of the same six facts.
+// visible band is always a full, unclipped repeat of the same seven facts.
 const DOUBLED = [...ITEMS, ...ITEMS];
 
 // SPEED IS NOT IN DESIGN.md. The Marquee section fixes the axis (X only) and

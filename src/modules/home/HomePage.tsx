@@ -200,7 +200,12 @@ export function HomePage() {
           lang="id"
           className="mx-auto w-full max-w-[var(--container-max)] px-[var(--space-section-x)] text-[length:var(--text-sm)] text-[color:var(--color-fg-muted-on-band)]"
         >
-          Arena Player · Lapangan mini soccer
+          {/* THE LAST LINE ON THE PAGE IS WHERE THE REGION BELONGS, because it
+              is the one string a visitor reads no matter which section brought
+              them in. "Lombok" and nothing narrower: the field's town is not
+              among the facts the client has supplied, and inventing one here
+              would put a wrong place on every screen. */}
+          Arena Player · Lapangan mini soccer di Lombok
         </p>
       </footer>
     </main>

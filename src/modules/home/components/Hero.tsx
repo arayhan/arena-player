@@ -169,7 +169,8 @@ export function Hero() {
           lang="id"
           className="mt-7 max-w-[42ch] text-[color:var(--color-fg-muted-on-band)]"
         >
-          Jadwal Arena Player tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp.
+          Jadwal lapangan mini soccer di Lombok, tampil langsung. Pilih jam kosong, lanjut lewat
+          WhatsApp.
         </p>
 
         <div data-rise className="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
