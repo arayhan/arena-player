@@ -648,3 +648,13 @@ ALSO SYNCED: the sidecar (15 `font-family:Saira`, 15 `font-stretch:125%`, 3 weig
 VERIFIED: `pnpm check` green — `check:docs` **15 checks over 110 files**, `check:domain` 8 identical, 115 tests. `impeccable doctor` reports **"No drift found"**, down from two findings. Every surviving "Saira" is in a dated or superseded sentence, in a history file, or in the new check's own watchlist. Page overflow 0 at 375 and 1280, headline ink unchanged.
 
 NOT TOUCHED: PROGRESS.md and progress-archive/ keep every "Saira" and "Orbitron". They record what was true when written, and rewriting history to match the present is the opposite of syncing.
+
+[2026-08-13] [designer] `docs/DESIGN.html` ADDED TO `detector.ignoreFiles`, on the user's explicit confirmation.
+
+WHY A FILE-SCOPED IGNORE RATHER THAN THREE VALUE-SCOPED ONES. The detector reported `design-system-font` (Saira), `dark-glow`, and a `design-system-radius` in that file. The radius was mine — a 2px corner on the `<code>` chip in the superseded banner I wrote the same day — and it was fixed rather than suppressed, because the world is square and 2px was my own inconsistency. The other two predate this work and belong to the prototype itself.
+
+The file is a **frozen historical artifact, not a maintained surface**: it renders the direction the client saw and approved on 2026-08-11, the re-approval for what replaced it is still owed, and the user chose a superseded banner over a regeneration precisely so that evidence survives. Every rule the detector has, and every rule it gains later, will keep firing on a file nobody is allowed to fix. That is the case `ignore-file` is for.
+
+WHAT IT COSTS, STATED SO IT IS NOT DISCOVERED LATER: this silences **every** rule for that path permanently, including rules not yet written. **It expires the moment the file stops being historical** — if `DESIGN.html` is ever regenerated against the current direction, remove the entry in the same commit, or the regenerated file ships unreviewed.
+
+ONE FINDING WORTH KEEPING ON RECORD RATHER THAN BURYING: `dark-glow` is probably a false positive against the CURRENT build too, not only against the prototype. The system ships `glow-interactive`, a blue shadow on hovered available slot cells, and DESIGN.md justifies it explicitly — it is the second signal on the SAME event as the Signal Blue border beneath it, not a lighting effect. If that rule ever fires on a live component, read that argument before treating it as a defect.
