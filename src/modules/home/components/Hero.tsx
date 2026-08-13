@@ -225,6 +225,37 @@ export function Hero() {
         <div className="h-16" />
       </div>
 
+      {/* THE SKEWED FIELD — the hero's background, chosen by the user on
+          2026-08-13 from three candidates in live mode. The other two were a
+          drawn pitch (centre circle, halfway line, penalty box) and mown
+          stripes on `--diag`; this one won.
+
+          IT IS THE AXIS STATED ONCE AND LARGE. `--skew` already carries the
+          button wipe, the section numerals and the rule numerals at component
+          scale; here it runs at plate scale, which is the same idea rather
+          than a fourth one. Nothing new tilts — the value is the system's own
+          single skew token, and a second skew value anywhere would be a
+          defect rather than a variation.
+
+          THE FILLS ARE TRANSLUCENT ON PURPOSE, NOT FOR SUBTLETY. This layer
+          sits at `z-0` and comes LATER in the DOM than the ghost `24` above,
+          which is also `z-0` — so an opaque fill would paint the numeral out
+          entirely. At 0.55 both read, and the plate gains the second board
+          the parallax comment already describes.
+
+          Tailwind utilities rather than a stylesheet rule: every other
+          element in this file is styled the same way, and three declarations
+          do not earn a named class in `globals.css`.
+
+          `aria-hidden` and `pointer-events-none` — it is paint on the sign,
+          not content, and it must never intercept a tap meant for the CTAs
+          sitting above it. Clipped by the section's own `overflow-hidden`, so
+          it cannot widen the page at any width. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <span className="absolute top-[-20%] right-[-14%] h-[150%] w-[76%] bg-[var(--color-border-on-band)] opacity-[0.55] [transform:skewX(var(--skew))]" />
+        <span className="absolute top-[-20%] right-[24%] h-[150%] w-[3px] bg-[var(--color-interactive-on-band)] opacity-[0.34] [transform:skewX(var(--skew))]" />
+      </div>
+
       {/* THE BAND SITS FLAT ON THE PLATE'S BOTTOM EDGE, EDGE TO EDGE.
 
           Flat because the user ruled out the skew on 2026-08-13, and on an
