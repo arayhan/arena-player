@@ -2,7 +2,7 @@
 
 Read before writing any markup, form field, or interactive control.
 
-**Authority:** this file is the single source for the behavioural baseline. Every contrast ratio, colour value and focus-ring style is [DESIGN.md](../../docs/DESIGN.md) — normative, and never restated here. Where this file mentions a threshold it names the rule, not the number.
+**Authority:** this file is the single source for the behavioural baseline. Every contrast ratio, colour value and focus-ring style is [DESIGN.md](../DESIGN.md) — normative, and never restated here. Where this file mentions a threshold it names the rule, not the number.
 
 **This is the part most likely to be skipped, because nothing fails when it is.** Every item below is checkable against code.
 
@@ -23,7 +23,7 @@ Read before writing any markup, form field, or interactive control.
 
 - Focus is managed on submission. **A 409 must move focus to the message**, or a screen-reader user never learns their slot was taken and simply sees a form that appears to have done nothing.
 - 409 and 429 are not interchangeable. Announcing the wrong one tells a rate-limited user their slot is gone when it is not.
-- Focus is visible wherever it lands, in a sensible order. Never `outline: none` without a replacement that meets the bar in [DESIGN.md](../../docs/DESIGN.md).
+- Focus is visible wherever it lands, in a sensible order. Never `outline: none` without a replacement that meets the bar in [DESIGN.md](../DESIGN.md).
 
 ## Disabled controls
 
@@ -54,7 +54,7 @@ The pull toward native `disabled` is strong: it is shorter, it is what the platf
 
 ## Status is information, not decoration
 
-A booking state the visitor cannot read is a booking state they will get wrong. No status is ever expressed as a single hue: each is a surface + border + text triple chosen together so the label passes AA. The values are in [DESIGN.md](../../docs/DESIGN.md).
+A booking state the visitor cannot read is a booking state they will get wrong. No status is ever expressed as a single hue: each is a surface + border + text triple chosen together so the label passes AA. The values are in [DESIGN.md](../DESIGN.md).
 
 The label carries the meaning too — "Sudah lewat" against "Terisi" is what satisfies WCAG 1.4.1, because colour is never the only means.
 

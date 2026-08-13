@@ -2,7 +2,7 @@
 
 Read before writing or changing a test, and before claiming anything works.
 
-**Authority:** this file is the single source for how verification is done here. The requirement that non-trivial modules carry tests is [CLAUDE.md](../../CLAUDE.md) hard rule 8 — that rule wins; this file says how to satisfy it. Verification _practice_ rationale (why Vitest, why the two-run split) is in [architecture.md](../../docs/architecture.md).
+**Authority:** this file is the single source for how verification is done here. The requirement that non-trivial modules carry tests is [CLAUDE.md](../../CLAUDE.md) hard rule 8 — that rule wins; this file says how to satisfy it. Verification _practice_ rationale (why Vitest, why the two-run split) is in [architecture.md](../architecture.md).
 
 ---
 

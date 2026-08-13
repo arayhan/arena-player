@@ -2,7 +2,7 @@
 
 Read before touching anything under `src/app/api/`, `src/server/`, `src/mocks/`, or a `*.service.ts`.
 
-**Authority:** the contract itself — exact field names, response shapes, status codes — lives in [architecture.md](../../docs/architecture.md) and is normative. This file holds the _conventions_ for implementing against it, which that document does not state. Postgres error codes and Neon/R2 gotchas belong to the `arena-player-database` skill. The race condition is [CLAUDE.md](../../CLAUDE.md) hard rule 1 and outranks everything here.
+**Authority:** the contract itself — exact field names, response shapes, status codes — lives in [architecture.md](../architecture.md) and is normative. This file holds the _conventions_ for implementing against it, which that document does not state. Postgres error codes and Neon/R2 gotchas belong to the `arena-player-database` skill. The race condition is [CLAUDE.md](../../CLAUDE.md) hard rule 1 and outranks everything here.
 
 ---
 

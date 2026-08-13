@@ -48,7 +48,8 @@ const SERVER_ONLY = {
     "src/server/ holds DATABASE_URL and the R2 secrets. Only route handlers under src/app/api/** may import it — everything else reaches data through an API route.",
 };
 
-// Import rule 1, the extraction boundary. CLAUDE.md and docs/dev-rules.md both
+// Import rule 1, the extraction boundary. CLAUDE.md and the dev rules (then
+// docs/dev-rules.md, now docs/rules/code-style.md) both
 // said "three import rules, all lint-enforced" while this one was enforced
 // nowhere — src/domain/ got it incidentally through the @/* ban and no other
 // folder got it at all. A doc that overstates a guard is the failure class this

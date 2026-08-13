@@ -46,7 +46,7 @@ restates none of it.
 | Phases, routes, static content, Definition of Done                 | [docs/PRD.md](docs/PRD.md)                                                                  |
 | System design, API contract, folder boundaries, performance budget | [docs/architecture.md](docs/architecture.md)                                                |
 | Database schema, and every gotcha that has already bitten          | [docs/database.md](docs/database.md)                                                        |
-| Naming, where a file goes, the accessibility baseline              | [docs/dev-rules.md](docs/dev-rules.md)                                                      |
+| Naming, where a file goes, testing, API conventions, accessibility | [docs/rules/](docs/rules/)                                                                  |
 | Colour, type, spacing, contrast ratios                             | [docs/DESIGN.md](docs/DESIGN.md)                                                            |
 | Why a past decision was made                                       | [docs/PROGRESS.md](docs/PROGRESS.md), then [docs/progress-archive/](docs/progress-archive/) |
 

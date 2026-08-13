@@ -2,7 +2,7 @@
 
 Read before writing any code. These are the conventions an agent cannot infer from the code itself.
 
-**Authority:** this file is the single source for naming, file placement, and component patterns. Where a rule belongs to another document it is linked, never copied — [CLAUDE.md](../../CLAUDE.md) hard rules win over everything here, [architecture.md](../../docs/architecture.md) owns folder rationale and the API contract, [DESIGN.md](../../docs/DESIGN.md) owns anything visual.
+**Authority:** this file is the single source for naming, file placement, and component patterns. Where a rule belongs to another document it is linked, never copied — [CLAUDE.md](../../CLAUDE.md) hard rules win over everything here, [architecture.md](../architecture.md) owns folder rationale and the API contract, [DESIGN.md](../DESIGN.md) owns anything visual.
 
 ---
 
@@ -89,7 +89,7 @@ Both folders are organised by _kind_ in a repo otherwise organised by _feature_.
 
 `src/lib/` stays flat. Nesting it is the first sign it has started collecting features rather than polishing libraries.
 
-**Adding to `src/domain/` is not a neutral act.** Every dependency it gains is one the admin repo is obliged to install at a matching major. Three of its four files have none; keep it that way. Full contract in [architecture.md](../../docs/architecture.md).
+**Adding to `src/domain/` is not a neutral act.** Every dependency it gains is one the admin repo is obliged to install at a matching major. Three of its four files have none; keep it that way. Full contract in [architecture.md](../architecture.md).
 
 ---
 
@@ -135,7 +135,7 @@ component  →  *.queries.ts  →  *.service.ts  →  transport
 (renders)     (TanStack Query)  (the call)      (fetch or axios)
 ```
 
-**No bare `fetch` in a component.** That rule is about the _component_, not the transport — `/` legitimately uses native `fetch`, it just does so from `home.service.ts`. Which transport belongs to which route is in [architecture.md](../../docs/architecture.md).
+**No bare `fetch` in a component.** That rule is about the _component_, not the transport — `/` legitimately uses native `fetch`, it just does so from `home.service.ts`. Which transport belongs to which route is in [architecture.md](../architecture.md).
 
 **Props typing.** Export a named `<Component>Props` type. Prefer a discriminated union over a bag of optional booleans:
 

@@ -12,7 +12,7 @@ Booking website for a mini soccer field. Users check slot availability, pick dat
 | [docs/database.md](docs/database.md)             | Neon + R2 schema, error-code contract, every hard-won gotcha                                                                                                                                   |
 | [docs/DESIGN.md](docs/DESIGN.md)                 | Visual system — tokens, typography, components, do's and don'ts. Follows the [DESIGN.md format spec](https://stitch.withgoogle.com/docs/design-md/overview/); frontmatter tokens are normative |
 | [docs/design-process.md](docs/design-process.md) | How design work runs — motion approval, image sourcing, animation budget, asset locations, consulting order                                                                                    |
-| [docs/dev-rules.md](docs/dev-rules.md)           | Engineering conventions — naming, which folder a thing goes in, component patterns, the accessibility baseline. The layer below these hard rules                                               |
+| [docs/rules/](docs/rules/)                       | Engineering conventions, one file per theme — naming, which folder a thing goes in, component patterns, testing, API conventions, the accessibility baseline. The layer below these hard rules |
 
 ## When to update this file
 
@@ -73,8 +73,9 @@ Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL 
 ```
 arena-player-web/
 ├── CLAUDE.md
-├── docs/            # PRODUCT, PRD, architecture, database, DESIGN, PROGRESS.md (current phase), progress-archive/, tasks/
-├── .claude/         # agents, skills, hooks, settings, rules/ (coding rules),
+├── docs/            # PRODUCT, PRD, architecture, database, DESIGN, PROGRESS.md (current phase),
+│                    # progress-archive/, tasks/, rules/ (coding rules, one file per theme)
+├── .claude/         # agents, skills, hooks, settings,
 │                    # commands/ (agent-only tooling as slash commands)
 ├── db/migrations/   # SQL, run manually — outside src/ because nothing imports it
 ├── src/
@@ -103,14 +104,14 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 
 ## Coding rules
 
-The rules live in `.claude/rules/`, one file per theme, so a session loads only what it needs. [docs/dev-rules.md](docs/dev-rules.md) is the index; these are the files.
+The rules live in [`docs/rules/`](docs/rules/), one file per theme, so a session reads only the one it needs.
 
-| Read before                         | File                                                                 |
-| ----------------------------------- | -------------------------------------------------------------------- |
-| writing any code                    | [.claude/rules/code-style.md](.claude/rules/code-style.md)           |
-| writing or changing a test          | [.claude/rules/testing.md](.claude/rules/testing.md)                 |
-| touching a route handler or service | [.claude/rules/api-conventions.md](.claude/rules/api-conventions.md) |
-| writing markup or a form control    | [.claude/rules/accessibility.md](.claude/rules/accessibility.md)     |
+| Read before                         | File                                                           |
+| ----------------------------------- | -------------------------------------------------------------- |
+| writing any code                    | [docs/rules/code-style.md](docs/rules/code-style.md)           |
+| writing or changing a test          | [docs/rules/testing.md](docs/rules/testing.md)                 |
+| touching a route handler or service | [docs/rules/api-conventions.md](docs/rules/api-conventions.md) |
+| writing markup or a form control    | [docs/rules/accessibility.md](docs/rules/accessibility.md)     |
 
 A hard rule below beats anything in those files. Where a rules file needs a number — a contrast ratio, a budget ceiling, a field name — it links to the owning document rather than copying the value.
 
