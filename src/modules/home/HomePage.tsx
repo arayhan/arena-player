@@ -8,7 +8,6 @@ import { ClosingCTA } from "./components/ClosingCTA";
 import { Section } from "./components/Section";
 import { ProgressBar } from "./components/ProgressBar";
 import { SiteHeader } from "./components/SiteHeader";
-import { SlotLegend } from "./components/SlotLegend";
 
 /**
  * ONE WORD OF A HEADING, IN THE ACCENT COLOUR — DESIGN.md's Section head.
@@ -67,10 +66,29 @@ export function HomePage() {
       <Hero />
 
       {/* THE ANCHOR IS #order, NOT #booking. /booking is a route, and an anchor
-          sharing its name would shadow it. Both CTAs link here. */}
+          sharing its name would shadow it. Both CTAs link here.
+
+          THE TWO-COLUMN COMPOSITION IS GONE, AND IT WAS COSTING THE PRODUCT ITS
+          WIDTH. DESIGN.md's Order section asks for `1.1fr 0.9fr` above 980px
+          with the legend beside the panel, and that was built. Measured, it put
+          the panel at 353.1px at 980px and 477px at 1440px — narrower on a
+          desktop than the 523.7px it reached at 768px, because above 980px it
+          was giving 45% of an already-indented row away. The consequence was not
+          cosmetic: the slot grid's own `@min-[640px]` and `@min-[1180px]`
+          container queries never fired at ANY viewport from 320 to 1440, so
+          every visitor on every device got a single column while the design
+          system promised three.
+
+          So the plate takes the whole content width (`contentFullWidth`, which
+          also drops the heading indent from `md` up) and the legend moves inside
+          it, onto the head panel directly above the fields it explains. The
+          phone ordering the old layout was protecting — panel first, legend
+          after — is preserved for free, because there is now one object and the
+          legend is part of it. */}
       <Section
         id="order"
         step="01"
+        contentFullWidth
         title={
           <>
             Jadwal <Accent>Hari Ini</Accent>, Bukan Janji
@@ -78,24 +96,7 @@ export function HomePage() {
         }
         lede="Pilih tanggal, lalu pilih jam yang masih kosong."
       >
-        {/* TWO COLUMNS ABOVE 980px, `0.9fr 1.1fr` — DESIGN.md's Order section.
-            ONE COLUMN BELOW IT, AND THE PANEL COMES FIRST. That order is not a
-            stacking accident: the two-scroll rule is about reaching the GRID,
-            not the paragraph that introduces it, so on a phone the legend
-            follows the thing it explains rather than delaying it.
-
-            `min-[980px]:` rather than a named breakpoint because 980 is not one
-            of Tailwind's, and DESIGN.md picks it for a measured reason — it is
-            where the panel is still wide enough to hold two slot columns after
-            giving a third of the row away. */}
-        <div className="grid gap-8 min-[980px]:grid-cols-[1.1fr_0.9fr] min-[980px]:items-start min-[980px]:gap-12">
-          <div className="min-[980px]:order-2">
-            <SlotLegend />
-          </div>
-          <div className="min-[980px]:order-1">
-            <OrderSection />
-          </div>
-        </div>
+        <OrderSection />
       </Section>
 
       {/* THE FIRST NAVY BAND. DESIGN.md's Section head table puts Ketentuan on

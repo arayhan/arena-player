@@ -38,6 +38,7 @@ export function Section({
   lede,
   children,
   className,
+  contentFullWidth = false,
   band = false,
 }: {
   /** Anchor target. `#order` is linked from both CTAs and must not change. */
@@ -59,6 +60,25 @@ export function Section({
   lede?: ReactNode;
   children?: ReactNode;
   className?: string;
+  /**
+   * Lets `children` keep the FULL content width at every breakpoint instead of
+   * being indented into the heading's column from `md` up.
+   *
+   * ADDED 2026-08-13 FOR THE ORDER PLATE, and it is a measurement rather than a
+   * preference. The default indent hands the numeral track a share of the row:
+   * measured at 1440px, `--text-numeral` resolves to 144px, the 1.7 track is
+   * 244.8px and the `md:gap-x-6` another 24px, so `children` gets 915.2px of the
+   * 1184px container. The order plate then took 0.55 of that under the old
+   * two-column composition and rendered **477px wide at 1440px** — which is why
+   * its own `@min-[640px]` and `@min-[1180px]` container queries had never once
+   * fired in any viewport from 320 to 1440 and the slot grid was a single column
+   * everywhere. A plate that is the product cannot be the narrowest thing on the
+   * widest screen.
+   *
+   * OPT-IN, DEFAULT `false`, so Ketentuan and Location keep the indent exactly
+   * as they render today — this prop adds a behaviour, it does not change one.
+   */
+  contentFullWidth?: boolean;
   /**
    * Renders the section as a FULL-BLEED NAVY BAND.
    *
@@ -237,10 +257,15 @@ export function Section({
             // The 343px is a measured constraint on the product; the indent is
             // taste. When the two disagree, clarity wins — the same rule that
             // put Signal Blue where the source world wanted brick red.
+            //
+            // `contentFullWidth` extends that same judgement past `md`, for the
+            // one section where the indent costs the product its width rather
+            // than costing it taste — see the prop's own doc comment above.
             <div
               className={cn(
                 "mt-[var(--space-head-gap)] min-w-0",
-                step ? "col-span-2 md:col-span-1 md:col-start-2" : undefined,
+                step && !contentFullWidth ? "col-span-2 md:col-span-1 md:col-start-2" : undefined,
+                step && contentFullWidth ? "col-span-2" : undefined,
               )}
             >
               {children}
