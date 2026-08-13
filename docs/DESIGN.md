@@ -58,7 +58,7 @@ typography:
   label:
     fontFamily: Saira
     fontSize: 15px
-    fontWeight: 800
+    fontWeight: 500
     lineHeight: 1
     letterSpacing: "0.06em"
   closing:
@@ -83,7 +83,7 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
 rounded:
-  control: 12px
+  control: 0px
   panel: 22px
   full: 9999px
 spacing:
@@ -488,7 +488,7 @@ Consequences, all of them deliberate:
 - **Everything leans on one axis**, `-8deg`, sampled from the client's mark and reduced until it survives 375px
 - **Outline is the second weight** — stroked type instead of a second face, a second colour, or a highlight box
 - Oversized uppercase Saira display against Plus Jakarta Sans body; no third face
-- Rounded throughout — 12px controls, 22px panels; exactly one **fully** round shape, and it means something
+- **Square throughout** — 0px controls, 0px surfaces; exactly one **fully** round shape, the date pill, and it means something. Reversed 2026-08-13: the velocity redesign squared every surface and left the button behind at 12px, so an inventory of computed radii found only four non-zero values on the whole page and two were oversights. The map placeholder still holds 22px and is the one remaining outlier
 - Status is a colour _triple_, never a single hue
 - Navy-tinted shadows only; black shadows read as dirt on a blue-white page
 - Whitespace is the layout device, not a shortage of content
@@ -593,7 +593,7 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 - **H3** (Saira 500, 20→32px fluid, 1.25): sub-headings. **No longer the slot time** — see the slot cell.
 - **Closing** (Saira 900, 40→112px fluid, 0.95, `-0.03em`, **uppercase**): the closing band's heading, and nothing else. Smaller than `display` on purpose — see the Closing CTA.
 - **Rule numeral** (Saira 900, 24px fixed, 1, outlined at 1px, skewed): the Ketentuan rule rows, and nothing else. Fixed rather than fluid because 24px IS the Outline-Needs-A-Floor Rule's floor — a clamp would dip under it at some viewport.
-- **Label** (Saira 800, 15px fixed, 1, `0.06em`, uppercase): button labels, and nothing else. Four call sites share it.
+- **Label** (Saira 500, 15px fixed, 1, `0.06em`, uppercase): button labels, and nothing else. Four call sites share it. **Dropped from 800 to 500 on 2026-08-13** — the display face is already wide, and at 800 with uppercase and 0.06em tracking three emphases stacked on a 15px label until it read as a filled block rather than as type.
 - **Eyebrow** (Saira 600, 12px fixed, 1, `0.22em`, uppercase): the hero eyebrow, and nothing else. See [The One-Eyebrow Rule](#where-the-eyebrow-lives--the-ban-narrowed-it-did-not-go).
 - **Body** (Plus Jakarta Sans 400, 16→18px fluid, 1.6): all prose. Cap measure at 60–68ch.
 - **Sm** (Plus Jakarta Sans 400, 14px fixed, 1.5): state labels, helper text, field labels.

@@ -147,7 +147,27 @@ export function Button({
     // breaks the row it sits in. Caught at 375px, where the header's
     // "PESAN LAPANGAN" broke across two lines and crowded the mark beside it.
     "group relative isolate inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap",
-    "rounded-[var(--radius-control)] type-display text-[length:var(--text-label)] font-extrabold tracking-[0.06em] uppercase",
+    // SQUARE, AND WEIGHT 500 — both chosen by the user 2026-08-13, and both
+    // are the button catching up with the redesign rather than a new idea.
+    //
+    // THE RADIUS: an inventory of every computed `border-radius` on the page
+    // found exactly four non-zero values — this button at 12px, the date pills
+    // at 9999px, the map placeholder at 22px, and the map pin's teardrop.
+    // Slot cells, panels, the order plate and the Ketentuan rows are all 0px.
+    // The redesign squared the world and the button was the survivor. The pill
+    // keeps its radius because a pill IS its shape; the map placeholder's 22px
+    // is a known outlier still owed a fix.
+    //
+    // Primary stays FILLED and secondary stays OUTLINED. Square corners are a
+    // shape decision; fill is the hierarchy, and the hero carries two CTAs
+    // where "Pesan Lapangan" has to win — the product is measured on filling
+    // empty slots, not on visual symmetry.
+    //
+    // THE WEIGHT: Panchang is already a wide face. At 800, uppercase, and
+    // 0.06em tracking, three separate emphases stacked on a 15px label and it
+    // read as a block rather than as type. 500 is the lightest weight this
+    // project loads, so it costs no additional font file.
+    "rounded-[var(--radius-control)] type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase",
     "transition-transform duration-300",
     HEIGHT[size],
     PADDING_X[size][style.kind],

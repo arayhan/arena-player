@@ -21,13 +21,16 @@ import { Marquee } from "./Marquee";
  * height. It opens above the fold on a 375px phone because the type scale was
  * measured at that width rather than chosen on a desktop and shrunk afterwards.
  *
- * PANCHANG IS WIDE, AND THE COMPOSITION IS BUILT OUT OF THAT RATHER THAN AROUND
+ * PANCHANG IS WIDE, AND THE HEADLINE IS SIZED OUT OF THAT RATHER THAN AROUND
  * IT. `PILIH JAM.` measures 427.5px at 57.25px — wider than the entire 343px
- * content box at 375px. The previous hero set all three beats at ONE size, so
- * the longest line decided the scale for the other two, which is exactly how a
- * 427px line ends up in a 343px box. Here the three beats take THREE sizes, and
- * they run the other way: the longest string is the smallest, the shortest is
- * the largest. The face's width became the composition.
+ * content box at 375px — so whatever the three beats do, that line decides how
+ * large they may be.
+ *
+ * This hero answered that with three escalating sizes, longest line smallest.
+ * **The user chose a flat setting on 2026-08-13**: one size for all three,
+ * derived from the longest line. The face's width still governs the scale; it
+ * no longer governs the composition, which now rests on colour and rhythm
+ * alone. The derivation is on the `h1` below.
  */
 export function Hero() {
   const rootRef = useRef<HTMLElement>(null);
@@ -149,19 +152,51 @@ export function Hero() {
           Mini Soccer · WITA · 06.00–24.00
         </p>
 
-        {/* THREE BEATS AT THREE SIZES — the answer to Panchang's width, and the
-            one structural idea in this hero.
+        {/* ONE SIZE FOR ALL THREE BEATS, chosen by the user 2026-08-13 over the
+            escalating 104/128/152 this hero shipped with. The escalation was
+            built to survive Panchang's width by giving the longest line the
+            smallest size; the flat setting solves the same problem the other
+            way, by sizing every line to the longest one.
+
+            THE CLAMP IS DERIVED FROM "Pilih Jam.", NOT PICKED. That line sets
+            at **7.231x its font size** in Panchang at this tracking — measured
+            live with `Range.getBoundingClientRect`, and consistent to three
+            digits at 375px and 1280px, which is what tells you it is a real
+            per-em constant rather than one width's coincidence. Every term
+            below is that ratio against the content box at 88% fill:
+
+              320px   box 288   ->  35px   (the floor; 10.95vw would give 35.0)
+              375px   box 343   ->  41px
+              768px   box 707   ->  84px
+              1280px  box 1184  ->  140px
+              1440px  box 1184  ->  144px  (the cap; the container stops growing)
+
+            88% rather than filling the box: the last 12% is where a font
+            fallback, a rounding difference, or one extra character would put
+            the line into horizontal overflow, and this page reached zero
+            overflow at eight widths the hard way.
+
+            THE CAP IS 144px BECAUSE THE CONTAINER STOPS AT 1184px. Past
+            1440px the viewport keeps growing and the content box does not, so
+            an uncapped vw term would push the line off the end of a box that
+            is no longer getting wider.
 
             `KIRIM.` takes the accent colour rather than an outline. On a navy
             plate an outlined word reads as a hollow punched through the sign,
             and this direction is made of filled fields; the colour change does
-            the same job without contradicting the world. */}
-        <h1 data-rise lang="id" className="mt-6 text-[color:var(--color-fg-on-band)]">
-          <span className="block leading-[0.9] [font-size:clamp(38px,10vw,104px)]">Pilih Jam.</span>
-          <span className="block leading-[0.9] text-[color:var(--color-interactive-on-band)] [font-size:clamp(46px,12.4vw,128px)]">
+            the same job without contradicting the world. With the three sizes
+            gone, that colour is now the only thing distinguishing the beats —
+            which is the point of a flat setting. */}
+        <h1
+          data-rise
+          lang="id"
+          className="mt-6 text-[color:var(--color-fg-on-band)] [font-size:clamp(35px,10.95vw,144px)]"
+        >
+          <span className="block leading-[0.9]">Pilih Jam.</span>
+          <span className="block leading-[0.9] text-[color:var(--color-interactive-on-band)]">
             Kirim.
           </span>
-          <span className="block leading-[0.9] [font-size:clamp(54px,14.6vw,152px)]">Main.</span>
+          <span className="block leading-[0.9]">Main.</span>
         </h1>
 
         <p

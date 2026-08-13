@@ -74,7 +74,16 @@
    * DESIGN.md's named Fixed-Small Rule always said 12px; this comment and one
    * paragraph in DESIGN.md were the stale pair.) The eyebrow has a further
    * reason: at 0.22em tracking a fluid size would change its own line length
-   * at every viewport, and it has to hold one line at 375px. */
+   * at every viewport.
+   *
+   * THIS COMMENT USED TO END "and it has to hold one line at 375px", WHICH THE
+   * BUILD HAS NEVER SATISFIED. Measured 2026-08-13: the hero eyebrow needs
+   * **388px** on one line and has **297px** (343px content box, less the 34px
+   * rule glyph and its 12px gap), so it sets as 228 + 152 at both 375px and
+   * 414px. Fixing it means changing the size, the tracking, or the string —
+   * a design decision, not a token edit — so the claim is retired here rather
+   * than left standing as a rule the page quietly breaks. Recorded as open in
+   * PROGRESS.md. */
   --text-sm: 0.875rem;
   --text-xs: 0.75rem;
   /* NEW. Same pixel size as --text-xs (12px) by coincidence, not a reference
@@ -168,15 +177,33 @@
    * duplicated across a spec and its build is a number that drifts. */
   --text-rule-numeral: 1.5rem;
 
-  /* --- Radius. Rounded further at the client's request, 2026-08-12. ------ */
-  /* The pill stays the ONLY fully-round shape — that is what still makes a
-   * row of date pills read as horizontally scrollable without an arrow or a
-   * fade. Both other radii grew in the redesign because the order panel is
-   * now a single large floating object (holding the date row, the slot grid
-   * and the hand-off bar together) rather than a card in a stack: at the old
-   * 14px, a panel that wide read as a rectangle with the corners filed off. */
-  --radius-control: 12px; /* was 10px */
-  --radius-panel: 22px; /* was 14px */
+  /* --- Radius. --------------------------------------------------------- */
+  /* THE WORLD IS SQUARE, AND THIS BLOCK IS NOW MOSTLY A RECORD OF THAT.
+   * These three values were raised at the client's request on 2026-08-12, and
+   * the velocity redesign then squared every surface that reads them — slot
+   * cells, the order plate, the Ketentuan rows. An inventory of every computed
+   * `border-radius` on the built page on 2026-08-13 found only four non-zero
+   * values left, and two of them were mistakes rather than decisions.
+   *
+   * `--radius-control` GOES TO ZERO, chosen by the user 2026-08-13. Its one
+   * consumer is `Button.tsx`, which was the last rounded control on a page of
+   * square ones. Kept as a token rather than deleted from the button: a single
+   * place to answer "what shape is a control here" is worth more than one
+   * saved line, and Phase 3's form inputs will ask the same question.
+   *
+   * The pill stays the ONLY fully-round shape — that is what makes a row of
+   * date pills read as horizontally scrollable without an arrow or a fade.
+   *
+   * `--radius-panel` IS THE OUTSTANDING ONE. Its only remaining consumer is
+   * the map placeholder, which keeps 22px while every other plate has lost
+   * its radius; it is recorded as owed in PROGRESS.md rather than fixed here,
+   * because that placeholder carries the address-and-coordinates content
+   * marker and gets rebuilt when the client supplies real coordinates. (Named
+   * in prose rather than written as the marker itself: `check:docs` reads the
+   * literal string as a declaration, and a comment about a placeholder is not
+   * a placeholder — it failed exactly that way once.) */
+  --radius-control: 0px; /* was 12px, was 10px */
+  --radius-panel: 22px; /* the map placeholder only — see above */
   --radius-pill: 9999px; /* unchanged */
 
   /* --- Depth. Navy-tinted, except the one accent-tinted exception below. */
