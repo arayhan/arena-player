@@ -106,7 +106,28 @@ export function HomePage() {
 
           The bordered panel that stood here is gone with the list inside it:
           a rounded card sitting ON a band is the "large dark card" defect
-          wearing its inverse. `KetentuanRows` renders full-bleed rows. */}
+          wearing its inverse. `KetentuanRows` renders one full-bleed plate.
+
+          NO `contentFullWidth` HERE, AND THAT IS A MEASUREMENT RATHER THAN AN
+          OMISSION. The order plate needed it because a grid of nine cells was
+          being starved into one column; a column of prose has the opposite
+          problem — the rules already cap at 72ch, so the extra width would go
+          entirely to whitespace while costing the plate its alignment under the
+          heading. Measured at 1280px, the indented column is 931.5px, which is
+          past the cap already.
+
+          THE 41px OVERFLOW IN THIS SECTION IS THE `<h2>`, NOT THE PLATE, AND IT
+          CANNOT BE FIXED FROM EITHER FILE THIS TURN OWNS. Measured at 375px:
+          "KETENTUAN" is a single unbreakable word measuring 278.6px in Panchang
+          at the h2 clamp's 28.75px, and Section's numeral track leaves the
+          heading column 221.6px. The word overhangs the viewport by exactly the
+          41px the section reports, and the plate below contributes 0. Panchang
+          is why — the same word measured 194px in the retired face, which is
+          what the Sub-360 Floor in globals.css was derived against. No value of
+          `--text-h2` above 22.9px fits that column, so the honest fix is the one
+          DESIGN.md already names: the numeral track, not the type. The ordinal
+          ink is 139px inside a 105.4px track here and on `#lokasi` too, so this
+          is a page-wide finding about `Section`, not a Ketentuan defect. */}
       <Section
         id="ketentuan"
         step="02"

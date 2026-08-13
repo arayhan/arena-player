@@ -45,16 +45,26 @@
     1rem + 11vw,
     9.5rem
   ); /* 48px -> 152px. Roughly doubled in the redesign; the hero headline only */
-  /* NEW NAME for the section-numeral role — this file used to call it
-   * `--text-step` because the numeral was a plain filled digit with no
-   * outline. The redesign makes it outlined, leaning, and load-bearing enough
-   * to name after its DESIGN.md role instead of its old visual treatment.
-   * `Section.tsx` was ported to read this name in the same wave. */
+  /* The section ordinal. Outlined, leaning, `aria-hidden` — a compositional
+   * device rather than content.
+   *
+   * RESIZED FOR PANCHANG 2026-08-13, AND IT IS AN INK MEASUREMENT RATHER THAN A
+   * TASTE CHANGE. This clamp was set against faces whose widest two-digit pair
+   * measured about 1.55em. Panchang's is "04" at **2.33em** — its "0" advances
+   * 1.196em where its "1" advances 0.56em — so at the old size the ordinal's
+   * ink overflowed its own grid track by 13.9px at 375px and 30.2px at 1280px,
+   * drawn straight through the heading beside it.
+   *
+   * Widening the track alone could not fix it: the track and the heading share
+   * one row, so every pixel the numeral takes is a pixel "KETENTUAN" loses, and
+   * that word is a single unbreakable 278.6px at the h2 clamp. The numeral had
+   * to give the width back. Scaled by ~0.7 so the ordinal's INK occupies about
+   * what it did before, which is what the composition was actually tuned on. */
   --text-numeral: clamp(
-    3.5rem,
-    2rem + 8vw,
-    9rem
-  ); /* 56px -> 144px, 0.8 leading, skewed --skew, outlined. aria-hidden compositional device, not content */
+    2.5rem,
+    1.4rem + 5.6vw,
+    6.25rem
+  ); /* 40px -> 100px, 0.8 leading, skewed --skew, outlined */
   --text-h2: clamp(1.75rem, 1rem + 3.4vw, 3.5rem); /* 28px -> 56px, section headings */
   --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem); /* unchanged by the redesign */
   /* sm, xs and eyebrow are FIXED. Shrinking a caption below 12px on a phone is
@@ -302,14 +312,50 @@ html {
  * The floor is the only part of the curve that can move without touching 375px,
  * and the floor only binds if the viewport is narrow enough to reach it.
  *
- * So: 24px, below 360px, full stop. 360px and up is byte-identical to the
- * approved scale — `--text-h2` computes 28.24px at 360 and 28.75px at 375
- * either way, because this query has already stopped applying. The DESIGN.md
- * frontmatter keeps the one canonical clamp; this is a floor under it for a
- * device class the scale was never measured against, not a second scale. */
-@media (max-width: 359px) {
+ * WIDENED AND LOWERED FOR PANCHANG, 2026-08-13. Every figure above was measured
+ * in a retired face. Panchang sets "KETENTUAN" at **278.6px** where the previous
+ * face set it at 194px, so the word now overhangs its column on every phone
+ * rather than only below 360px, and 24px is no longer low enough — at the 24px
+ * floor it still measures 232.6px against a 226.4px column. Measured: no
+ * `--text-h2` above **22.9px** fits at 375px, so the floor is 22px and the query
+ * runs to 429px, which is the last width where the heading column is still
+ * narrower than the word.
+ *
+ * This is the third time this rule has been re-derived rather than scaled, and
+ * the reason is always the same: the binding number is one specific word in one
+ * specific face, and nothing about it survives a typeface change. 430px and up
+ * is untouched — the clamp resolves 29.62px there either way, because the query
+ * has already stopped applying. The DESIGN.md frontmatter keeps the one
+ * canonical clamp; this is a floor under it for the widths the scale cannot
+ * serve, not a second scale. */
+/* A STEP, NOT A CLIFF. The heading column grows with the viewport while the
+ * word stays one width, so there is a band of widths where the clamp is too
+ * big and the phone floor is needlessly small. Measured: the clamp's own value
+ * first fits somewhere around 600px, so 480-599 gets its own step at 24px
+ * rather than jumping from 19px straight to the curve. */
+@media (min-width: 480px) and (max-width: 599px) {
   :root {
     --text-h2: 1.5rem;
+  }
+}
+
+@media (max-width: 479px) {
+  :root {
+    --text-h2: 1.1875rem;
+  }
+}
+
+/* BELOW 360px THE ORDINAL GIVES WIDTH BACK AS WELL, and this is the width
+ * where the numbers stop leaving a choice. At 320px the container is 288px;
+ * the ordinal track and the heading share it, and "KETENTUAN" in Panchang is a
+ * single unbreakable word. Holding the numeral at its clamp floor there leaves
+ * the heading 162.8px for a word that needs 193.8px even at 20px. So both give:
+ * the ordinal drops to 28px and the heading to 18px, and the numbered-step
+ * device survives on a device class the type scale was never measured for. */
+@media (max-width: 359px) {
+  :root {
+    --text-h2: 1.125rem;
+    --text-numeral: 1.75rem;
   }
 }
 

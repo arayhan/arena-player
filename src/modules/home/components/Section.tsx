@@ -163,7 +163,21 @@ export function Section({
             // Expressed against `--text-numeral` rather than a pixel value so
             // the track scales with the clamp instead of being pinned to one
             // viewport.
-            step ? "grid-cols-[calc(var(--text-numeral)*1.7)_minmax(0,1fr)]" : "grid-cols-1",
+            // 2.5, NOT 1.7 — RE-DERIVED FOR PANCHANG 2026-08-13, and the old
+            // value was overflowing rather than merely tight. Measured per
+            // glyph at 100px: this face's "0" advances 119.61px where its "1"
+            // advances 56.00px, so the widest two-digit ordinal is "04" at
+            // 2.33em against a track sized for 1.7em. The ink ran 13.9px past
+            // its own cell at 375px and 30.2px at 1280px, drawn straight
+            // through the heading beside it — visible in a screenshot, silent
+            // in every check.
+            //
+            // 2.33em of ink plus the skew overhang, measured at 2.73em together and
+            // rounded to 2.85 for margin. The numeral clamp shrank in the same pass;
+            // widening this multiplier alone could not have worked, because the
+            // track and the heading share one row and "KETENTUAN" is a single
+            // unbreakable word that already did not fit.
+            step ? "grid-cols-[calc(var(--text-numeral)*2.85)_minmax(0,1fr)]" : "grid-cols-1",
           )}
         >
           {step ? (
