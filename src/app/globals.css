@@ -95,21 +95,66 @@
   --text-label: 0.9375rem;
 
   /* NEW 2026-08-12. The closing band's heading, and it is a SEPARATE SCALE
-   * because  does not fit the words it has to set.
+   * because the display token does not fit the words it has to set.
    *
    * DESIGN.md says the closing heading is "display-scale", and that spec
    * collides with the binding constraint this same document states forty
    * lines earlier: the hero headline's longest word is five characters
    * BECAUSE display type at 375px only has 343px to work with. The closing
-   * heading's longest word is "MENUNGGU." at nine. Measured at
-   * : 334.9px at a 320px viewport against a 288px content
-   * box, and the page scrolled sideways by 7px.
+   * heading's longest word is "MENUNGGU." at nine.
    *
    * DESIGN.html had already solved this and nobody had noticed — its
-   *  carries its own clamp rather than the display token, which
+   * `.closing__h` carries its own clamp rather than the display token, which
    * is exactly why the design detector kept reporting 2.5rem as off-ramp. It
-   * was a real, deliberate, undocumented scale. This makes it a role. */
-  --text-closing: clamp(2.5rem, 1rem + 8vw, 7rem);
+   * was a real, deliberate, undocumented scale. This makes it a role.
+   *
+   * RE-DERIVED FOR PANCHANG 2026-08-13, AND THIS IS THE THIRD TIME THE SAME
+   * WORD HAS MOVED IT. The 1rem + 8vw curve was measured against a face that
+   * set "MENUNGGU." at 6.54em. Panchang sets it at **9.0761em** — 1.39x wider,
+   * measured with `Range.getClientRects` on the live node rather than on a
+   * detached probe, because a detached probe silently falls back to system-ui
+   * and reports 4.43em for a string that really renders at 6.82em. At the old
+   * clamp the word measured 417.5px inside a 343px box at 375px and the page
+   * scrolled sideways by 21px; at 320px it was 377.6px inside 288px, 29px.
+   *
+   * The curve is now anchored to the box rather than to a remembered size. The
+   * content box is `100vw - 2 x --space-section-x`, and the largest beat is
+   * "LAPANGAN" at 8.548em, so the biggest value that fits is `content / 8.548`
+   * — 33.69px at 320px and 82.66px at 768px, a slope of 10.9vw. 9.6vw sits under
+   * that line at every width, and the tightest point on the whole curve is 320px,
+   * where the beat measures 262.6px inside 288px with **25.4px** to spare.
+   *
+   * IT IS THE LARGEST OF THREE BEATS NOW, NOT THE WHOLE HEADING — see
+   * ClosingCTA.tsx, which derives the other two from this token rather than
+   * introducing two more literals. */
+  --text-closing: clamp(1.875rem, 9.6vw, 7rem);
+
+  /* NEW 2026-08-13. The location block's stacked display lines, and it is a
+   * role for the same reason `closing` is: the hero's `--text-display` does
+   * not fit the words this block has to set, and the block had been reaching
+   * for it since the day it was written.
+   *
+   * THE BINDING STRING IS "LOMBOK" AT 6.8182em, measured live. `--text-display`
+   * clamps to 152px, which asks that word for 1036.3px of ink. It never had it:
+   * the block's own column is 288px at 320px and — this is the part that made
+   * `#lokasi` the worst section on the page — only **304.7px at 980px**, where
+   * DESIGN.md's two-column Location composition splits an already-indented row
+   * in half. The section overflowed at every width from 320 to 1440 and was
+   * WORSE at 768 (158px) than at 375 (31px), because `md:col-start-2` hands the
+   * content column to the numeral track at exactly the width where the display
+   * clamp is climbing fastest.
+   *
+   * So the ceiling is set by the narrowest column this block ever gets, not by
+   * the widest viewport. That column is **380.8px at 980px**, where the section
+   * splits in two — 6.8182em fits it at 55.86px, and 4.8vw resolves to 47.04px
+   * there. The 3.5rem cap holds from 1167px up, under the 516.9px the widest
+   * screen provides; the 2.25rem floor covers the phone widths, where the column
+   * is full-width and generous and the type is bound by nothing.
+   *
+   * Not merged with `--text-closing`: these two roles are bound by different
+   * words in different boxes, and the last time this system let one number
+   * stand for two measurements it shipped a heading 46px wider than its box. */
+  --text-location: clamp(2.25rem, 4.8vw, 3.5rem);
 
   /* NEW 2026-08-12. The Ketentuan rule numeral, FIXED at the outline floor.
    * DESIGN.md's Outline-Needs-A-Floor Rule sets 24px as the smallest size any

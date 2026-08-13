@@ -50,12 +50,12 @@ function Accent({ children, band = false }: { children: ReactNode; band?: boolea
  * opens the page rather than continuing a sequence; the closing is a call to
  * action, and numbering it would imply a fourth thing to read.
  *
- * STILL TO COME, so nobody reads their absence as a decision: the Ketentuan's
- * ten-row band treatment and the Location section's map placeholder, then the
- * navy Closing CTA that replaces the light footer below; then the slot-state
- * legend, the two-column order composition, and the motion pieces (marquee,
- * parallax mark, progress bar) which need the user's choice before any of them
- * is written.
+ * ALL FIVE SECTIONS ARE BUILT. This block listed the Ketentuan band, the
+ * location map placeholder and the closing CTA as "still to come" until
+ * 2026-08-13; all three exist, along with the slot legend, the two-column
+ * order composition and the marquee. What remains is not a section: DESIGN.md
+ * is rewritten from the built result, and the client has not re-approved this
+ * direction or the typeface behind it.
  */
 export function HomePage() {
   return (
@@ -146,7 +146,23 @@ export function HomePage() {
           is a checkable fact about a place whose street address is still an
           outstanding placeholder below — the same class of invention as a
           made-up street name, only quieter because it sounds like copy rather
-          than data. */}
+          than data.
+
+          NO `contentFullWidth` HERE, AND IT WAS CONSIDERED RATHER THAN SKIPPED.
+          This section was the page's worst overflow — 158px at 768px, five
+          times the phone figure — and the order plate's fix for the identical
+          symptom was to take the full content width back from the numeral
+          track. It would have helped here too: at 1280px the block would go from
+          891.9px to 1184px, and its two columns from 421.9px to 568px each.
+          It is not used because the cause was different. The order plate was
+          starved of width it genuinely needed — a nine-cell grid collapsed to
+          one column on every device. This block was asking for the HERO's type
+          scale in half an indented row, and the honest fix is the scale, not
+          more room to be wrong in. Widening it would have hidden the defect at
+          desktop widths and left it at 768px, where the indent bites hardest.
+          The indent also stays because three of the four sections use it, and
+          the plate-under-an-indented-paragraph misalignment `contentFullWidth`
+          buys is a cost worth paying exactly once. */}
       <Section
         id="lokasi"
         step="03"

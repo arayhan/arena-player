@@ -43,7 +43,7 @@ import { KETENTUAN, KETENTUAN_TITLE } from "../home.content";
  *   rule text     blue-50  on navy-900 ......... 15.69:1
  *   rule text     blue-50  on navy-700 (hover) . 11.94:1
  *   head label    navy-200 on navy-900 .......... 7.91:1
- *   numeral       blue-400 on navy-900 .......... 6.71:1
+ *   numeral       blue-400 on navy-900 .......... 6.72:1
  *   numeral       blue-400 on navy-700 (hover) .. 5.11:1
  * The hairlines are the one thing here that does NOT owe a text ratio:
  * navy-700 on navy-900 computes 1.31:1 and that is correct, because they are
