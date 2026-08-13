@@ -139,7 +139,7 @@ export function LocationBlock() {
             rule, the button wipe, the marquee band — and this is not one of
             them. A sixth leaning element would be the "second skew value"
             DESIGN.md calls a defect, not a variation. */}
-        <p className="type-display text-[length:var(--text-location)] leading-[0.95] font-black tracking-[-0.03em] text-[color:var(--color-fg)] uppercase">
+        <p className="type-display text-[length:var(--text-location)] leading-[0.95] font-extrabold tracking-[-0.03em] text-[color:var(--color-fg)] uppercase">
           <span className="block">Arena</span>
           {/* THE OUTLINED MIDDLE LINE — DESIGN.md's Location section: "the
               middle line outlined at 1.5px in navy-400".

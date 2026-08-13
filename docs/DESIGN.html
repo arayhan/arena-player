@@ -806,6 +806,19 @@ th{font-family:var(--font-display);font-stretch:125%;font-weight:700;color:var(-
 <script>document.documentElement.classList.add('js-motion');</script>
 </head>
 <body>
+
+<!-- SUPERSEDED BANNER. Added 2026-08-13. Inline styles on purpose: this block
+     must render correctly even if every stylesheet rule below it is retired,
+     and it must be deletable in one cut when the file is regenerated. -->
+<div role="note" style="background:#011A43;color:#EFF6FF;padding:20px 24px;font:15px/1.6 system-ui,sans-serif;border-bottom:3px solid #2563EB">
+  <div style="max-width:72ch;margin:0 auto">
+    <p style="margin:0 0 10px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#60A5FA;font-weight:700">Superseded — not authority</p>
+    <p style="margin:0 0 10px"><strong>This prototype renders a direction the build has moved past.</strong> It was regenerated on 2026-08-12 for the &ldquo;velocity&rdquo; art direction, and the built site has changed under it since: the display typeface is now <strong>Panchang</strong>, not Saira; the hero headline sets at one size rather than three; controls are square rather than 12px-rounded; the marquee is flat rather than skewed; and the hero is a navy plate with no WebGL field.</p>
+    <p style="margin:0 0 10px"><strong>Authority is <code style="background:#0A2E6B;padding:1px 5px;border-radius:2px">docs/DESIGN.md</code></strong>, which was rewritten from the built result on 2026-08-13. Read this file for what the client saw, never for what to build.</p>
+    <p style="margin:0"><strong>It is kept rather than regenerated, deliberately.</strong> The client approved the light-only direction on 2026-08-11 and <strong>has not seen anything since</strong> — so this page is the only record of what was actually approved, and overwriting it while that re-approval is still owed would destroy the evidence rather than update it.</p>
+  </div>
+</div>
+
 <!--
   DIRECTION — "velocity", docs/DESIGN.md, 2026-08-12.
 

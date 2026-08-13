@@ -14,7 +14,7 @@
         "rule": "design-system-font",
         "value": "archivo",
         "createdAt": "2026-08-08T10:46:54.145Z",
-        "reason": "DESIGN.html is typeset as a build manual in Archivo, its own voice, while documenting a product that uses Saira and Plus Jakarta Sans. The file states this in visible copy at L446 and L691. Not product typography."
+        "reason": "DESIGN.html is typeset as a build manual in Archivo, its own voice, while documenting a product that uses the display and body faces named in DESIGN.md. The file states this in visible copy at L446 and L691. Not product typography."
       },
       {
         "rule": "design-system-font",

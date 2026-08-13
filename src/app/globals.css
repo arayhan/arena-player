@@ -508,7 +508,7 @@ html {
   }
   h1 {
     font-size: var(--text-display);
-    font-weight: 900;
+    font-weight: 800;
     line-height: 0.95;
     letter-spacing: -0.03em;
     text-transform: uppercase;

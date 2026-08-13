@@ -168,7 +168,7 @@ export function KetentuanRows() {
             <span
               aria-hidden="true"
               className={cn(
-                "type-display font-black leading-none select-none",
+                "type-display font-extrabold leading-none select-none",
                 "inline-block origin-bottom [transform:skewX(var(--skew))]",
                 // 24px IS THE FLOOR THE OUTLINE RULE SETS — DESIGN.md: "this
                 // is the one place the system sits exactly on it." No smaller

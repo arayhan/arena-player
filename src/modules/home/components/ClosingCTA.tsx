@@ -76,7 +76,7 @@ export function ClosingCTA() {
             `w-full` because the parent is a flex column with `items-center`,
             which would otherwise size this to fit-content for the same reason. */}
         <h2 lang="id" className="w-full text-[color:var(--color-fg-on-band)]">
-          <span className="block text-[length:var(--text-closing)] leading-[0.95] font-black tracking-[-0.03em]">
+          <span className="block text-[length:var(--text-closing)] leading-[0.95] font-extrabold tracking-[-0.03em]">
             Lapangan
           </span>
 
@@ -107,11 +107,11 @@ export function ClosingCTA() {
               blue-400 on navy-900 computes 6.72:1 — the same on-band accent
               `Kirim.` uses, and the reason `--color-interactive` may never
               appear here: blue-600 on navy is 3.30:1. */}
-          <span className="block leading-[0.95] font-black tracking-[-0.03em] text-[color:var(--color-interactive-on-band)] [font-size:calc(var(--text-closing)*0.88)]">
+          <span className="block leading-[0.95] font-extrabold tracking-[-0.03em] text-[color:var(--color-interactive-on-band)] [font-size:calc(var(--text-closing)*0.88)]">
             Menunggu.
           </span>
 
-          <span className="block leading-[0.95] font-black tracking-[-0.03em] [font-size:calc(var(--text-closing)*0.7)]">
+          <span className="block leading-[0.95] font-extrabold tracking-[-0.03em] [font-size:calc(var(--text-closing)*0.7)]">
             Jam Berjalan.
           </span>
         </h2>

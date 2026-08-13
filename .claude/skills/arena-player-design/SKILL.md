@@ -7,13 +7,15 @@ description: Use before any UI, styling, animation, or design work in arena-play
 
 Two docs, not one. [docs/DESIGN.md](../../../docs/DESIGN.md) is the visual system — tokens, type, components, do's and don'ts. [docs/design-process.md](../../../docs/design-process.md) is how design work _runs_ — motion approval, image sourcing, the animation budget, asset locations, the landing page content map, and the consulting order. This skill is the quick-reference for both and should not drift from either.
 
-## Direction — mostly NOT decided yet
+## Direction — DECIDED. Execute it, do not reopen it
 
-**Locked, and safe to build on:** light and blue-white, the deliberate inverse of the dark-neon benchmark the client named. Navy `#011A43` sampled from their logo. Saira (wdth 125) display over Plus Jakarta Sans body — changed 2026-08-12, see DESIGN.md. Whitespace as a material.
+**This section said "mostly NOT decided yet" until 2026-08-13 and instructed you to STOP if the art direction was missing from DESIGN.md.** It has been there since 2026-08-12. An agent obeying the old text would have halted on a finished page — which is why a skill file that asserts project state, rather than pointing at where state lives, is a liability. Prefer a pointer to a copy in everything below.
 
-**Not decided:** the art direction itself — type scale, spacing rhythm, section-transition language, and what surpassing the benchmark means concretely. That is **Phase 1b task 1**, and `DESIGN.md` records its north star as deliberately unset until then.
+**The north star is velocity: the page leans on the logo's own axis.** One skew value (`--skew: -8deg`), one gradient angle (`--diag: 168deg`), applied to a fixed list of elements. A second skew value anywhere is a defect, not a variation. The hero is a navy "pelat enamel" plate — flat saturated fields, hard edges, no gradients. Read [DESIGN.md](../../../docs/DESIGN.md) → Overview for the whole thing; it is the authority and this paragraph is a signpost.
 
-Do not mistake one for the other. `PRD.md` says the design "should feel like a winning Awwwards website" — that is the **ambition Phase 1b task 1 converts into a direction**, not the direction. If you are building a section and the art direction is not written in DESIGN.md, that task has not run: stop and say so rather than inventing one section's worth of it.
+**Typefaces: Panchang display over Plus Jakarta Sans body.** Changed twice — Orbitron → Saira (2026-08-12) → Panchang (2026-08-13). Panchang loads at **500, 700 and 800 only** and has **no width axis**, so never ask for a weight of 900 or set `font-stretch` on it: neither fails loudly, and both make every document quoting them wrong. `pnpm check:docs` now guards the family name via `typeface-drift`.
+
+**Still owed, and no work here closes it: client re-approval.** The client approved the light-only direction on 2026-08-11 and has not seen this one. Nothing may be presented as client-approved.
 
 ## Hard limits (do not violate)
 
@@ -21,9 +23,10 @@ Do not mistake one for the other. `PRD.md` says the design "should feel like a w
 - **Animation**: GSAP + ScrollTrigger + CSS `transform`/`opacity` only. No second animation runtime. No Lottie >100KB, no autoplay video unless the Phase 1b hero-video gate passed, no animating layout properties (causes CLS).
 - **ONE WebGL moment** permitted, hero only — dynamically imported, static fallback, ≤ 40KB gzip, deletable in one commit. Full conditions in docs/architecture.md. The cap excludes three.js and pixi.js; use a GLSL fragment shader (~3–5KB) or OGL (~10KB).
 - **`prefers-reduced-motion`** mandatory on every animated component, enforced through the `gsap.matchMedia()` wrapper in `src/lib/motion.ts`. Direct `gsap.to()` in a component is banned — GSAP has no built-in reduced-motion handling.
-- **Mobile-first at 375px.** Order section (`id="order"`) reachable within 1–2 scrolls — hero ≤ 100svh, use `svh` not `vh` (in-app browsers lie about `vh`).
-- **Performance**: LCP < 2.5s, Lighthouse mobile ≥ 85, no CLS. Stay inside the performance budget in docs/architecture.md.
-- **No prices anywhere.** Rules section verbatim Indonesian from the PRD.
+- **Mobile-first at 375px.** Order section (`id="order"`) reachable within 1–2 scrolls. Use `svh` not `vh` (in-app browsers lie about `vh`). **The hero's `≤ 100svh` cap is gone** — the user removed it on 2026-08-13 as limiting; the plate takes the height its content needs. The two-scroll rule itself is unchanged and still binds.
+- **Performance**: LCP < 2.5s, Lighthouse mobile ≥ 85, no CLS. Stay inside the performance budget in docs/architecture.md. **Currently failing** — the mobile median is 71, deferred by the user while the visual direction settles.
+- **No prices on `/`. `/booking` is the exception** — the client settled this 2026-08-11: a real rupiah amount appears there, once the visitor has arrived through the WhatsApp link. The rate card has not been supplied, so the figure is a content placeholder and **no number may be invented** — it is the one placeholder a visitor would act on.
+- **Rules section verbatim Indonesian from the PRD.** Ten rules, never reworded; `check:docs` compares them character for character.
 
 ## Tokens — the rules, not the values
 

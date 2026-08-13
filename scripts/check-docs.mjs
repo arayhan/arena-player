@@ -568,6 +568,113 @@ for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
   }
 }
 
+// --- 15. The typeface a document names must be the typeface the app loads ----
+//
+// THIS CHECK EXISTS BECAUSE A TYPEFACE CHANGE IS INVISIBLE TO EVERY OTHER GUARD
+// IN THIS FILE. `design-value-drift` above compares hex colours and contrast
+// ratios; a family name is not either. So when the display face went Orbitron ->
+// Saira (2026-08-12) -> Panchang (2026-08-13), six authority documents kept
+// asserting the retired name — DESIGN.md, DESIGN.html, PRD.md, PRODUCT.md, the
+// design sidecar, and the design skill an agent loads BEFORE touching anything —
+// and `pnpm check` stayed green through all of it for two days.
+//
+// The face has now changed twice in two days. A third change repeats this
+// exactly unless something reads the code and fails the prose.
+//
+// THE SOURCE OF TRUTH IS layout.tsx, not a list here. A list would be one more
+// copy to drift; the loaded families are parsed out of the `next/font` calls
+// that actually ship. Anything else named as CURRENT is a finding.
+{
+  const layout = readFileSync(join(ROOT, "src/app/layout.tsx"), "utf8");
+
+  // Two shapes, because the two faces load differently and both are load-bearing:
+  // `next/font/google` imports the family as an identifier (Plus_Jakarta_Sans),
+  // and `next/font/local` names its files by path (./fonts/Panchang-700.woff2).
+  const loaded = new Set();
+  for (const m of layout.matchAll(/import\s*\{([^}]+)\}\s*from\s*["']next\/font\/google["']/g)) {
+    for (const name of m[1].split(",")) {
+      const clean = name.trim().replace(/_/g, " ");
+      if (clean) loaded.add(clean.toLowerCase());
+    }
+  }
+  for (const m of layout.matchAll(/["']\.\/fonts\/([A-Za-z][A-Za-z0-9]*)[-.]/g)) {
+    loaded.add(m[1].toLowerCase());
+  }
+
+  // The watchlist is every face this project has ever named, plus the ones a
+  // model reaches for by default. A face on this list that is NOT loaded may
+  // only appear in a historical sentence.
+  const KNOWN_FACES = [
+    "orbitron",
+    "saira",
+    "panchang",
+    "inter",
+    "archivo",
+    "roboto",
+    "poppins",
+    "montserrat",
+    "space grotesk",
+    "nv dune hero",
+  ];
+  const retired = KNOWN_FACES.filter((f) => !loaded.has(f));
+
+  // WHERE A CLAIM IS BINDING. History files are already excluded from `sources`
+  // by `isHistory`, which is the right call: "the pair is now Saira" was TRUE on
+  // 2026-08-12 and rewriting it would be falsifying the record. These are the
+  // files a future agent reads as CURRENT STATE.
+  const AUTHORITY = (f) =>
+    f === "docs/DESIGN.md" ||
+    f === "docs/PRD.md" ||
+    f === "docs/PRODUCT.md" ||
+    f === "CLAUDE.md" ||
+    f.startsWith(".claude/skills/") ||
+    f.startsWith(".claude/rules/") ||
+    f.startsWith(".claude/agents/");
+
+  // A DATED SENTENCE IS HISTORY EVEN INSIDE AN AUTHORITY FILE, and this is the
+  // discriminator the check lives or dies on. DESIGN.md's change log has to be
+  // able to say "Was: Saira" without failing, or the guard would forbid the
+  // project from recording its own decisions — and a guard that punishes honest
+  // history is a guard people delete. A line is historical if it carries a
+  // superseded-marker: a date, or one of the words that mark a retired claim.
+  const HISTORICAL =
+    /\b(20\d\d-\d\d-\d\d|superseded|used to|no longer|was\b|retired|previous|until|replaced|changed to|former)\b/i;
+
+  // THE TEST IS SECTION-SCOPED, NOT LINE-SCOPED, AND THE FIRST VERSION WAS NOT.
+  // Line-scoping failed on the first thing it was pointed at: DESIGN.md's change
+  // log is a `| Was | Is now |` table under a dated heading, and the ROWS carry
+  // no date of their own — so a document recording its own history honestly got
+  // a finding for doing exactly that. A guard that punishes an accurate change
+  // log is a guard the next person deletes. A heading marks its whole section as
+  // historical until a heading of the same or higher level closes it.
+  for (const f of sources) {
+    if (!AUTHORITY(f)) continue;
+    const lines = readFileSync(join(ROOT, f), "utf8").split(/\r?\n/);
+    let historicalLevel = 0; // 0 = not inside a historical section
+    lines.forEach((line, i) => {
+      const heading = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (heading) {
+        const level = heading[1].length;
+        if (historicalLevel && level <= historicalLevel) historicalLevel = 0;
+        if (!historicalLevel && HISTORICAL.test(heading[2])) historicalLevel = level;
+      }
+      if (historicalLevel) return;
+      if (HISTORICAL.test(line)) return;
+      for (const face of retired) {
+        // Word-boundary, case-insensitive. `Saira` in a URL or a filename is
+        // still a claim about what this project uses.
+        if (new RegExp(`\\b${face.replace(/ /g, "\\s+")}\\b`, "i").test(line)) {
+          fail(
+            "typeface-drift",
+            `${f}:${i + 1} — names "${face}" as current, but src/app/layout.tsx loads ` +
+              `[${[...loaded].join(", ")}]. Say it in a dated or superseded sentence, or fix it.`,
+          );
+        }
+      }
+    });
+  }
+}
+
 // --- report -----------------------------------------------------------------
 // Findings go to STDOUT, not stderr. The exit code carries pass/fail; the text
 // is informational. PowerShell 5.1 wraps every stderr line from a native
@@ -589,6 +696,7 @@ const CHECKS = [
   "design-value-drift",
   "unbalanced-fence",
   "ketentuan-verbatim",
+  "typeface-drift",
 ];
 
 if (failures.length === 0) {

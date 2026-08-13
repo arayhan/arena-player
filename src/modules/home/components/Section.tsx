@@ -184,7 +184,7 @@ export function Section({
             <span
               aria-hidden="true"
               className={cn(
-                "type-display font-black leading-[0.8]",
+                "type-display font-extrabold leading-[0.8]",
                 "inline-block origin-bottom [transform:skewX(var(--skew))]",
                 // `tabular-nums` DOES SOMETHING NOW. Under Orbitron it was a
                 // silent no-op — that face ships no `tnum` feature, which this
