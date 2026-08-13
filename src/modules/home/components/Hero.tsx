@@ -139,7 +139,14 @@ export function Hero() {
         {/* THE ONE EYEBROW IN THE SYSTEM, and on this plate it reads as the
             maker's mark stamped along the top edge: what the venue is, which
             clock it runs on, when it opens. WITA, never WIB — the field is in
-            Lombok and the date layer pins Asia/Makassar. */}
+            Lombok and the date layer pins Asia/Makassar.
+
+            KNOWN DEFECT, LEFT ALONE DELIBERATELY: this line needs 388px and has
+            297px (the 343px content box less the 34px rule and its 12px gap), so
+            it wraps to two lines at 375px and 414px. It is recorded as open in
+            DESIGN.md and PROGRESS.md. The headline round below deliberately did
+            not touch it — the user's prompt named the headline, and refinement
+            preserves what sits outside the ask. */}
         <p
           data-rise
           lang="id"
@@ -152,45 +159,46 @@ export function Hero() {
           Mini Soccer · WITA · 06.00–24.00
         </p>
 
-        {/* ONE SIZE FOR ALL THREE BEATS, chosen by the user 2026-08-13 over the
-            escalating 104/128/152 this hero shipped with. The escalation was
-            built to survive Panchang's width by giving the longest line the
-            smallest size; the flat setting solves the same problem the other
-            way, by sizing every line to the longest one.
+        {/* TWO CURVES, NOT ONE, AND THE PHONE OWNS THE FIRST OF THEM. Chosen by
+            the user 2026-08-14 from two candidates in live mode, against the
+            brief "make the hero fonts a bit smaller, and also do on a responsive
+            side (mobile first)". The rejected candidate dropped the single flat
+            clamp uniformly from 88% to 80% box fill; this one splits the curve
+            so the phone can be designed rather than derived from the desktop.
 
-            THE CLAMP IS DERIVED FROM "Pilih Jam.", NOT PICKED. That line sets
-            at **7.231x its font size** in Panchang at this tracking — measured
-            live with `Range.getBoundingClientRect`, and consistent to three
-            digits at 375px and 1280px, which is what tells you it is a real
-            per-em constant rather than one width's coincidence. Every term
-            below is that ratio against the content box at 88% fill:
+            THE SIZES ARE STILL DERIVED FROM ONE MEASUREMENT. "Pilih Jam." sets at
+            **7.231x its font size** in Panchang at this tracking — measured with
+            `Range.getBoundingClientRect` on the live node, consistent to three
+            digits at 375px and 1280px, which is what distinguishes a real per-em
+            constant from one width's coincidence. A target FILL of the content
+            box therefore resolves to a size at every width:
 
-              320px   box 288   ->  35px   (the floor; 10.95vw would give 35.0)
-              375px   box 343   ->  41px
-              768px   box 707   ->  84px
-              1280px  box 1184  ->  140px
-              1440px  box 1184  ->  144px  (the cap; the container stops growing)
+              375px   box 343   ->  34px   (70% fill)
+              600px   box 552   ->  53px   (70%)
+              640px   box 589   ->  62px   (76%, the desktop curve takes over)
+              768px   box 707   ->  74px   (76%)
+             1280px   box 1184  -> 124px   (76%)
+             1440px   box 1184  -> 128px   (the cap; the container stops growing)
 
-            88% rather than filling the box: the last 12% is where a font
-            fallback, a rounding difference, or one extra character would put
-            the line into horizontal overflow, and this page reached zero
-            overflow at eight widths the hard way.
+            WHY THE PHONE FILLS LESS. Below 640px the headline shares one fold
+            with an eyebrow, a sub-lede and two STACKED CTAs; above it, the plate
+            is wide and the headline is effectively alone in it. One clamp cannot
+            express that — a single curve has one slope, and the constraint
+            changes shape at the breakpoint rather than scaling with the
+            viewport. This is what "on the responsive side" asked for.
 
-            THE CAP IS 144px BECAUSE THE CONTAINER STOPS AT 1184px. Past
-            1440px the viewport keeps growing and the content box does not, so
-            an uncapped vw term would push the line off the end of a box that
-            is no longer getting wider.
-
-            `KIRIM.` takes the accent colour rather than an outline. On a navy
-            plate an outlined word reads as a hollow punched through the sign,
-            and this direction is made of filled fields; the colour change does
-            the same job without contradicting the world. With the three sizes
-            gone, that colour is now the only thing distinguishing the beats —
-            which is the point of a flat setting. */}
+            THE 640px RULE CARRIES NO CONDITION, AND THE FIRST DRAFT'S DID. Both
+            breakpoint branches were authored behind a live-mode parameter
+            attribute, which the browser only stamps once the knob is MOVED — so
+            at rest neither matched, the desktop curve never applied, and the
+            headline sat at the phone clamp's 60px cap all the way to 1280px:
+            60px where it specifies 124px. It failed silently, with no error and
+            no mount failure. A default belongs in plain CSS; only an override
+            belongs behind an attribute. */}
         <h1
           data-rise
           lang="id"
-          className="mt-6 text-[color:var(--color-fg-on-band)] [font-size:clamp(35px,10.95vw,144px)]"
+          className="mt-6 text-[color:var(--color-fg-on-band)] [font-size:clamp(29px,8.9vw,60px)] min-[640px]:[font-size:clamp(60px,9.7vw,128px)]"
         >
           <span className="block leading-[0.9]">Pilih Jam.</span>
           <span className="block leading-[0.9] text-[color:var(--color-interactive-on-band)]">

@@ -30,7 +30,8 @@ typography:
     letterSpacing: "-0.03em"
   heroHeadline:
     fontFamily: Panchang
-    fontSize: "clamp(35px, 10.95vw, 144px)"
+    fontSize: "clamp(29px, 8.9vw, 60px)"
+    fontSizeFrom640: "clamp(60px, 9.7vw, 128px)"
     fontWeight: 800
     lineHeight: 0.9
     letterSpacing: "-0.03em"
@@ -528,7 +529,7 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 ### Hierarchy
 
 - **Display** (Panchang 800, 48→152px fluid, 0.95, `-0.03em`, **uppercase**): the `h1` element default. **The hero no longer reads it** — see `heroHeadline` below. Retained as the base `h1` size for any future display usage.
-- **Hero headline** (Panchang 800, 35→144px fluid, 0.9, `-0.03em`, **uppercase**): the hero's three beats, all at one size. See [The hero headline's clamp](#the-hero-headlines-clamp-is-derived-not-picked).
+- **Hero headline** (Panchang 800, 29→60px on a phone and 60→128px from 640px, 0.9, `-0.03em`, **uppercase**): the hero's three beats, all at one size, on **two curves**. See [The hero headline's two curves](#the-hero-headlines-two-curves-are-derived-not-picked).
 - **Numeral** (Panchang 800, 40→100px fluid, 0.8, skewed `-8deg`, **outlined**): the section ordinal. `aria-hidden` — a compositional device, not content. **Resized for Panchang on 2026-08-13**: the clamp was set against faces whose widest two-digit pair measured about 1.55em, and Panchang's is `04` at **2.33em**, so at the old size the ordinal's ink overflowed its own grid track by 13.9px at 375px and 30.2px at 1280px, drawn straight through the heading beside it.
 - **H2** (Panchang 800, 28→56px fluid, 1.05, `-0.01em`, **uppercase**): section headings. One word per heading may take the accent colour; the rest is the surface's foreground.
 - **H3** (Panchang 500, 20→32px fluid, 1.25): sub-headings. **Not the slot time** — an `h3` inside a grid of nine is nine sub-headings, and the time is a label on a control.
@@ -543,21 +544,30 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 
 > **Open defect — `--text-body` is undefined.** `globals.css` sets `body { font-size: var(--text-body) }` and **no such token exists**; the string appears exactly once in the whole repo, at that usage site. An invalid `var()` makes the declaration invalid at computed-value time, so `font-size` inherits and the page renders a flat **16px** at every width — confirmed in the browser, `bodyFontSize=16px`, `--text-body=(UNDEFINED)`. This document previously claimed `clamp(1rem, 0.96rem + 0.19vw, 1.125rem)`, so desktop body text has been 2px smaller than specified for as long as the token has been missing, with nothing erroring. **The frontmatter above records what renders, not what was intended.** Defining the token would grow body text site-wide, which is a visual change the user has not seen — so it is recorded here as owed rather than applied inside a documentation sync.
 
-### The hero headline's clamp is derived, not picked
+### The hero headline's two curves are derived, not picked
 
-`clamp(35px, 10.95vw, 144px)`, one size for all three beats. The hero previously escalated 104/128/152px across the three lines, sizing the longest line smallest to survive Panchang's width; the user chose the flat setting on 2026-08-13, which solves the same problem the other way.
+`clamp(29px, 8.9vw, 60px)` on a phone, `clamp(60px, 9.7vw, 128px)` from **640px**. One size for all three beats within each curve.
 
-`Pilih Jam.` sets at **7.231× its font size** in Panchang at this tracking — measured with `Range.getBoundingClientRect` on the live node, and consistent to three digits at 375px and 1280px, which is what distinguishes a real per-em constant from one width's coincidence. Every term of the clamp is that ratio against the content box at **88% fill**:
+The hero has now been resized twice. It shipped with three escalating sizes (104/128/152px), went flat at a single `clamp(35px, 10.95vw, 144px)` on 2026-08-13, and split into two curves on **2026-08-14** — chosen by the user from two candidates against the brief "make the hero fonts a bit smaller, and also do on a responsive side (mobile first)". The rejected candidate dropped the single flat clamp uniformly from 88% to 80% fill.
 
-| Viewport | Content box | Size resolved | Longest line's ink | Fill |
-| -------- | ----------- | ------------- | ------------------ | ---- |
-| 320px    | 288px       | 35.0px        | 258px              | 90%  |
-| 375px    | 343px       | 41.1px        | 303px              | 88%  |
-| 768px    | 707px       | 84.1px        | 620px              | 88%  |
-| 1280px   | 1184px      | 140.2px       | 1033px             | 87%  |
-| 1440px   | 1184px      | 144.0px       | 1061px             | 90%  |
+**The sizes are still derived from one measurement.** `Pilih Jam.` sets at **7.231× its font size** in Panchang at this tracking — measured with `Range.getBoundingClientRect` on the live node, consistent to three digits at 375px and 1280px, which is what distinguishes a real per-em constant from one width's coincidence. A target **fill** of the content box therefore resolves to a size at every width:
 
-88% rather than filling the box: the last 12% is where a font fallback, a rounding difference, or one extra character puts the line into horizontal overflow. **The 144px cap exists because the container stops growing at 1184px while the viewport does not** — an uncapped `vw` term would push the line off the end of a box that is no longer widening.
+| Viewport  | Content box | Size  | Longest line's ink | Fill    |
+| --------- | ----------- | ----- | ------------------ | ------- |
+| 320px     | 288px       | 29px  | 214px              | 74%     |
+| 375px     | 343px       | 33px  | 246px              | 72%     |
+| 414px     | 381px       | 37px  | 271px              | 71%     |
+| 600px     | 552px       | 53px  | 393px              | 71%     |
+| **640px** | 589px       | 62px  | 457px              | **78%** |
+| 768px     | 707px       | 74px  | 549px              | 78%     |
+| 1280px    | 1184px      | 124px | 915px              | 77%     |
+| 1440px    | 1184px      | 128px | 943px              | 80%     |
+
+**Why the phone fills less.** Below 640px the headline shares one fold with an eyebrow, a sub-lede and two **stacked** CTAs; above it, the plate is wide and the headline is effectively alone in it. One clamp cannot express that — a single curve has one slope, and the constraint changes **shape** at the breakpoint rather than scaling with the viewport.
+
+**The 128px cap exists because the container stops growing at 1184px** while the viewport does not; an uncapped `vw` term would push the line off the end of a box that is no longer widening.
+
+> **A live-mode trap worth keeping.** Both breakpoint branches were first authored behind a parameter attribute selector, which the browser only stamps once the knob is **moved**. At rest neither matched, the desktop curve never applied, and the headline sat at the phone clamp's 60px cap all the way to 1280px — 60px where it specifies 124px, with no error and no mount failure. **A default belongs in plain CSS; only an override belongs behind an attribute.**
 
 ### Why `location` is its own role
 
