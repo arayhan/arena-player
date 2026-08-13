@@ -410,12 +410,15 @@ arena-player-web/
 │       ├── 1b-gate-client.md  # client sign-off for the 1b checkpoint; blocks Phases 2 and 3
 │       └── …                  # step files land when each phase's build starts
 ├── .claude/
-│   ├── agents/
+│   ├── agents/                # project-manager, engineering-lead, ui-designer,
+│   │                          # software-engineer, code-reviewer. ui-designer owns
+│   │                          # everything a visitor can see, code included
 │   ├── skills/                # arena-player-gotchas, arena-player-database, arena-player-design
 │   ├── hooks/
 │   │   ├── notify.ps1             # Stop/Notification/SubagentStop toast
 │   │   ├── inject-gotchas.ps1     # SessionStart — injects the trap list
-│   │   └── check-claudemd.ps1     # Stop — nudges when CLAUDE.md drifts
+│   │   ├── check-claudemd.ps1     # Stop — nudges when CLAUDE.md drifts
+│   │   └── check-docs.ps1         # Stop — runs scripts/check-docs.mjs, exits 2 on failure
 │   └── settings.json
 ├── public/                     # served as-is; nothing secret ever goes here
 │   ├── logo.svg                # AP monogram placeholder — TODO(content)

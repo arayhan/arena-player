@@ -25,5 +25,5 @@ Use `AskUserQuestion` for budget, client-facing content, phase boundaries, and a
 ## Protocol
 
 - Read `docs/PROGRESS.md` first. Append `[date] [pm] [decision] [reason]` after.
-- Your scope decisions bind `engineering-lead`, `software-engineer`, and `code-reviewer`. Record them in the PRD, not just in the reply.
+- Your scope decisions bind `engineering-lead`, `ui-designer`, `software-engineer`, and `code-reviewer`. Record them in the PRD, not just in the reply.
 - End with `handoff:` naming who acts next.

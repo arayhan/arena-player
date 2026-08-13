@@ -3,7 +3,7 @@
 Cross-agent communication file. Every agent reads this before working, appends after.
 Format (caveman-compact): `[YYYY-MM-DD] [agent] [what] [reason]`
 
-Agents: pm | lead | engineer | reviewer
+Agents: pm | lead | designer | engineer | reviewer
 Older entries use the retired six-agent tags (instructor, eng-lead, senior, fe, be) — left as written.
 
 **This file holds the current phase only.** Earlier entries live in
@@ -435,3 +435,17 @@ THE HONEST NUMBER, after freeing the port properly, rebuilding, and running thre
 VERIFIED: `pnpm typecheck` clean, `check:docs` 14/14 over 100 files, `check:domain` 8 identical, `check:unit` 115/115, `lint` 0 errors with one pre-existing warning, `.impeccable` detector clean across `src/`.
 
 OPEN, AND EACH NEEDS THE USER: the marquee's speed and direction (45px/s right-to-left is a disclosed default, not an approved decision — `design-process.md` requires the choice be made before the code, and no agent could ask); the location block's three display lines (ARENA / PLAYER / LOMBOK, reasoned from PRODUCT.md's confirmed market but still copy nobody approved); and the performance gate above. Also still owed: `.impeccable/design.json` needs a refresh for the three new type roles, and the client re-approval now covers the velocity direction AND the typeface change.
+
+[2026-08-13] [lead] FIFTH AGENT ADDED — `ui-designer`, and it owns the whole visual layer rather than advising on it. The user's boundary, chosen explicitly: if a visitor can see it, the designer owns the decision AND the code. `software-engineer` narrows to route handlers, `src/domain/`, `src/server/`, `src/services/`, module logic, MSW and every test; its description, body and handoff line were rewritten to match. A form's submit path is the engineer's, the same form's markup is not.
+
+THE GAP THIS FILLS WAS STRUCTURAL, NOT A PREFERENCE. `docs/design-process.md` named `/impeccable` as "the single named design driver" and named no owner at all — the word "agent" did not appear in that file once. Visual work therefore landed on whichever agent happened to be building, which is how a page ends up with sections designed by three different hands. The Consulting order gains a step 0 and a "Who runs this" section above it.
+
+IT ALSO CLOSES A LIVE INCONSISTENCY. `software-engineer.md` obliged that agent to run the motion-approval `AskUserQuestion` round while its own frontmatter never granted `AskUserQuestion`. The duty moved to `ui-designer`, which does have the tool. `model: opus`, matching the repo's own split — opus for the two judgement roles, sonnet for execution.
+
+WRITTEN AGAINST A GATE THAT TARGETS EXACTLY THIS FILE. `scripts/check-docs.mjs` check 7 scans `.claude/agents/` and fails on any hex or contrast ratio absent from DESIGN.md, and its own comment records that the agents surface is where the overstated-ratio defect came from. A design-owning agent is the file most tempted to quote tokens, so it points at DESIGN.md and copies nothing — verified: `grep -E "#[0-9a-f]{6}|[0-9.]+:1"` on the new file returns nothing.
+
+REGISTERED IN SIX PLACES, WHICH IS EVERY ROSTER THIS REPO ACTUALLY HAS: the agent-tag line at the head of this file (`pm | lead | designer | engineer | reviewer`), the handoff rosters in `engineering-lead` and `project-manager`, `code-reviewer`'s "who fixes what" line, `design-process.md`'s new ownership section, and the folder tree in `architecture.md` — where `agents/` was the one entry with no inline contents comment while `skills/` beside it had one. That tree also gained the missing `check-docs.ps1`, a pre-existing staleness.
+
+CLAUDE.md UPDATED, DELIBERATELY. The change crosses its own stated threshold — "a cross-cutting convention every agent must follow" — because it changes which agent writes UI code. One line, pointing rather than explaining, per that file's own budget note.
+
+VERIFIED: `check:docs` 14/14 over 101 files, `typecheck` clean, `check:unit` 115/115, `check:domain` 8 identical, `lint` 0 errors. The new file is 33 lines, inside the 29-39 house range, with exactly the four frontmatter keys the other four use.

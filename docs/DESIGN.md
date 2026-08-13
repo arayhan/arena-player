@@ -236,6 +236,8 @@ components:
 
 # Design System: Arena Player
 
+**Owned by the `ui-designer` agent**, who authors this file and every component it describes. Written from the built result rather than ahead of it: a rulebook written before the build gets defended against reality instead of describing it.
+
 Machine-readable tokens are the frontmatter above; this prose says how to apply them. Motion, shadow, breakpoint, and border tokens have no home in the DESIGN.md schema and live in [`.impeccable/design.json`](../.impeccable/design.json). How design work is _run_ here — motion approval, image sourcing, asset locations — is [design-process.md](design-process.md).
 
 > **Read this before anything else.** The art direction was **replaced on 2026-08-12**. The direction the client saw and approved on 2026-08-11 was the light-only, instruction-book direction that this file used to describe, and it is now superseded. **A re-approval is owed and has not happened.** Until it does, nothing in this document may be presented as client-approved. See [What changed on 2026-08-12](#what-changed-on-2026-08-12) below, and the dated entry in [PROGRESS.md](PROGRESS.md).

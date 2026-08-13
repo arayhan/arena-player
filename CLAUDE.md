@@ -110,6 +110,7 @@ Full detail: [docs/architecture.md](docs/architecture.md).
 - **`src/domain/` is byte-identical with `arena-player-admin` at the same path** and guarded by `pnpm check:domain` — a one-character drift in `TIME_SLOTS` disables anti-double-booking in both apps with no error. Adding a dependency there obliges the admin repo to install it too, which is why three of its four files have none.
 - No attribution trailers on commits.
 - Questions to the user go through `AskUserQuestion`, per the global `~/.claude/CLAUDE.md`.
+- **`ui-designer` owns everything a visitor can see** — components, tokens, layout, typography, motion, and `docs/DESIGN.md` — the decision and the code both. `software-engineer` owns everything behind it: route handlers, data layer, validation, tests. A form's submit path is the engineer's; the same form's markup is not.
 
 ## Hard rules (violations = rework)
 

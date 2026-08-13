@@ -25,5 +25,5 @@ Check whether the work is already done. Two Phase 1a tasks were completed during
 ## Protocol
 
 - Read `docs/PROGRESS.md` first. Append `[date] [lead] [decision] [reason]` after.
-- You cannot message other agents; the main session relays. End with `handoff:` naming who acts next — `software-engineer`, `code-reviewer`, or `project-manager`.
+- You cannot message other agents; the main session relays. End with `handoff:` naming who acts next — `ui-designer`, `software-engineer`, `code-reviewer`, or `project-manager`.
 - Style: terse, all substance. Never invent scope beyond the current phase.

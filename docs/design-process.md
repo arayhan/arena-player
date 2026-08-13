@@ -70,8 +70,15 @@ This is a booking page for a real venue that real customers pay to use.
 
 Generated SVG AP monogram (navy `#011A43`) until the client provides the real logo file. Favicon and OG image are generated from the same placeholder. Swap is a `TODO(content)` item — see the placeholder categories in [PRD.md](PRD.md).
 
+## Who runs this
+
+**`ui-designer` owns every process on this page, and owns the code that comes out of it.** Added 2026-08-13. Until then this document named `/impeccable` as "the single named design driver" and named no owner at all — so visual work landed on whichever agent happened to be building, which is how a page ends up with five sections designed by three different hands.
+
+The boundary is literal: **if a visitor can see it, it is the designer's — the decision and the implementation.** Route handlers, the data layer, validation and tests stay with `software-engineer`. A form's submit path is theirs; the same form's markup and classes are not.
+
 ## Consulting order for new sections
 
+0. `ui-designer` — the agent that runs the order below
 1. [DESIGN.md](DESIGN.md) — constraints, source of visual truth
 2. `/impeccable` — direction and polish
 3. `/remotion-create` — only for produced video assets
