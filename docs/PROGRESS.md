@@ -694,3 +694,19 @@ NOT AN EXCEPTION TO THE motion.ts BAN. That ban exists because GSAP ships no `pr
 PARAMS BAKED: accepted at `{"speed": 1, "density": "normal"}`, so the durations are literals and the 150px and 58px grid alternatives are deleted rather than commented out. Carbonize verified clean — no `impeccable`, `@scope`, `hb-` or `data-p-` residue, `live-complete.mjs` reports "completed", zero variant nodes in the DOM, page overflow 0.
 
 VERIFIED: typecheck OK, prettier clean, `check:domain` 8 files identical, `check:docs` 15 checks over 110 files, 115 tests. **`pnpm lint` reports one error and it is not this work**: `no-sync-scripts` on `src/app/layout.tsx:122`, which is live mode's own injected `<script>` — an uncommitted dev-only tag that disappears when the live server stops.
+
+[2026-08-14] [designer] THE GHOST `24` BECOMES THE CLIENT'S MARK — accepted by the user in live mode from two candidates, against "remove the 24 on the hero background, change it to be a transparent logo instead".
+
+WHAT SHIPPED: the mark at 118% of the plate's width, anchored left and vertically centred, 9% opacity, `brightness(0) invert(1)`, cropped hard by the section's own `overflow-hidden`. The rejected candidate kept the numeral's top-right slot and simply swapped a number for the brand; this one moves the visual mass, so the mark stops being an ornament in a corner and becomes the surface the type sits on.
+
+THE PARALLAX SURVIVED BECAUSE THE REF MOVED WITH IT. `markRef` was on the `24`, and the `24` was the ScrollTrigger's target — removing the numeral without relocating the ref would have killed the one motion this plate had, silently, with no error and no failing check. Both variants carried it on the wrapper from the start.
+
+I MEASURED THE LCP RISK I FLAGGED RATHER THAN LEAVING IT AS A WORRY, AND FOUND A DIFFERENT PROBLEM. `PerformanceObserver` returned zero `largest-contentful-paint` entries against the dev server, so **the LCP question is genuinely unanswered here** — it needs a production Lighthouse run, the same tool that produced the median-71 figure. What the browser did answer is the weight: the mark renders **1510x728** at 1280px and its `w=1080` candidate decodes to **81KB**.
+
+`sizes` IS WORKING; THE FORMAT IS NOT. The 3840 candidate is never fetched and the header's own copy of the same file pulls 2KB at `w=96`, so the srcset declaration is doing its job. The problem is upstream: `public/logo-mark.png` is a **202KB PNG of a flat two-colour logo**, and a flat two-colour logo rendered 1510px wide is an SVG-shaped problem being solved with a raster. An SVG of the same mark would be a couple of KB and scale perfectly at any width. **It is the single cheapest performance win available on this page** while Lighthouse sits at 71 against an 85 gate — and it is an asset the client supplies or has traced, not one this repo may fabricate.
+
+PARAMS BAKED: accepted at `{"ink": 0.09, "bleed": "edge"}`, so the opacity is a literal and the `contained` / `full` bleed alternatives are deleted rather than commented out. Expressed as Tailwind utilities rather than a `globals.css` rule, matching the skewed field beside it — positioning and opacity have arbitrary-value forms worth reading, unlike the pitch grid's keyframes.
+
+A MISTAKE OF MINE WORTH RECORDING: the first splice added the `next/image` import, which shifted every line number, and the hard-coded line range then failed its own assert — while `--reply done` had already been sent in the same command, so the toolbar briefly reported variants ready against a file that had none. The splice script now locates the block by CONTENT rather than by line number, and `done` is only sent after `tsc` passes.
+
+VERIFIED: `ghost24=gone`, mark present at `opacity 0.09` with the invert filter, zero variant nodes, page overflow 0, typecheck clean, `live-complete.mjs` reports "completed".

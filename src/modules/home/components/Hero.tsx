@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 import { useMotion } from "@/lib/motion";
@@ -140,18 +141,49 @@ export function Hero() {
       data-hero-inview="true"
       className="relative overflow-hidden border-b-[3px] border-[var(--color-interactive)] bg-[var(--color-band)]"
     >
-      {/* THE GHOST NUMERAL — the parallax layer, `aria-hidden` decoration
-            rather than content. `24` is the only number on this plate that is not
-            a bookable time: it is the hours the field spans, 06.00 to 24.00. Sized
-            in `vw` so it stays the largest thing in the composition at every
-            width, and clipped by the section's own `overflow-hidden` so it can
-            never widen the page. */}
+      {/* THE MARK IS THE PLATE'S FACE — it replaces the ghost `24` on 2026-08-14,
+          chosen by the user from two candidates in live mode. The rejected one kept
+          the numeral's top-right slot and simply swapped a number for the brand;
+          this one moves the visual mass, so the mark stops being an ornament in a
+          corner and becomes the surface the type sits on. An enamel plate is
+          stamped, and this is what stamped looks like.
+
+          IT STILL CARRIES THE PARALLAX. `markRef` was on the `24`, which was the
+          ScrollTrigger's target — dropping the numeral without moving the ref would
+          have killed the one motion this plate already had, silently and with no
+          error. The wrapper keeps it, so the drift is unchanged.
+
+          `brightness(0) invert(1)` RATHER THAN A COLOUR TOKEN. The supplied mark is
+          a dark navy lockup drawn for a light ground; on a navy plate it is navy on
+          navy and effectively invisible. Inverting is honest because the mark is a
+          single flat colour — there is no photographic content for a filter to
+          distort — and it is the same argument the header already makes for the
+          same file.
+
+          9% INK, BAKED FROM THE ACCEPTED KNOB. It sits UNDER the reading rather
+          than beside it, so it takes about a third of the ghost numeral's weight;
+          the `contained` and `full` bleed alternatives are deleted rather than
+          commented out.
+
+          NOT `priority`, AND `sizes` IS NOT OPTIONAL. DESIGN.md fixes the LCP as
+          the display headline — text is the cheapest and most reliable there is —
+          and a raster at plate scale is a plausible LCP candidate in a way a text
+          watermark never was. `sizes` declares the real painted width so the srcset
+          resolver picks a candidate near it; leaving it off once cost this project
+          81.7KB on a header mark the size of a fingernail. */}
       <span
         ref={markRef}
         aria-hidden="true"
-        className="type-display pointer-events-none absolute -top-[6vw] -right-[3vw] z-0 leading-[0.7] font-extrabold text-[color:var(--color-border-on-band)] opacity-70 select-none [font-size:clamp(190px,44vw,580px)]"
+        className="pointer-events-none absolute top-1/2 left-[-18%] z-0 w-[118%] -translate-y-[52%] opacity-[0.09] [filter:brightness(0)_invert(1)] select-none"
       >
-        24
+        <Image
+          src="/logo-mark.png"
+          alt=""
+          width={1042}
+          height={502}
+          sizes="(min-width: 1280px) 1000px, 95vw"
+          className="h-auto w-full"
+        />
       </span>
 
       {/* THE WEBGL FIELD IS GONE FROM THIS HERO, AND THAT IS THE DIRECTION
