@@ -883,6 +883,10 @@ This is the only centred composition on the page, which is what makes it read as
 
 **Three stacked rounded cards became one plate.** A 3px `blue-600` edge, `gap-0`, and the summary, the payment note and the form as panels divided by the plate's own **2px navy rules** — the same object the order panel is, so the two surfaces finally read as one product. Panels draw `border-b` only; the plate draws its outer edge once, so no seam doubles.
 
+**The proof field is a dropzone**, added 2026-08-14. A 112px square target, **dashed at rest and solid `blue-600` over a `blue-50` wash while a file is over it** — a border weight and fill change rather than colour alone, and the same "this is live, take it" vocabulary the slot grid uses. The label switches from _Tarik gambar ke sini_ to _Lepas di sini_.
+
+**It is still a real `<input type="file">`.** The input is `sr-only`, never `hidden`: it keeps its place in the tab order, so a keyboard visitor reaches it and opens the picker with Enter exactly as before, and the zone shows that input's focus ring through `has-[:focus-visible]`. A `display: none` input is the usual cost of a hand-rolled dropzone and removes the only accessible way to attach a file — which this form may not do, because keyboard-operable upload is an established requirement. **Both entry points validate through one function**, so a drop cannot smuggle a file past the size and type check that the picker would have refused.
+
 **The notice states carry it too.** `ExpiredNotice` and `UnusableNotice` are the same URL in its other states, and leaving them rounded would have given one route two visual languages depending on whether the slot was still valid.
 
 ### Inputs / Fields

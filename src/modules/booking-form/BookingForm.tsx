@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import type { TimeSlot } from "@/domain/slots";
@@ -164,8 +164,10 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     resultRef.current?.focus();
   }, [outcome, setError]);
 
-  function onProofChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
+  // ONE ACCEPTANCE PATH FOR BOTH ENTRY POINTS. The picker and the drop target
+  // must validate identically or the dropzone becomes a way to smuggle a file
+  // past `checkProof` — a 12MB HEIC that the button would have refused.
+  function acceptProof(file: File | null) {
     setValue("proof", file, { shouldDirty: true });
     const problem = checkProof(file);
     if (problem) {
@@ -173,6 +175,49 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     } else {
       clearErrors("proof");
     }
+  }
+
+  function onProofChange(event: React.ChangeEvent<HTMLInputElement>) {
+    acceptProof(event.target.files?.[0] ?? null);
+  }
+
+  // DRAG DEPTH, NOT A BOOLEAN. `dragleave` fires every time the pointer crosses
+  // into a CHILD of the zone, so a plain boolean flickers the highlight off and
+  // on as the cursor moves over the text inside it. Counting enters against
+  // leaves is the standard fix and the only one that survives nested content.
+  const dragDepth = useRef(0);
+  const [dragging, setDragging] = useState(false);
+
+  function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    dragDepth.current += 1;
+    setDragging(true);
+  }
+
+  function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    dragDepth.current -= 1;
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0;
+      setDragging(false);
+    }
+  }
+
+  // `dragover` MUST preventDefault or `drop` never fires. That is the single
+  // most common reason a hand-rolled dropzone silently does nothing.
+  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }
+
+  function onDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    // ONE file. The field takes a single proof of transfer, and a multi-file
+    // drop should land the first rather than be refused outright — the visitor
+    // dropped something, and silence is the worst answer available.
+    acceptProof(event.dataTransfer.files?.[0] ?? null);
   }
 
   // Terminal states with nothing left to fix: the form is retired rather
@@ -398,15 +443,57 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             <label htmlFor="proof" className={LABEL_CLASS}>
               Bukti Transfer
             </label>
-            <input
-              id="proof"
-              type="file"
-              accept={PROOF_ACCEPT}
-              aria-invalid={Boolean(errors.proof)}
-              aria-describedby={describedBy(errors.proof && "proof-error")}
-              onChange={onProofChange}
-              className="mt-1 block w-full text-[length:var(--text-sm)] text-[var(--color-fg)] file:mr-3 file:h-10 file:border-0 file:bg-[var(--color-accent-strong)] file:px-4 file:font-semibold file:text-[var(--color-fg-inverse)] hover:file:bg-[var(--color-accent-strong-hover)]"
-            />
+            {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
+                `sr-only`, not `hidden` — it keeps its place in the tab order, so a
+                keyboard visitor reaches it and opens the picker with Enter exactly
+                as before. A `display: none` input would have removed the only
+                accessible way to attach a file, which is the usual cost of a
+                hand-rolled dropzone and is not one this form can pay: DESIGN.md
+                lists "the file upload is keyboard-operable" as an established
+                requirement.
+
+                The zone shows the input's focus ring with `has-[:focus-visible]`,
+                so focus is visible on the thing a sighted keyboard user is looking
+                at rather than on a 1px offscreen box.
+
+                DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed reads as
+                "something goes here"; the switch to a solid accent edge plus the
+                blue wash is the same "this is live, take it" vocabulary the slot
+                grid uses, and it is a border WEIGHT and FILL change rather than
+                colour alone. */}
+            <div
+              onDragEnter={onDragEnter}
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={cn(
+                "mt-1 flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 border-2 border-dashed px-4 py-5 text-center transition-colors duration-200",
+                "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-focus)]",
+                dragging
+                  ? "border-solid border-[var(--color-interactive)] bg-[var(--color-wash)]"
+                  : "border-[var(--color-band)] bg-[var(--color-bg)] hover:bg-[var(--color-bg-subtle)]",
+              )}
+              onClick={() => document.getElementById("proof")?.click()}
+            >
+              <input
+                id="proof"
+                type="file"
+                accept={PROOF_ACCEPT}
+                aria-invalid={Boolean(errors.proof)}
+                aria-describedby={describedBy(errors.proof && "proof-error")}
+                onChange={onProofChange}
+                className="sr-only"
+              />
+              <span
+                lang="id"
+                className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
+              >
+                {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
+              </span>
+              <span lang="id" className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]">
+                atau klik untuk memilih file · JPG, PNG, WebP
+              </span>
+            </div>
             {proofFile ? (
               <p
                 lang="id"

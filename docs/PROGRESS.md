@@ -793,3 +793,21 @@ A MISTAKE ON THE WAY IN: the plate's explanatory comment was written as `{/* …
 VERIFIED at 375px and 1280px on the happy path — container 1280px, plate border 3px `rgb(37,99,235)`, section radius 0, field borders 2px at radius 0, submit 56px uppercase, zero variant nodes, page overflow 0 — and on the expired state: panel 3px/0 radius, CTA 56px uppercase at radius 0, overflow 0. `pnpm typecheck`, `format:check`, `check:docs` (15 checks over 112 files) and 115 tests pass. `rg 'rounded-\['` over the module returns only the sentence in a comment describing what was removed.
 
 STILL TRUE, AND UNTOUCHED BY THIS: the rate card is not supplied, so `/booking` still shows no rupiah figure. The layout now has a place for one; the number remains the client's to give.
+
+[2026-08-14] [designer] THE PROOF FIELD BECOMES A DROPZONE — asked for in live mode, built directly rather than as variants.
+
+I REPLIED `error` TO THE LIVE EVENT RATHER THAN GENERATING, FOR TWO REASONS BOTH WORTH KEEPING. A dropzone is BEHAVIOUR — drag handlers, a depth counter, state — and scoped preview CSS cannot deliver behaviour; a variant round would have shipped two differently-styled inputs that still refused a dropped file. And the scaffold's range 401-451 was unbalanced JSX: its `original` block opens mid-`<div>` and closes mid-way through the `server_error` conditional, so every duplicated variant would inherit an orphan closer. That is the same trap that killed the OrderSection round, recognised this time before writing anything.
+
+ONE ACCEPTANCE PATH FOR BOTH ENTRY POINTS. `acceptProof(file)` is shared by the picker's `onChange` and the drop handler. Without that, the dropzone becomes a way to smuggle a file past `checkProof` — a 12MB HEIC the button would have refused.
+
+DRAG DEPTH, NOT A BOOLEAN. `dragleave` fires every time the pointer crosses into a CHILD of the zone, so a plain boolean flickers the highlight off and on as the cursor moves over the text inside it. Enters are counted against leaves.
+
+`dragover` CALLS preventDefault, which is the single most common reason a hand-rolled dropzone silently does nothing: without it the browser never fires `drop`.
+
+IT IS STILL A REAL FILE INPUT. The `<input>` is `sr-only`, never `hidden` — it keeps its place in the tab order, so a keyboard visitor reaches it and opens the picker with Enter exactly as before, and the zone renders that input's focus ring via `has-[:focus-visible]` so focus is visible on the thing a sighted keyboard user is looking at. A `display: none` input is the usual cost of a hand-rolled dropzone and removes the only accessible way to attach a file; DESIGN.md lists keyboard-operable upload as an established requirement, so that cost was not available. Exactly one `label[for="proof"]` survives, so the accessible name is unchanged.
+
+VERIFIED BY SIMULATING A REAL DROP, not by reading the markup: a synthetic `DataTransfer` carrying `bukti-transfer.png` produced **`Terpilih: bukti-transfer.png`** in the field. State transitions measured across a render tick — rest `dashed / #fff / "Tarik gambar ke sini"`, dragging **`solid / #EFF6FF / "Lepas di sini"`**, after leave back to rest.
+
+A MEASUREMENT ARTEFACT I ALMOST REPORTED AS A DEFECT: my first read said the highlight never turned on. It had — I checked `className` synchronously in the same tick as the dispatch, before React flushed. Re-measured with a 300ms delay it is correct. Reading React state without waiting for a render is the same class of mistake as reading a stale Next compile, and this session has now made both.
+
+typecheck clean, prettier clean, `check:docs` 15 checks, 115 tests.
