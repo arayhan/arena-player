@@ -710,3 +710,28 @@ PARAMS BAKED: accepted at `{"ink": 0.09, "bleed": "edge"}`, so the opacity is a 
 A MISTAKE OF MINE WORTH RECORDING: the first splice added the `next/image` import, which shifted every line number, and the hard-coded line range then failed its own assert — while `--reply done` had already been sent in the same command, so the toolbar briefly reported variants ready against a file that had none. The splice script now locates the block by CONTENT rather than by line number, and `done` is only sent after `tsc` passes.
 
 VERIFIED: `ghost24=gone`, mark present at `opacity 0.09` with the invert filter, zero variant nodes, page overflow 0, typecheck clean, `live-complete.mjs` reports "completed".
+
+[2026-08-14] [designer] THE SLOT GRID'S BROKEN RULE JUNCTIONS — and the borders were never the problem.
+
+THE USER CIRCLED TWO POINTS WHERE THE GRID'S LINES FAIL TO MEET and said it worsens with more rows. Three rounds of live-mode variants aimed at the BORDER MECHANISM and all three missed, because the mechanism is correct.
+
+THE ACTUAL CAUSE, MEASURED IN THE STATE THE SCREENSHOT SHOWS — a future date, so all nine slots are live and the grid is 3x3 at 1280px:
+
+row 1 06.00-08.00 grid item 117px button 94px -> 23px short
+08.00-10.00 grid item 117px button 94px -> 23px short
+10.00-12.00 grid item 117px button 117px -> flush (carries the free-run badge)
+rows 2 and 3 uniform 94px, correct
+
+`OrderSection` wraps every cell in `<div data-motion="slot">` so GSAP has a stagger target, and CSS Grid stretches THAT WRAPPER to the tallest cell in its row. The `<button>` inside was `min-h-[88px] w-full` with no height rule, so it stopped at its own content height — and the button is what DRAWS the plate's rules. In the one row containing a badge, two of three rules therefore stopped 23px short: a vertical rule ending early and a horizontal rule sitting at two heights across one row. Exactly what was circled.
+
+**Fix: `h-full` on the button.** One class, in `SlotCell.tsx`, which is the right layer because the cell is rendered from TWO grids — live and elapsed — and it stops the cell depending on whatever wraps it.
+
+WHY MY FIRST MEASUREMENT SAID THE GRID WAS FINE, WHICH IS THE LESSON HERE. I measured today's date: three slots elapsed and collapsed, six live cells, no free-run badge in any visible row, every cell a uniform 94px. A clean result from the wrong state, and I reported it as evidence the grid was correct. The defect requires a row containing the badge, which is the state the user's screenshot had selected and mine did not. **Reading the wrong state is not the same as reading nothing; it is worse, because it produces a confident wrong answer.**
+
+A SECOND, GENUINE DEFECT IN THE SAME AREA, FIXED WITH IT. The elapsed group's grid set `-mr-0.5` but not `-mb-0.5`, so its last row kept its bottom rule while the enclosing block drew one of its own — measured `marginBottom: 0px` against the live grid's `-2px`, a 2px + 2px seam. Visible only while "Sudah lewat" is expanded, which is why it survived every review of a collapsed panel. Now `-mb-0.5`, and the seam measures **0px gap** between the last elapsed button's bottom and the live grid's top.
+
+THREE FIGURES IN DESIGN.md's SLOT CELL SPEC DISAGREED WITH THE BUILD, AND ALL THREE WERE MINE TO FIX. It said "14px/16px padding, 64px minimum height, 1.5px border"; measured on the live node the cell is `min-height: 88px`, `padding: 16px 12px`, `border-right/bottom: 2px`. The document now records what renders — and the comment I had just written in `SlotCell.tsx` claiming 88px was "the floor DESIGN.md specifies" was itself wrong and is corrected. The rewrite of DESIGN.md carried these three forward without checking them; a rewrite from the built result has to mean every number, not most of them.
+
+VERIFIED at 375 / 800 / 1280 with a future date selected: **buttonsShorterThanCell = 0** and **rowsWithUnalignedBottoms = 0** at all three widths, every row's buttons sharing one `bottom` value. Elapsed seam 0px. `pnpm typecheck`, `format:check`, `check:domain`, `check:docs` (15 checks over 110 files) and 115 tests all pass. Screenshot at 1280px looked at: every vertical rule now runs continuously between rows and every horizontal rule is one straight line across all three columns.
+
+`pnpm lint`'s one error remains `no-sync-scripts` on `src/app/layout.tsx:122` — live mode's own injected dev-only `<script>`, uncommitted, which disappears when the live server stops.

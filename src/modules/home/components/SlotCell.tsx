@@ -89,7 +89,30 @@ export function SlotCell({
       // activation, which `pointer-events: none` does not.
       onClick={selectable ? onSelect : undefined}
       className={cn(
-        "group relative flex min-h-[88px] w-full flex-col items-start justify-center gap-1",
+        // `h-full` ALONGSIDE `min-h`, AND THE MISSING ONE WAS A VISIBLE DEFECT.
+        // This button is not the grid item — `OrderSection` wraps it in a
+        // `data-motion` div so GSAP has a stagger target — and CSS Grid stretches
+        // that WRAPPER to the tallest cell in its row, not this button. Without
+        // `h-full` the button stops at its own content height, and since the
+        // button is what draws the plate's rules, they stop with it.
+        //
+        // MEASURED, at 1280px on a date where all nine slots are live: the row
+        // holding a free-run badge gave every wrapper 117px, and the two buttons
+        // WITHOUT a badge stayed at 94px — a 23px shortfall. The result is the
+        // defect the user circled: a vertical rule that ends early and a
+        // horizontal rule sitting at two different heights across one row.
+        //
+        // It only appears when a row contains the badge, which is why measuring
+        // today's date proved nothing — three slots are elapsed and collapsed
+        // there, no badge is visible, and every cell reads a uniform 94px.
+        //
+        // `min-h-[88px]` STAYS, and it is the BUILD's floor rather than the
+        // document's. DESIGN.md said 64px until 2026-08-14; the shipped value
+        // has been 88px, measured. The document was corrected to match the
+        // build rather than the other way round, because 88px is what the
+        // three-line cell (time, state, free-run badge) actually needs.
+        // `h-full` only takes over when the row is taller than that.
+        "group relative flex h-full min-h-[88px] w-full flex-col items-start justify-center gap-1",
         // SQUARE, AND THE BORDERS ARE THE PLATE'S RULES. `border-r` and
         // `border-b` only: the grid above pulls itself 2px past its container
         // on both of those axes, so the last column's and last row's rules land

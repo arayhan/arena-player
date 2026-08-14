@@ -344,7 +344,16 @@ export function OrderSection() {
                 </button>
 
                 <div ref={elapsedRef}>
-                  <div className="grid -mr-0.5 border-t-2 border-[var(--color-band)] @min-[640px]:grid-cols-2 @min-[1120px]:grid-cols-3">
+                  {/* `-mb-0.5` MATCHES THE LIVE GRID, AND ITS ABSENCE WAS A
+                      DOUBLED SEAM. This grid pulled itself 2px past its
+                      container horizontally but not vertically, so its last row
+                      KEPT its bottom rule while the enclosing block below still
+                      drew one of its own — measured `marginBottom: 0px` here
+                      against the live grid's `-2px`, which is 2px + 2px at the
+                      boundary. It is only visible while "Sudah lewat" is
+                      expanded, which is why it survived every review of a
+                      collapsed panel. */}
+                  <div className="grid -mr-0.5 -mb-0.5 border-t-2 border-[var(--color-band)] @min-[640px]:grid-cols-2 @min-[1120px]:grid-cols-3">
                     {elapsed.map((s) => (
                       <div key={s.slot} data-motion="elapsed-row">
                         <SlotCell

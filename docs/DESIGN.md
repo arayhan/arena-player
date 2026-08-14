@@ -772,7 +772,10 @@ A 3-column grid at 375px gives roughly 110px per cell and the label cannot fit a
 
 The state label sits **under** the time inside every cell at every width — it is what keeps all 20 characters at any column count and it puts the time on its own line where it reads as the thing being chosen.
 
-- **Layout:** time above, state below, 14px/16px padding, 64px minimum height, square, 1.5px border.
+- **Layout:** time above, state below, **16px/12px padding, 88px minimum height**, square, **2px right and bottom rules**. **The cell also takes `h-full`**, which is not cosmetic: it is not the grid item — `OrderSection` wraps it so GSAP has a stagger target — so Grid stretches the WRAPPER to the tallest cell in the row and the button must be told to follow. Without it, a row containing a free-run badge left the two cells beside it 23px short at 1280px, and since the button draws the rules, they stopped short with it: a vertical rule ending early and a horizontal rule at two heights across one row.
+
+  > **These figures were 14px/16px, 64px and 1.5px in this document until 2026-08-14 and none of the three matched the build.** Measured on the live node: `min-height: 88px`, `padding: 16px 12px`, `border-right/bottom: 2px`. The document now records what renders.
+
 - **Time:** the display face at 700, 16px, `0.02em`, **tabular numerals**. Plus Jakarta Sans ships a `tnum` feature; the previous display face did not, and `tabular-nums` was a measured no-op there for two separate faces before this was caught.
 - **State:** the `sm` role. A token, not a literal.
 - **Available:** white fill, 1.5px `blue-600` border, navy text, label "Tersedia", `cursor: pointer`.
