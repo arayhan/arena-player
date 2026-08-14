@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FiImage } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 
 import type { TimeSlot } from "@/domain/slots";
@@ -461,13 +462,36 @@ export function BookingForm({ date, slot }: BookingFormProps) {
                 blue wash is the same "this is live, take it" vocabulary the slot
                 grid uses, and it is a border WEIGHT and FILL change rather than
                 colour alone. */}
+            {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
+                `sr-only`, not `hidden` — it keeps its place in the tab order, so a
+                keyboard visitor reaches it and opens the picker with Enter exactly
+                as before. A `display: none` input would have removed the only
+                accessible way to attach a file.
+
+                The zone shows the input's focus ring with `has-[:focus-visible]`,
+                so focus is visible on the thing a sighted keyboard user is looking
+                at rather than on a 1px offscreen box.
+
+                DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed is the one
+                border treatment on this plate that is NOT a rule, and that is the
+                point: every other edge here is a fixed division, so a broken edge
+                reads as "something goes in here". The switch to a solid accent edge
+                plus the blue wash is the same "this is live, take it" vocabulary the
+                slot grid uses, and it changes border WEIGHT and FILL, not colour
+                alone.
+
+                SIZED TO BE FOUND. At the 112px it started as, this was the quietest
+                control on a plate of hard-ruled fields — and it is the only one that
+                has to explain itself to somebody who has never used a dropzone.
+                160px tall, a 44px mark, and the label at h3: the same object, loud
+                enough to be the step it actually is. */}
             <div
               onDragEnter={onDragEnter}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
               className={cn(
-                "mt-1 flex min-h-28 cursor-pointer flex-col items-center justify-center gap-1 border-2 border-dashed px-4 py-5 text-center transition-colors duration-200",
+                "mt-1 flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-7 text-center transition-colors duration-200",
                 "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-focus)]",
                 dragging
                   ? "border-solid border-[var(--color-interactive)] bg-[var(--color-wash)]"
@@ -484,9 +508,16 @@ export function BookingForm({ date, slot }: BookingFormProps) {
                 onChange={onProofChange}
                 className="sr-only"
               />
+              {/* react-icons — the library PRODUCT.md names. Never an emoji, and
+                  never a generated glyph: those drift in stroke weight and optical
+                  grid the moment a second one is added. */}
+              <FiImage
+                aria-hidden="true"
+                className="size-11 shrink-0 text-[var(--color-fg-muted)]"
+              />
               <span
                 lang="id"
-                className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
+                className="type-display text-[length:var(--text-h3)] font-medium tracking-[0.06em] uppercase"
               >
                 {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
               </span>

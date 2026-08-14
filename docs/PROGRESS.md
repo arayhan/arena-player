@@ -811,3 +811,17 @@ VERIFIED BY SIMULATING A REAL DROP, not by reading the markup: a synthetic `Data
 A MEASUREMENT ARTEFACT I ALMOST REPORTED AS A DEFECT: my first read said the highlight never turned on. It had — I checked `className` synchronously in the same tick as the dispatch, before React flushed. Re-measured with a 300ms delay it is correct. Reading React state without waiting for a render is the same class of mistake as reading a stale Next compile, and this session has now made both.
 
 typecheck clean, prettier clean, `check:docs` 15 checks, 115 tests.
+
+[2026-08-15] [designer] THE DROPZONE GETS A MARK AND A SIZE — `bolder` round on `/booking`, two variants, V1 accepted.
+
+WHAT WAS WRONG: at 112px with two lines of text, the dropzone was the quietest control on a plate where every other element is a hard-ruled field — and it is the only control that has to explain itself to a visitor who has never seen a dropzone. It shipped correct and unnoticeable.
+
+THE TWO VARIANTS COMMITTED TO DIFFERENT AXES, which is what a `bolder` round requires. V1 amplified SCALE: 160px target, a 44px `FiImage` mark, label at `h3`, dashed edge kept. V2 amplified STRUCTURE: dashes replaced by the plate's own 2px navy rule, mark set in a filled navy square — the same solid-block device the section ordinals and buttons use. V1 chosen. V2 fits the system better on paper and loses the one thing doing the work: the dashed edge is the only border on this plate that is NOT a rule, so it is the only one that reads as "something goes in here". Making it a ruled field would have made it look finished rather than waiting.
+
+ICONS COME FROM `react-icons`, NEVER GENERATED — the standing project rule. This is the package's first use in the codebase; a single named import, `/booking` only, so the landing page's budget is untouched. Verified by `rg react-icons src/`: one import line.
+
+A SILENT NO-OP CAUGHT BEFORE IT SHIPPED. My first splice inserted the icon by matching an indentation-sensitive block from the scaffold, and the file's own indentation differed — the replace matched nothing and returned the string unchanged. `tsc` passed, the variants rendered, and both would have been the original with a different border. `rg FiImage` found the import and zero uses, which is what exposed it. A string replace that "succeeds" silently when it matches nothing is the same failure mode as the check-then-insert race: no error, wrong result. Assert on the match, not on the exit code.
+
+THE LIVE SERVER DIED before either variant was accepted, so the choice was made by asking rather than by the toolbar. The variant scaffolding is fully removed from source — asserted, not eyeballed: the write fails if the string `impeccable` survives anywhere in the file.
+
+`pnpm check`: typecheck clean, prettier clean, `check:domain` 8 files identical, `check:docs` 15 checks over 111 files, 115 tests passed. One pre-existing `react-hooks/incompatible-library` warning, unrelated.
