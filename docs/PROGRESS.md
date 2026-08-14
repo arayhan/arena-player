@@ -765,3 +765,15 @@ Fixed by passing real elements: `document.querySelectorAll` bypasses context sco
 The test that does discriminate, and what it now reports: **at load, before any scroll, six targets are below the fold and all six are `opacity: 0` awaiting their trigger**; after scrolling past all of them, **stranded = 0** and every opacity is 1. The first half proves it armed; the second proves it releases. Neither alone is sufficient, which is the whole lesson.
 
 VERIFIED: typecheck clean, `check:docs` 15 checks, 115 tests.
+
+[2026-08-14] [designer] THE SCROLL REVEAL REACHES THE PAGE'S TWO LARGEST OBJECTS — 6 targets became 17.
+
+THE USER ASKED THE SAME THING A THIRD TIME, AND THE THIRD ASK WAS NOT ABOUT THE BUG. The second was: the reveal was inert and is now fixed. This one arrived after that fix was live and verified, so "still no changes" had to mean something else — and measuring the page said what: six small heading blocks were animating across a 5000px scroll while the two biggest objects on it, the order plate and a ten-row list, sat perfectly still. "Trigger every match elements" was a coverage complaint, not a repeat of the defect.
+
+ADDED: the order plate, as ONE object — the date row, the grid and the hand-off band are a single sign, and revealing their parts separately would contradict the composition that file's whole rewrite established. Its slot cells keep their own existing entrance, which fires when DATA arrives; that is a different event from the plate entering the viewport and the two do not collide.
+
+ADDED: the ten Ketentuan rows, INDIVIDUALLY rather than as a list. Ten rows crossing the fold one at a time is the page's longest scroll doing something with the distance; the whole `<ol>` arriving at once would spend the same animation on one moment the visitor has already passed. Each row carries its own trigger, so the cascade is a property of scrolling rather than a timed stagger that can run ahead of the reader.
+
+VERIFIED with the two-sided test this session learned the hard way — one half proves it arms, the other proves it releases, and neither is sufficient alone. At load, before any scroll: **17 targets, 17 below the fold, 17 armed at `opacity: 0`**. After scrolling the full page: **stranded 0/17**, page overflow 0. Breakdown: 5 `div`, 10 `li`, 1 `h2`, 1 `p`.
+
+typecheck clean, `check:docs` 15 checks, 115 tests.

@@ -263,6 +263,13 @@ export function OrderSection() {
           (below) are clipped exactly at the plate's inner edge. */}
       <div
         ref={plateRef}
+        // `data-reveal` — the page-wide reveal, see ScrollReveal.tsx. The WHOLE
+        // plate as one object: the date row, the grid and the hand-off band are
+        // a single sign, and revealing their parts separately would contradict
+        // the composition this file spent its whole rewrite establishing. The
+        // slot cells keep their own entrance for when DATA arrives, which is a
+        // different event from the plate entering the viewport.
+        data-reveal
         className="@container relative z-10 overflow-hidden border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)]"
       >
         {/* HEAD, PANEL ONE: the date row. Divided from what follows by the same

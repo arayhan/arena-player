@@ -101,6 +101,14 @@ export function KetentuanRows() {
         {KETENTUAN.map((rule, index) => (
           <li
             key={rule}
+            // `data-reveal` PER ROW, NOT ON THE LIST. Ten rows revealing one by
+            // one as they cross the fold is the page's longest scroll doing
+            // something with the distance; the whole `<ol>` arriving at once
+            // would spend the same animation on a single moment the visitor is
+            // already past. Each row carries its own trigger, so the cascade is
+            // a property of scrolling rather than a timed stagger that can run
+            // ahead of the reader.
+            data-reveal
             className={cn(
               // THE NUMERAL TRACK, RE-DERIVED AGAINST PANCHANG RATHER THAN
               // SCALED. It was a flat `84px`, a figure inherited from a retired
