@@ -20,11 +20,19 @@ export interface BookingEntryProps {
 // Shared by both non-happy-path notices so the two buttons are pixel-for-pixel
 // the same control, styled off the same CTA used in the footer's closing CTA
 // (HomePage.tsx) — one destination, one visual language for "go pick a slot".
+// SQUARE AND 56px, MATCHING THE PLATE — carbonized 2026-08-14 with the layout
+// round the user accepted for the happy path. These two notices are the SAME
+// ROUTE in its other states, and leaving them at the old 10px radius and 48px
+// height would have given one URL two visual languages depending on whether the
+// slot was still valid. The label takes the display face at the `label` role,
+// like every other button in the system.
 const CTA_CLASS =
-  "mt-8 inline-flex h-12 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]";
+  "type-display mt-8 inline-flex h-14 items-center justify-center bg-[var(--color-accent-strong)] px-6 text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors hover:bg-[var(--color-accent-strong-hover)]";
 
+// A PLATE, not a rounded card. Same 3px Signal Blue edge the happy path and the
+// landing page's order panel both carry, so all three read as one product.
 const PANEL_CLASS =
-  "rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-6 md:p-8";
+  "border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)] p-6 md:p-8";
 
 // Hand-written Indonesian month abbreviations, the same technique
 // src/modules/home/order.utils.ts uses for the wa.me message template.
@@ -67,7 +75,12 @@ export function BookingEntry({ date, time }: BookingEntryProps) {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-[1100px] px-4 py-12 md:py-24">
+      {/* THE CONTAINER FINALLY MATCHES THE LANDING PAGE. `max-w-[1100px]`
+          was the PRE-REDESIGN value: the container went to 1280px on
+          2026-08-12 and this route never followed, so the two surfaces
+          measured differently on the same screen. The padding takes the
+          section tokens for the same reason — one rhythm, not two. */}
+      <div className="mx-auto w-full max-w-[var(--container-max)] px-[var(--space-section-x)] py-[clamp(44px,7vw,96px)]">
         {params.kind === "valid" ? (
           <BookingForm date={params.date} slot={params.slot} />
         ) : params.kind === "expired" ? (

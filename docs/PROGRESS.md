@@ -777,3 +777,19 @@ ADDED: the ten Ketentuan rows, INDIVIDUALLY rather than as a list. Ten rows cros
 VERIFIED with the two-sided test this session learned the hard way — one half proves it arms, the other proves it releases, and neither is sufficient alone. At load, before any scroll: **17 targets, 17 below the fold, 17 armed at `opacity: 0`**. After scrolling the full page: **stranded 0/17**, page overflow 0. Breakdown: 5 `div`, 10 `li`, 1 `h2`, 1 `p`.
 
 typecheck clean, `check:docs` 15 checks, 115 tests.
+
+[2026-08-14] [designer] /booking JOINS THE DIRECTION — accepted in live mode from two layout candidates against "enhance the layout, and sync with homepage design".
+
+THE ROUTE HAD NEVER FOLLOWED THE 2026-08-12 REDESIGN, and that is a structural finding rather than a taste note. Read off the live node: container `max-w-[1100px]` against the page's 1280px, section corners at 14px and controls at 10px against a system that has been 0px since 2026-08-13, grey hairline borders where the landing page draws 2px navy rules, and no display face anywhere. Three stacked rounded cards in a column is the exact arrangement "Pelat Enamel" was defined against.
+
+WHAT SHIPPED: one plate. A 3px `blue-600` edge, `gap-0`, and the schedule summary, the payment note and the form as PANELS divided by the plate's own 2px navy rules — the same object the order panel is. Panels draw `border-b` only, because the plate draws its outer edge once and a panel drawing four sides would double every seam. The rejected candidate split the page into a sticky receipt rail and a form column above 980px.
+
+CARBONIZED INTO `BookingForm.tsx` AS REAL CLASSES, NOT LEFT AS AN OVERRIDE SHEET. The preview reached the form by descendant selector because the scaffold only wraps the container in `BookingEntry.tsx`; the accepted variant went into the form's own centralised `PANEL_CLASS`, field class and button class, so nothing depends on a stylesheet that shadows another file.
+
+THE NOTICE STATES CAME WITH IT, AND THAT WAS NOT IN THE ASK. `ExpiredNotice` and `UnusableNotice` live in `BookingEntry.tsx` and still carried `rounded-[14px]` panels and 48px `rounded-[10px]` buttons. They are the SAME URL in its other states — leaving them would have given one route two visual languages depending on whether the slot was still valid. Verified against a deliberately expired link.
+
+A MISTAKE ON THE WAY IN: the plate's explanatory comment was written as `{/* … */}` directly after `return (`, which is a second child of the return expression rather than a comment. `tsc` caught it. It is now a line comment above the `return`, and says so in place.
+
+VERIFIED at 375px and 1280px on the happy path — container 1280px, plate border 3px `rgb(37,99,235)`, section radius 0, field borders 2px at radius 0, submit 56px uppercase, zero variant nodes, page overflow 0 — and on the expired state: panel 3px/0 radius, CTA 56px uppercase at radius 0, overflow 0. `pnpm typecheck`, `format:check`, `check:docs` (15 checks over 112 files) and 115 tests pass. `rg 'rounded-\['` over the module returns only the sentence in a comment describing what was removed.
+
+STILL TRUE, AND UNTOUCHED BY THIS: the rate card is not supplied, so `/booking` still shows no rupiah figure. The layout now has a place for one; the number remains the client's to give.

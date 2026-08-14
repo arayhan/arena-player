@@ -17,13 +17,26 @@ export interface BookingFormProps {
   slot: TimeSlot;
 }
 
-const PANEL_CLASS = "rounded-[14px] border border-[var(--color-border)] bg-[var(--color-bg)] p-4";
+// A PANEL OF ONE PLATE, NOT A CARD — carbonized 2026-08-14 from the
+// layout round the user accepted on /booking. It was
+// `rounded-[14px] border border-[var(--color-border)]`, which is a
+// rounded card floating in a gap: the exact arrangement "Pelat Enamel"
+// was defined against, and the one the landing page spent its whole
+// rewrite removing. Three stacked cards are now three panels divided by
+// the plate's own 2px navy rules, which is what the order panel does.
+//
+// `border-b` ONLY. The plate draws its outer edge once, on the wrapper;
+// a panel that also drew left, right and top would double every seam.
+const PANEL_CLASS = "border-b-2 border-[var(--color-band)] bg-[var(--color-bg)] px-4 py-4 md:px-6";
 
 const CTA_CLASS =
-  "mt-4 inline-flex h-12 items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]";
+  "type-display mt-4 inline-flex h-14 items-center justify-center bg-[var(--color-accent-strong)] px-6 text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors hover:bg-[var(--color-accent-strong-hover)]";
 
 const INPUT_CLASS =
-  "h-12 w-full rounded-[10px] border bg-[var(--color-bg)] px-3 text-[var(--color-fg)] outline-none";
+  // SQUARE, AND A 2px NAVY RULE RATHER THAN A GREY HAIRLINE. `rounded.control`
+  // is 0px system-wide since 2026-08-13, and on this plate a field is a
+  // ruled box like a slot cell rather than a floating input.
+  "h-12 w-full border-2 border-[var(--color-band)] bg-[var(--color-bg)] px-3 text-[var(--color-fg)] outline-none";
 const INPUT_VALID_CLASS = "border-[var(--color-border)]";
 const INPUT_ERROR_CLASS = "border-[var(--color-danger-line)] bg-[var(--color-danger-surface)]";
 
@@ -167,8 +180,17 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // needs a different slot, not a resubmit of this one.
   const showForm = outcome?.kind !== "created" && outcome?.kind !== "slot_taken";
 
+  // THE PLATE. One object with a 3px Signal Blue edge, exactly like the order
+  // panel on the landing page, and no gap between its children — the panels
+  // inside are divided by the plate's own rules rather than separated by space.
+  // That is the whole point of the layout round the user accepted on
+  // 2026-08-14: restyling three rounded cards would have left them three cards.
+  //
+  // A LINE COMMENT, NOT A JSX ONE. `{/* … */}` placed directly after `return (`
+  // is a second child of the return expression, which is a syntax error rather
+  // than a comment — it broke the build once on the way in.
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)]">
       {/* DESIGN.md's `display` role is written for the hero: one headline, three
           short lines, one word per line, measured against "PILIH JAM." (its
           longest word is 5 characters). "Lengkapi Pemesanan" is two 8-9 letter
@@ -193,7 +215,10 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           asked for --text-h3 and rendered at h2's size, as did three <h3>
           labels on the landing page. The class was emitted, matched, and lost,
           with nothing to show for it. */}
-      <h1 lang="id" className="max-w-[24ch] text-[length:var(--text-h2)]">
+      <h1
+        lang="id"
+        className="border-b-2 border-[var(--color-band)] px-4 py-5 text-[length:var(--text-h2)] uppercase md:px-6"
+      >
         Lengkapi Pemesanan
       </h1>
 
@@ -232,7 +257,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             not invented digits — an account number nobody verified sends a
             payment to the wrong place, which is worse than an obvious
             blank. Product Principle 7: a placeholder must look like one. */}
-        <div className="mt-3 rounded-[10px] border border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3">
+        <div className="mt-3 border-2 border-dashed border-[var(--color-band)] bg-[var(--color-bg-subtle)] p-3">
           <p lang="id" className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]">
             Nomor rekening &amp; nama pemilik menyusul — menunggu data dari pihak lapangan.
           </p>
@@ -254,7 +279,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
       </section>
 
       {showForm ? (
-        <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+        <form onSubmit={submit} noValidate className="flex flex-col gap-5 px-4 py-5 md:px-6">
           <div>
             <label htmlFor="teamName" className={LABEL_CLASS}>
               Nama Tim
@@ -325,7 +350,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               aria-invalid={Boolean(errors.notes)}
               aria-describedby={describedBy("notes-counter", errors.notes && "notes-error")}
               className={cn(
-                "mt-1 w-full rounded-[10px] border bg-[var(--color-bg)] p-3 text-[var(--color-fg)] outline-none",
+                "mt-1 w-full border-2 border-[var(--color-band)] bg-[var(--color-bg)] p-3 text-[var(--color-fg)] outline-none",
                 errors.notes ? INPUT_ERROR_CLASS : INPUT_VALID_CLASS,
               )}
               {...register("notes")}
@@ -380,7 +405,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               aria-invalid={Boolean(errors.proof)}
               aria-describedby={describedBy(errors.proof && "proof-error")}
               onChange={onProofChange}
-              className="mt-1 block w-full text-[length:var(--text-sm)] text-[var(--color-fg)] file:mr-3 file:h-10 file:rounded-[10px] file:border-0 file:bg-[var(--color-accent-strong)] file:px-4 file:font-semibold file:text-[var(--color-fg-inverse)] hover:file:bg-[var(--color-accent-strong-hover)]"
+              className="mt-1 block w-full text-[length:var(--text-sm)] text-[var(--color-fg)] file:mr-3 file:h-10 file:border-0 file:bg-[var(--color-accent-strong)] file:px-4 file:font-semibold file:text-[var(--color-fg-inverse)] hover:file:bg-[var(--color-accent-strong-hover)]"
             />
             {proofFile ? (
               <p
@@ -408,7 +433,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               tabIndex={-1}
               role="alert"
               lang="id"
-              className="rounded-[14px] border-2 border-[var(--color-warning-line)] bg-[var(--color-warning-surface)] p-4 text-[var(--color-warning-strong)] outline-none"
+              className="border-2 border-[var(--color-warning-line)] bg-[var(--color-warning-surface)] p-4 text-[var(--color-warning-strong)] outline-none"
             >
               Terlalu banyak percobaan dalam waktu singkat. Tunggu sebentar, lalu coba kirim lagi —
               tidak ada yang salah dengan pemesananmu.
@@ -421,13 +446,13 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               tabIndex={-1}
               role="alert"
               lang="id"
-              className="rounded-[14px] border-2 border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)] p-4 text-[var(--color-danger-strong)] outline-none"
+              className="border-2 border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)] p-4 text-[var(--color-danger-strong)] outline-none"
             >
               <p className="font-semibold">Terjadi kendala di server.</p>
               <button
                 type="button"
                 onClick={() => void submit()}
-                className="mt-3 h-10 rounded-[10px] border border-[var(--color-danger-strong)] px-4 font-semibold text-[var(--color-danger-strong)] hover:bg-[var(--color-bg)]"
+                className="mt-3 h-10 border-2 border-[var(--color-danger-strong)] px-4 font-semibold text-[var(--color-danger-strong)] hover:bg-[var(--color-bg)]"
               >
                 Coba lagi
               </button>
@@ -440,7 +465,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           <button
             type="submit"
             aria-disabled={mutation.isPending}
-            className="flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--color-accent-strong)] px-6 font-semibold text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+            className="type-display flex h-14 w-full items-center justify-center bg-[var(--color-accent-strong)] px-6 text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors hover:bg-[var(--color-accent-strong-hover)] aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
           >
             {/* A real ellipsis, not three periods. Three periods set in Inter
                 are three separate glyphs with word-spacing between them, so the

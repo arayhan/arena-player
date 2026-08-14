@@ -877,6 +877,14 @@ This is the only centred composition on the page, which is what makes it read as
 
 **The wipe is the axis made interactive**, and it is the only place a `skewX` is animated rather than static. It runs on `transform` alone, on a compositor layer, and collapses to a plain colour change under `prefers-reduced-motion`.
 
+### /booking — one plate, ruled
+
+**The route joined the direction on 2026-08-14**, chosen by the user from two layout candidates; the rejected one split it into a receipt rail and a form column above 980px. It had never followed the 2026-08-12 redesign, and the gap was measurable rather than a matter of taste: a **1100px** container against the page's 1280px, **14px** section corners and **10px** controls against a system that is 0px, grey hairlines where the landing page draws 2px navy rules, and no display face anywhere.
+
+**Three stacked rounded cards became one plate.** A 3px `blue-600` edge, `gap-0`, and the summary, the payment note and the form as panels divided by the plate's own **2px navy rules** — the same object the order panel is, so the two surfaces finally read as one product. Panels draw `border-b` only; the plate draws its outer edge once, so no seam doubles.
+
+**The notice states carry it too.** `ExpiredNotice` and `UnusableNotice` are the same URL in its other states, and leaving them rounded would have given one route two visual languages depending on whether the slot was still valid.
+
 ### Inputs / Fields
 
 - **Style:** 48px tall, square, 1px `grey-200` border, 12px padding, white fill.
