@@ -34,7 +34,16 @@ export function ScrollReveal() {
   useMotion(
     {
       animate: ({ gsap, ScrollTrigger }) => {
-        const targets = gsap.utils.toArray<HTMLElement>("[data-reveal]");
+        // `document.querySelectorAll`, NOT `gsap.utils.toArray("[data-reveal]")`,
+        // AND THE FIRST VERSION SHIPPED THE WRONG ONE. `useMotion` runs this
+        // inside `gsap.context(fn, scope)`, and a context RESOLVES SELECTOR
+        // STRINGS WITHIN ITS SCOPE ELEMENT. The scope here is this component's
+        // own empty `<div>`, so the selector matched **zero** elements and the
+        // reveal silently did nothing — no error, no warning, every target
+        // sitting at `opacity: 1` exactly as if the feature had never been
+        // written. Passing real elements bypasses context scoping entirely
+        // while the context still owns their cleanup.
+        const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
         if (targets.length === 0) return;
 
         targets.forEach((el) => {
@@ -70,10 +79,12 @@ export function ScrollReveal() {
       // nothing to restore.
       settle: () => {},
     },
-    // NOT scoped to `scopeRef`. The elements this animates are spread across
-    // every section of the page and are not descendants of this component, so
-    // a scope would match nothing. The ref exists only to give `gsap.context`
-    // a stable owner for cleanup.
+    // The scope exists for CLEANUP OWNERSHIP ONLY — everything built inside is
+    // reverted together on unmount. It deliberately does NOT select the
+    // targets: they live all over the page and none is a descendant of this
+    // component. The first version relied on `gsap.utils.toArray` here and got
+    // exactly what that combination promises — an empty list. See the note at
+    // the query above.
     { scope: scopeRef },
   );
 

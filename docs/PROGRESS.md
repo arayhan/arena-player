@@ -751,3 +751,17 @@ SMOOTH SCROLL IS CSS, NOT A SCRIPT. `scroll-behavior: smooth` on `html` covers a
 EASING: DESIGN.md names `cubic-bezier(0.22, 1, 0.36, 1)`. GSAP reaches that family through `power3.out` without loading `CustomEase`, which is a separate plugin and a separate download; `Hero` already uses it for its own entrance, so the two match rather than merely rhyme. Recorded rather than passed off as exact.
 
 VERIFIED: `revealTargets = 6`, `htmlScrollBehavior = smooth`. After scrolling the full page, **`stillTransparentAfterScroll = 0`** — the failure mode this animation class has is an element stranded at `opacity: 0`, and that is the measurement that rules it out. Page overflow 0. `typecheck`, `format:check`, `check:domain`, `check:docs` (15 checks over 111 files) and 115 tests pass; the only lint error remains live mode's own injected dev-only script.
+
+[2026-08-14] [designer] THE SCROLL REVEAL I SHIPPED AN HOUR EARLIER NEVER RAN, AND MY OWN VERIFICATION IS WHAT MISSED IT.
+
+The user re-sent the identical steer, which is the signal that mattered: they had seen no change. Measured at load, before any scrolling: all six `[data-reveal]` targets sat at `opacity: 1, transform: none` while every one of them was below the fold. If `gsap.from` had built, they would have been at `opacity: 0` waiting for their trigger. **The feature was inert — no error, no warning, nothing in the console.**
+
+THE CAUSE, AND I HAD WRITTEN IT DOWN BEFORE I CAUSED IT. `useMotion` runs `animate()` inside `gsap.context(fn, scope)`, and a gsap context **resolves selector strings within its scope element**. The scope here is this component's own empty `<div>`. `gsap.utils.toArray("[data-reveal]")` therefore matched **zero** elements, the `forEach` body never executed, and the early return did the rest silently. The comment sitting three lines below the bug said "a scope would match nothing" — I described the trap accurately and then wrote the code that falls into it.
+
+Fixed by passing real elements: `document.querySelectorAll` bypasses context scoping while the context still owns cleanup.
+
+**THE VERIFICATION FAILURE IS THE MORE IMPORTANT HALF.** I checked "after scrolling the whole page, `stillTransparentAfterScroll = 0`" and reported it as proof the reveal worked. That test **passes trivially when the animation never runs at all** — nothing is stranded at `opacity: 0` precisely because nothing was ever set to `opacity: 0`. I chose a test that could only detect the failure mode I was worried about (stranded content) and was blind to the one that actually happened (no animation). A green check on a feature that does nothing is worse than no check.
+
+The test that does discriminate, and what it now reports: **at load, before any scroll, six targets are below the fold and all six are `opacity: 0` awaiting their trigger**; after scrolling past all of them, **stranded = 0** and every opacity is 1. The first half proves it armed; the second proves it releases. Neither alone is sufficient, which is the whole lesson.
+
+VERIFIED: typecheck clean, `check:docs` 15 checks, 115 tests.
