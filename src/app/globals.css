@@ -572,6 +572,93 @@ button:not(:disabled):not([aria-disabled="true"]),
   }
 }
 
+/* THE HERO'S BACKGROUND MOTION — the pitch markings drifting, accepted by the
+ * user 2026-08-14 from two candidates in live mode. The brief asked for "a
+ * three.js effect"; the engine is 3.75x the 40KB WebGL cap in architecture.md,
+ * and that document already recorded the answer the first time this came up:
+ * reach for the shader, not the engine. This costs ZERO bytes instead — no
+ * canvas, no library, no requestAnimationFrame, two compositor-only transforms.
+ *
+ * BAKED, NOT PARAMETERISED. Accepted at speed 1 and density "normal", so the
+ * durations are literals and the 150px and 58px grid alternatives are deleted
+ * rather than commented out. A live-mode knob that survives into source is a
+ * decision nobody made.
+ *
+ * IN `globals.css` RATHER THAN AS A TAILWIND UTILITY, unlike the skewed field
+ * beside it. That layer is three static declarations; this one needs keyframes
+ * and a pseudo-element, and neither has an arbitrary-value form worth reading.
+ *
+ * THE ANIMATION IS GATED ON `[data-hero-inview="true"]`, WHICH IS THE
+ * OFF-SCREEN-IS-OFF RULE AND NOT AN OPTIMISATION. DESIGN.md requires every
+ * continuously-running animation to stop when its section leaves the viewport;
+ * before this, the marquee was the only one and it already obeys. A CSS
+ * animation otherwise keeps ticking while a visitor reads the Ketentuan, which
+ * is precisely the CPU this page cannot spend on a mid-range Android.
+ *
+ * REDUCED MOTION IS `animation: none`, NOT THE GLOBAL 0.01ms OVERRIDE BELOW.
+ * That override makes an animation land on its FINAL frame instantly rather
+ * than not run — for a looping background it would freeze the plate at
+ * `scale(1.14)`, a composition nobody designed. These hold their opening frame. */
+.hero-pitch {
+  position: absolute;
+  inset: -20%;
+  background:
+    repeating-linear-gradient(90deg, var(--color-border-on-band) 0 2px, transparent 2px 96px),
+    repeating-linear-gradient(0deg, var(--color-border-on-band) 0 2px, transparent 2px 96px);
+  opacity: 0.5;
+}
+
+/* The centre circle. A pseudo-element because the live preview's mount keeps
+ * only a container's first child, so a sibling span never reached the browser —
+ * and because one node beats two for the same drawing. */
+.hero-pitch::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46vw;
+  height: 46vw;
+  max-width: 560px;
+  max-height: 560px;
+  margin: -23vw 0 0 -23vw;
+  border: 2px solid var(--color-interactive-on-band);
+  border-radius: 50%;
+  opacity: 0.28;
+}
+
+[data-hero-inview="true"] .hero-pitch {
+  animation: hero-pitch-drift 34s ease-in-out infinite alternate;
+}
+
+[data-hero-inview="true"] .hero-pitch::before {
+  animation: hero-pitch-ring 22s ease-in-out infinite alternate;
+}
+
+@keyframes hero-pitch-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-3%, -2%, 0) scale(1.14);
+  }
+}
+
+@keyframes hero-pitch-ring {
+  from {
+    transform: scale(0.94);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-pitch,
+  .hero-pitch::before {
+    animation: none !important;
+  }
+}
+
 /* GSAP has no built-in reduced-motion handling, so this is the CSS half of the
  * guarantee and src/lib/motion.ts is the JS half. Neither is sufficient alone. */
 @media (prefers-reduced-motion: reduce) {
