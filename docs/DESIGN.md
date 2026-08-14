@@ -392,6 +392,12 @@ The client asked for a **minimalist UI, but modern — with many animations, tra
 
 Everything animated routes through `src/lib/motion.ts` — a direct `gsap.to()` in a component is banned, because GSAP has no built-in `prefers-reduced-motion` handling and the wrapper is the only thing that supplies it. CSS `@keyframes` are permitted where the reduced-motion block in `globals.css` already neutralises them.
 
+**The page-wide scroll reveal is built, and it is opt-in by attribute.** Any element carrying `data-reveal` fades and rises 48px over 700ms when its top reaches 88% of the viewport, **fires once and is then unobserved**. `ScrollReveal.tsx` is a single client island rendering no visible DOM: it reads `[data-reveal]` from the document and drives them through `src/lib/motion.ts`, so every section stays a **server component** and ships no JavaScript for the effect. A section added later opts in by writing one attribute.
+
+**Nothing starts hidden in the markup.** `gsap.from` sets the start state only after GSAP has loaded, so a failed fetch, a reduced-motion preference or disabled JavaScript all leave a complete, readable page.
+
+**In-page navigation scrolls smoothly**, declared as `scroll-behavior: smooth` on `html` rather than in JavaScript — it covers anchor clicks, `location.hash` changes and `scrollIntoView` alike, and the reduced-motion block already forces it back to `auto`.
+
 **The Off-Screen-Is-Off Rule.** Any continuously-running animation must stop when its section leaves the viewport, via `IntersectionObserver`, and must stop under `prefers-reduced-motion`. **There are two**: the marquee, and the hero's background grid added 2026-08-14. The hero gates its CSS animation on a `data-hero-inview` attribute the observer toggles on the `<section>`, and the attribute **defaults to `"true"` in the markup** — a missing `IntersectionObserver` must cost a little CPU rather than leave a dead background.
 
 **A CSS animation is not exempt from the `motion.ts` rule; it is outside what that rule is for.** The ban on a direct `gsap.to()` exists because GSAP ships no `prefers-reduced-motion` handling, so a tween authored outside the wrapper escapes the guarantee. CSS has that handling natively, and `globals.css` already carries the block. What CSS does _not_ have is a viewport check — hence the observer above, which touches one attribute and drives no animation itself.

@@ -357,6 +357,17 @@
  * actually get clicked. */
 html {
   scroll-padding-top: 80px;
+  /* SMOOTH SCROLL FOR IN-PAGE NAVIGATION, added 2026-08-14. Every real
+   * destination on this page is an anchor — the header CTA and both hero CTAs
+   * jump to `#order` or `#lokasi` — so an instant teleport is the one thing
+   * that makes a one-page site feel like several.
+   *
+   * DECLARED HERE, NOT IN JS. `scroll-behavior` covers anchor clicks,
+   * `location.hash` changes and `scrollIntoView` alike, in one line and with no
+   * library. A smooth-scroll script would also have to be undone under reduced
+   * motion; this is undone for free, because the reduced-motion block at the
+   * foot of this file already forces `scroll-behavior: auto !important`. */
+  scroll-behavior: smooth;
 }
 
 /* THE ONE PLACE THE TYPE SCALE IS OVERRIDDEN, AND IT IS 39px WIDE.

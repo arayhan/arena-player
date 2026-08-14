@@ -75,7 +75,12 @@ export function ClosingCTA() {
             so the composition cannot re-derive its own geometry from the copy.
             `w-full` because the parent is a flex column with `items-center`,
             which would otherwise size this to fit-content for the same reason. */}
-        <h2 lang="id" className="w-full text-[color:var(--color-fg-on-band)]">
+        {/* `data-reveal` on the heading and on the lede SEPARATELY, which is
+            the one place on the page that is right. Everywhere else a heading
+            and its body are one object; here the heading is a three-beat
+            sentence that IS the ending, and letting the lede follow it a beat
+            later is the closing cadence rather than two decisions. */}
+        <h2 data-reveal lang="id" className="w-full text-[color:var(--color-fg-on-band)]">
           <span className="block text-[length:var(--text-closing)] leading-[0.95] font-extrabold tracking-[-0.03em]">
             Lapangan
           </span>
@@ -116,7 +121,11 @@ export function ClosingCTA() {
           </span>
         </h2>
 
-        <p lang="id" className="mt-6 max-w-[46ch] text-[color:var(--color-fg-muted-on-band)]">
+        <p
+          data-reveal
+          lang="id"
+          className="mt-6 max-w-[46ch] text-[color:var(--color-fg-muted-on-band)]"
+        >
           Satu lapangan mini soccer di Lombok, jadwalnya terbuka. Pilih jamnya, sisanya lewat
           WhatsApp.
         </p>

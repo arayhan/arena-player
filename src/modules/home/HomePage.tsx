@@ -7,6 +7,7 @@ import { OrderSection } from "./components/OrderSection";
 import { ClosingCTA } from "./components/ClosingCTA";
 import { Section } from "./components/Section";
 import { ProgressBar } from "./components/ProgressBar";
+import { ScrollReveal } from "./components/ScrollReveal";
 import { SiteHeader } from "./components/SiteHeader";
 
 /**
@@ -61,6 +62,12 @@ export function HomePage() {
   return (
     <main className="flex-1">
       <ProgressBar />
+
+      {/* THE PAGE-WIDE SCROLL REVEAL, mounted once. It renders no visible DOM;
+          it reads every `[data-reveal]` in the document and drives them through
+          `src/lib/motion.ts`. Mounted here rather than inside each section so
+          the sections stay server components and ship no JavaScript for it. */}
+      <ScrollReveal />
       <SiteHeader />
 
       <Hero />

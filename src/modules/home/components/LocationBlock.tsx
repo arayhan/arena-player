@@ -106,7 +106,15 @@ export function LocationBlock() {
     // section the page's worst overflow. Tailwind's own `grid-cols-2` emits
     // `minmax(0,1fr)` and was therefore safe; an arbitrary value is not, and
     // `Section.tsx` records the same trap costing 41px of page width.
-    <div className="grid gap-8 min-[980px]:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] min-[980px]:items-start min-[980px]:gap-12">
+    // `data-reveal` — the page-wide scroll reveal, see ScrollReveal.tsx. The
+    // WHOLE two-column block, not its parts: the display lines, the metadata
+    // and the map placeholder are one composition, and revealing the map
+    // separately from the address it belongs to would break the only
+    // relationship this section exists to state.
+    <div
+      data-reveal
+      className="grid gap-8 min-[980px]:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] min-[980px]:items-start min-[980px]:gap-12"
+    >
       <div>
         {/* THE STACKED DISPLAY LINES. Three short lines, not the `h2`'s single
             inline sentence — a brand-plus-region statement, which is

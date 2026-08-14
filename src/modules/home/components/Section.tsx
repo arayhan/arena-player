@@ -230,7 +230,16 @@ export function Section({
             </span>
           ) : null}
 
-          <div className="min-w-0">
+          {/* `data-reveal` OPTS THIS BLOCK INTO THE PAGE-WIDE SCROLL REVEAL
+              (see ScrollReveal.tsx). An attribute rather than a hook, so this
+              stays a server component and ships no JavaScript for the effect.
+              The heading and its lede move as ONE object; revealing them
+              separately would read as two decisions where the composition is
+              one. The ordinal beside them is deliberately excluded — it is
+              `aria-hidden` decoration that already carries the section's
+              identity, and animating a watermark draws the eye to the thing
+              that is not the point. */}
+          <div data-reveal className="min-w-0">
             <h2>{title}</h2>
             {lede ? (
               // Body copy caps at 60–68ch. Past that the eye loses the line
