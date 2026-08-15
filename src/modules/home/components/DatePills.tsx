@@ -2,6 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 
+import { FiCalendar } from "react-icons/fi";
+
 import { cn } from "@/lib/cn";
 import { useMotion } from "@/lib/motion";
 
@@ -195,43 +197,84 @@ export function DatePills({
         })}
       </div>
 
-      {/* THE DISCLOSURE, AND IT IS THE ELAPSED TOGGLE'S TWIN ON PURPOSE. Same
-          caret, same muted `sm` label, same hover wash — this plate has exactly
-          one way of saying "there is more behind this", and inventing a second
-          would make the two rows read as two different kinds of control when
-          they are the same kind. The surface brief required it to "read as
-          opening something, not as a third date": a caret plus a full-width row
-          under the pills is a disclosure, and it is emphatically not a pill. */}
+      {/* THE DISCLOSURE, LOUD AND EXPLAINED — reworked 2026-08-15.
+          
+          IT WAS THE ELAPSED TOGGLE'S TWIN: same caret, same muted `sm` label,
+          same hover wash, on the argument that this plate has one way of saying
+          "there is more behind this". That symmetry cost it the two things it
+          needed. It looked like the same class of thing as a collapsed list of
+          hours nobody can book, so it read as skippable — and it said nothing
+          about WHY a visitor would open it. The pills reach fourteen days; the
+          bookable window is three months. A visitor wanting a date in October
+          has no way to learn from "Pilih tanggal lain" that October is even
+          available.
+          
+          SO IT TAKES THE INTERACTIVE BLUE, the display face, and a second line
+          that states the fact. It is still a full-width disclosure row rather
+          than a pill or a filled bar: a pill would read as a third date, and a
+          filled navy bar is the hand-off band's device, which means "go to
+          WhatsApp" on this plate and may not mean anything else.
+          
+          The mark is `react-icons`, per the project rule that icons come from a
+          library rather than a drawn glyph. */}
       <button
         type="button"
         lang="id"
         aria-expanded={open}
         aria-controls="order-calendar"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-4 py-3 text-left text-[length:var(--text-sm)] text-[var(--color-fg-muted)] transition-colors duration-200 hover:bg-[var(--color-bg-subtle)]"
+        className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-200 hover:bg-[var(--color-wash)]"
       >
+        <FiCalendar
+          aria-hidden="true"
+          className="mt-0.5 size-5 shrink-0 text-[var(--color-interactive)]"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="type-display block text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-interactive)] uppercase">
+            Pilih tanggal lain
+          </span>
+          <span className="mt-1 block text-[length:var(--text-sm)] text-[var(--color-fg-muted)]">
+            Tanggal lebih dari 14 hari ke depan bisa dipilih lewat kalender.
+          </span>
+        </span>
         <span
           aria-hidden="true"
-          className={cn("inline-block transition-transform duration-150", open && "rotate-90")}
+          className={cn(
+            "mt-0.5 inline-block text-[var(--color-interactive)] transition-transform duration-150",
+            open && "rotate-90",
+          )}
         >
           ›
         </span>
-        Pilih tanggal lain
       </button>
 
       {open ? (
         <div ref={calendarRef} id="order-calendar">
-          {/* THE HEIGHT CAP IS THE WHOLE REASON THIS OPENS IN PLACE RATHER THAN
-              PUSHING THE PAGE APART. Four month grids unrolled inline are well
-              over a thousand pixels, which would shove the slot grid — the
-              product — off the screen the moment a visitor went looking for a
-              date. Capped, the calendar scrolls inside itself and the grid stays
-              where it was. `overscroll-contain` for the same reason the pill row
-              has it: a flick at the end of this list must not scroll the page
-              behind it. */}
+          {/* THE HEIGHT CAP IS A PHONE RULE NOW, not a universal one — changed
+              2026-08-15.
+              
+              WHY IT EXISTS AT ALL: three month grids unrolled inline are well
+              over a thousand pixels, which on a phone would shove the slot grid
+              — the product — off the screen the moment a visitor went looking
+              for a date. Capped, the calendar scrolls inside itself and the grid
+              stays where it was. `overscroll-contain` for the same reason the
+              pill row has it: a flick at the end of this list must not scroll
+              the page behind it.
+              
+              WHY IT LIFTS FROM 980px: on a desktop there is no such trade. The
+              plate is wide, the viewport is tall, and a scrollbar INSIDE a panel
+              that the page could simply scroll past is a second scrollport a
+              visitor has to notice and aim at. Above the query the months unroll
+              in full and the page does the scrolling, which is the behaviour the
+              user asked for.
+              
+              `@min-[980px]` is the PLATE's container query, not a viewport
+              breakpoint — the same unit every other responsive decision on this
+              panel uses, so the calendar changes shape with the object it lives
+              in rather than with the window. */}
           <div
             lang="id"
-            className="max-h-[min(58svh,420px)] overflow-y-auto border-t-2 border-[var(--color-band)] [overscroll-behavior-y:contain]"
+            className="max-h-[min(58svh,420px)] overflow-y-auto border-t-2 border-[var(--color-band)] [overscroll-behavior-y:contain] @min-[980px]:max-h-none @min-[980px]:overflow-visible"
           >
             {months.map((month) => (
               <section

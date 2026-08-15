@@ -540,8 +540,19 @@ for (const f of ALL.filter((f) => /^src\/.+\.(ts|tsx)$/.test(f))) {
     const prdRules = [...block.matchAll(/^\d+\.\s+(.+)$/gm)].map((m) => m[1].trim());
     const shipped = [...content.matchAll(/^\s+"(.+)",$/gm)].map((m) => m[1].replace(/\\"/g, '"'));
 
-    if (prdRules.length !== 10) {
-      fail("ketentuan-verbatim", `docs/PRD.md — expected 10 rules, parsed ${prdRules.length}`);
+    // NINE SINCE 2026-08-15, TEN BEFORE IT. The client dropped the DP rule and
+    // rewrote the two after it. The count is asserted rather than inferred from
+    // the file it is checking: a list that silently loses a rule to a bad edit
+    // would otherwise still "match" as long as both copies lost the same one,
+    // and this check exists precisely because the shipped text is an agreement a
+    // visitor accepts by booking. Moving the number is a deliberate act, which
+    // is the property worth keeping.
+    const KETENTUAN_RULES = 9;
+    if (prdRules.length !== KETENTUAN_RULES) {
+      fail(
+        "ketentuan-verbatim",
+        `docs/PRD.md — expected ${KETENTUAN_RULES} rules, parsed ${prdRules.length}`,
+      );
     }
     if (shipped.length !== prdRules.length) {
       fail(

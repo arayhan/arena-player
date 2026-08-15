@@ -323,16 +323,17 @@ Hard performance guardrails:
 
 PERATURAN SEWA LAPANGAN
 
-1. Booking, wajib DP sebesar 50% (harga sewa lapangan)
-2. Pembatalan sewa dilakukan sebelum 1 x 24 jam. Diluar itu DP dianggap hangus
-3. Jika terjadi hujan, waktu bermain dapat di-reschedule atau DP di-refund
-4. Wajib menggunakan sepatu sepak bola (turf atau pull plastik)
-5. Dilarang menggunakan sepatu sepak bola dengan pull besi
-6. Dilarang merokok, makan, dan membuang sampah ke dalam area lapangan
-7. Dilarang membawa alkohol, narkoba, senjata tajam, dan benda terlarang lainnya ke area Arena Player
-8. Dilarang membuat keributan atau berkelahi di lapangan
-9. Luka, cidera, dan kecelakaan yang dialami pemain bukan tanggung jawab Arena Player
-10. Perhatikan barang bawaan. Segala kerusakan atau kehilangan bukan tanggung jawab pihak Arena Player
+1. Pembatalan: balik 50% confirm sebelum 1x24 jam
+2. Jika terjadi hujan bisa reschedule atau uang dikembalikan 100%
+3. Wajib menggunakan sepatu sepak bola (turf atau pull plastik)
+4. Dilarang menggunakan sepatu sepak bola dengan pull besi
+5. Dilarang merokok, makan, dan membuang sampah ke dalam area lapangan
+6. Dilarang membawa alkohol, narkoba, senjata tajam, dan benda terlarang lainnya ke area Arena Player
+7. Dilarang membuat keributan atau berkelahi di lapangan
+8. Luka, cidera, dan kecelakaan yang dialami pemain bukan tanggung jawab Arena Player
+9. Perhatikan barang bawaan. Segala kerusakan atau kehilangan bukan tanggung jawab pihak Arena Player
+
+> **Nine rules since 2026-08-15, not ten.** The client dropped "Booking, wajib DP sebesar 50% (harga sewa lapangan)" and rewrote the two that followed it: cancellation now promises **half back** when confirmed more than 24 hours out, and rain now offers a reschedule **or a full refund** rather than a DP refund. This list is verbatim client content — `pnpm check:docs`'s `ketentuan-verbatim` holds it byte-identical to `KETENTUAN` in `src/modules/home/home.content.ts`, so the two move together or the check fails.
 
 ## Placeholders — mark in code with `// TODO(content)`
 

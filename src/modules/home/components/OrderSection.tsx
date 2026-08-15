@@ -371,7 +371,7 @@ export function OrderSection() {
                 DatePills lesson stands: a level separates by size, weight or a
                 real token, never by transparency. Both halves clear AA on this
                 field on their own. */}
-            <span className="font-bold text-[var(--color-fg)]">Gratis fotografer</span>{" "}
+            <span className="font-bold text-[var(--color-fg)]">Gratis Fotografer</span>{" "}
             <span className="text-[var(--color-fg-muted)]">di 1 jam pertama, 16.00–24.00</span>
           </p>
         </div>

@@ -418,7 +418,19 @@
  * This also covers the anchors the hero's CTAs use, which are the two that
  * actually get clicked. */
 html {
-  scroll-padding-top: 81px;
+  /* 112px, RAISED FROM 81 ON 2026-08-15 BECAUSE 81 WAS THE HEADER AND NOTHING
+   * ELSE. The header is `fixed` and measures ~80px at rest, so an anchor landing
+   * at 81 put the section's first line one pixel below it — technically clear,
+   * visually jammed against it, and read by the user as "the scroll didn't
+   * work". 112 is the header plus ~32px of air, which is what makes the
+   * destination look like a destination.
+   *
+   * IT APPLIES TO THE ELEMENT THAT ACTUALLY SCROLLS. If anything under `html`
+   * ever becomes a scrollport this property goes inert and the offset silently
+   * stops existing — the warning further down this file is about exactly that,
+   * and it is why this number is verified by measuring where a section lands
+   * rather than by reading it back. */
+  scroll-padding-top: 112px;
   /* SMOOTH SCROLL FOR IN-PAGE NAVIGATION, added 2026-08-14. Every real
    * destination on this page is an anchor — the header CTA and both hero CTAs
    * jump to `#order` or `#lokasi` — so an instant teleport is the one thing

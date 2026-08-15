@@ -17,9 +17,8 @@
 export const KETENTUAN_TITLE = "PERATURAN SEWA LAPANGAN";
 
 export const KETENTUAN: readonly string[] = [
-  "Booking, wajib DP sebesar 50% (harga sewa lapangan)",
-  "Pembatalan sewa dilakukan sebelum 1 x 24 jam. Diluar itu DP dianggap hangus",
-  "Jika terjadi hujan, waktu bermain dapat di-reschedule atau DP di-refund",
+  "Pembatalan: balik 50% confirm sebelum 1x24 jam",
+  "Jika terjadi hujan bisa reschedule atau uang dikembalikan 100%",
   "Wajib menggunakan sepatu sepak bola (turf atau pull plastik)",
   "Dilarang menggunakan sepatu sepak bola dengan pull besi",
   "Dilarang merokok, makan, dan membuang sampah ke dalam area lapangan",
