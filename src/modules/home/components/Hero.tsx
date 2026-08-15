@@ -444,20 +444,26 @@ export function Hero() {
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
-          {/* NO `<strong>` ANY MORE. It marked "Gratis fotografer" as important
+          {/* NO `<strong>` ANY MORE. It marked "Gratis Fotografer" as important
               RELATIVE to the conditions beside it; with the conditions gone it
               would be emphasis against nothing, and a screen reader would
               announce importance on the whole of a two-word plate. The weight it
               carried moved to the `<p>`, where it is now the plate's own setting
               rather than a distinction inside it. */}
-          Gratis fotografer
+          Gratis Fotografer
         </p>
 
         {/* mt-4, not the mt-9 this row used to carry. The offer and the CTA are
             one act-now cluster — that grouping is the whole argument for letting
             the offer borrow the interactive blue — so they sit tight to each
             other and the generous gap moves above the offer instead. */}
-        <div data-rise className="mt-4 flex flex-col gap-3 min-[420px]:flex-row">
+        {/* STACKED UNTIL 560px, raised from 420 on 2026-08-15 at the user's
+            instruction. 560 is not a new number: the order section's hand-off
+            band already switches there, so this puts the two full-width
+            decisions on the page onto the same breakpoint instead of inventing
+            a second one. 375px is unaffected — these were already stacked
+            below 420 — so the only widths that change are 420 to 559. */}
+        <div data-rise className="mt-4 flex flex-col gap-3 min-[560px]:flex-row">
           <Button
             href="#order"
             variant="on-band"
