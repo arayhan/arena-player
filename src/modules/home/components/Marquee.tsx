@@ -26,32 +26,42 @@ import { useMotion, type MotionApi } from "@/lib/motion";
  * With the band itself blue the question dissolves: separators take `navy-900`,
  * the sign's own second colour.
  *
- * CONTENT IS FACTS, NEVER A SLOGAN, per DESIGN.md: "it carries facts rather
- * than slogans... so every fact in it appears somewhere reachable." Copied
- * verbatim from the DESIGN.html prototype's own marquee track, and checked
- * against the two numbers it states rather than assumed: nine time slots
- * (`src/domain/slots.ts`'s `TIME_SLOTS`, 06.00–24.00) and a 14-day booking
- * window (`src/domain/dates.ts`'s `BOOKING_WINDOW_DAYS`).
+ * IT CARRIES THE CLIENT'S FOUR SELLING POINTS AS OF 2026-08-15, and that
+ * REPLACES the rule this comment used to state.
+ *
+ * It ran seven facts — LOMBOK, 9 SLOT / HARI, 06.00 — 24.00, WITA, BOOKING VIA
+ * WHATSAPP, TANPA AKUN, 14 HARI KE DEPAN — under DESIGN.md's One-Marquee Rule:
+ * "facts rather than slogans... so every fact in it appears somewhere
+ * reachable." The user replaced the list with the four lines the client leads
+ * with, and DESIGN.md was rewritten in the same commit rather than left
+ * contradicting this file.
+ *
+ * WHAT A VISITOR CAN AND CANNOT CHECK, named here because the band is
+ * `aria-hidden` and therefore may never be the only place something is said:
+ *
+ *   ARENA PLAYER       the header wordmark
+ *   GRATIS FOTOGRAFER  the hero's own line
+ *   HARGA SUPER MURAH  NOTHING on `/` — hard rule 2 keeps every price off the
+ *                      landing page, so this is a claim a visitor can only
+ *                      check after arriving at /booking
+ *   FASILITAS LENGKAP  NOTHING anywhere — no facilities content exists yet
+ *
+ * The last two are the client's marketing voice, kept deliberately. **Hard rule
+ * 2 is untouched**: "murah" is an adjective, and `/` still renders no figure of
+ * any kind.
  */
 const ITEMS = [
-  // "LOMBOK" IS THE SEVENTH ITEM AND THE ONE ADDITION TO THE PROTOTYPE'S
-  // TRACK. It passes the facts-not-slogans rule the comment above states —
-  // it is where the field is, the same class of fact as the slot count and
-  // the timezone standing beside it, and it is reachable elsewhere on the
-  // page (the location block's third display line). A tagline would not
-  // qualify no matter how short.
-  "LOMBOK",
-  "9 SLOT / HARI",
-  "06.00 — 24.00",
-  "WITA",
-  "BOOKING VIA WHATSAPP",
-  "TANPA AKUN",
-  "14 HARI KE DEPAN",
+  "ARENA PLAYER",
+  "GRATIS FOTOGRAFER",
+  "HARGA SUPER MURAH",
+  "FASILITAS LENGKAP",
 ] as const;
 
 // The track holds ITEMS twice back to back (see the render below), so
 // translating by exactly one copy's measured width loops seamlessly — the
-// visible band is always a full, unclipped repeat of the same seven facts.
+// visible band is always a full, unclipped repeat of the same four lines. The
+// count is not baked in anywhere: the tween measures the rendered width, so a
+// list of four loops exactly as the list of seven did.
 const DOUBLED = [...ITEMS, ...ITEMS];
 
 // SPEED IS NOT IN DESIGN.md. The Marquee section fixes the axis (X only) and
