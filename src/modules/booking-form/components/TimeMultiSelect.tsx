@@ -1,5 +1,7 @@
 "use client";
 
+import { FiX } from "react-icons/fi";
+
 import type { TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
 
@@ -83,14 +85,25 @@ export function TimeMultiSelect({
             {slot}
             <button
               type="button"
-              // The visible × is decorative; the accessible name says which hour
-              // is being removed, because "remove" alone in a row of four chips
-              // names nothing.
+              // The visible mark is decorative; the accessible name says which
+              // hour is being removed, because "remove" alone in a row of four
+              // chips names nothing.
               aria-label={`Hapus jam ${slot}`}
               onClick={() => onRemove(slot)}
+              // 24 × 24 is WCAG 2.2's target-size minimum (2.5.8) exactly, and
+              // that is the floor rather than an accident of the chip's height.
               className="flex size-6 items-center justify-center text-[var(--color-fg-inverse)] transition-colors hover:bg-[var(--color-accent-strong-hover)]"
             >
-              <span aria-hidden="true">×</span>
+              {/* AN ICON, NOT THE `×` CHARACTER, AND THE DIFFERENCE IS MEASURED.
+                  U+00D7 draws at x-height in Plus Jakarta Sans inside an 18px
+                  inline box that also reserves ascender and descender space it
+                  never uses — so flexbox centred the BOX correctly (offset x 0,
+                  y -0.2 when measured) while the visible mark still sat high and
+                  small: 8.5px of ink in a 24px target. Aligning a glyph aligns
+                  the metrics, not the drawing. An SVG's viewBox IS its geometry,
+                  so there is nothing between the two. Same set as the dropzone's
+                  mark; icons come from a library here, never a generated glyph. */}
+              <FiX aria-hidden="true" className="size-3.5 shrink-0" />
             </button>
           </span>
         ))}
