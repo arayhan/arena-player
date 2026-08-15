@@ -43,10 +43,10 @@ Frontend-first. See [docs/PRD.md](docs/PRD.md) for the task breakdown per phase.
 
 | Phase | Scope                                                                                                                  | Status                           |
 | ----- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| 1a    | Engineering foundation — architecture, scaffold, DX, dev rules, API contract, MSW mock                                 | **Done**                         |
+| 1a    | Engineering foundation — architecture, scaffold, DX, dev rules, API contract, mock layer                               | **Done**                         |
 | 1b    | Design foundation — **art direction** + hero copy, design system HTML doubling as the prototype. **Client checkpoint** | **Done** — approved with changes |
 | 2     | Landing page `/` — layout → order → hero → content → footer. **Client checkpoint**                                     | **Build now**                    |
-| 3     | Booking form `/booking` — layout → UI → validation → submission → TanStack Query + axios                               | After Phase 2                    |
+| 3     | Booking form `/booking` — layout → UI → validation → submission → TanStack Query + fetch                               | After Phase 2                    |
 | 4     | Backend — **mandatory**, nothing real works without it. Design discussion deferred                                     | After Phase 3                    |
 | —     | WhatsApp bot, real content, deploy, handover                                                                           | After Phase 4                    |
 
@@ -66,7 +66,7 @@ pnpm dev                           # http://localhost:3000
 
 Migrations in `db/migrations/` are run **manually** by the user in the Neon SQL editor — never assume one is applied.
 
-**Context7 MCP is wired up** (`.mcp.json`). Use it to check current API syntax rather than recalling it — several libraries here have breaking changes that training data gets wrong: MSW v2 (`http.get` / `HttpResponse.json`, not v1's `rest.get` / `res(ctx.json())`), TanStack Query v5 (`isPending`, object-form args), zod, `@gsap/react`'s `useGSAP`, and the Neon serverless driver.
+**Context7 MCP is wired up** (`.mcp.json`). Use it to check current API syntax rather than recalling it — several libraries here have breaking changes that training data gets wrong: TanStack Query v5 (`isPending`, object-form args), zod, `@gsap/react`'s `useGSAP`, and the Neon serverless driver.
 
 ## Folder structure
 
@@ -79,7 +79,9 @@ arena-player-web/
 │                    # commands/ (agent-only tooling as slash commands)
 ├── db/migrations/   # SQL, run manually — outside src/ because nothing imports it
 ├── src/
-│   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/.
+│   ├── app/         # App Router, the composition layer — page.tsx, booking/, api/
+│                    # (four DEMO routes: availability, rates, payment-accounts, bookings —
+│                    # they store nothing; each says so at its top).
 │   │                # The one folder where a component file is lowercase: layout/page/route
 │   │                # are framework filenames and providers.tsx keeps their casing
 │   ├── modules/     # named after SURFACES. home/ (renders /), booking-form/ (renders /booking).
@@ -89,13 +91,13 @@ arena-player-web/
 │   ├── domain/      # BYTE-IDENTICAL with the admin repo, same path there — slots, dates,
 │   │                # status, phone. Only dates.ts has a dependency
 │   ├── server/      # import "server-only" — db.ts, storage.ts, env.ts
-│   ├── services/    # api-client.ts (axios, /booking only)
+│   ├── services/    # api-client.ts (fetch wrapper, /booking only — axios removed 2026-08-15)
 │   ├── components/  # cross-module UI primitives only
 │   ├── hooks/       # cross-module React hooks, use-<thing>.ts. Same one-consumer rule as
 │   │                # components/. Data-fetching hooks stay in their module as *.queries.ts
 │   ├── lib/         # polish for installed libraries, flat — cn, motion (lazy GSAP), query-client
 │   ├── utils/       # web-only helpers — error.ts, formatter.ts
-│   └── mocks/       # MSW handlers implementing the API contract
+│   └── test/        # test-only shims (the server-only stub Vitest aliases)
 └── scripts/         # human-facing tooling only, wired to package.json.
                      # Agent-only tooling goes in .claude/commands/ instead
 ```
@@ -131,14 +133,14 @@ A hard rule below beats anything in those files. Where a rules file needs a numb
 ## Hard rules (violations = rework)
 
 1. **Race condition**: anti double-booking relies only on the partial unique index `uniq_active_slot`. Never check-then-insert. Insert, catch `23505`, return 409.
-2. **No prices on `/`. `/booking` shows a real rupiah amount** — the client settled this on 2026-08-11 and the open decision is closed. The landing page renders no number of any kind, still. The booking form is the exception, and only after the visitor has arrived through the WhatsApp link. **The rate card has not been supplied**, so the figure itself is `TODO(content)` and no placeholder number may be invented in the meantime — an invented price is the one placeholder a visitor would act on.
-3. **Placeholders** marked `// TODO(content)` — seven categories in the vocabulary: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy, **rate card**. `rg "TODO\(content\)"` must find only these categories and nothing else — an **allowlist, not a headcount**, because a supplied item loses its marker. **WA number arrived 2026-08-11** and lives in `src/modules/home/home.constants.ts`; six remain outstanding. The rate card joined the same day, when the client answered _where_ a price appears without supplying _what_ it is. Named `content` not `phase2` because the re-cut made "Phase 2" the landing page.
+2. **No prices on `/`. `/booking` shows a real rupiah amount** — the client settled this on 2026-08-11 and the open decision is closed. The landing page renders no number of any kind, still. The booking form is the exception, and only after the visitor has arrived through the WhatsApp link. **The rate card arrived 2026-08-15** and lives in `src/server/rates.ts`: 400.000 before 12.00, 600.000 to 18.00, 800.000 from 18.00, per two-hour slot. It is served from its own `/api/rates` rather than folded into availability, which is what keeps the no-price rule on `/` structural instead of remembered. A price that is not in the rate card is still never invented.
+3. **Placeholders** marked `// TODO(content)` — seven categories in the vocabulary: WA number, bank account + holder, address + maps coords, photos, logo file, hero copy, rate card. `rg "TODO\(content\)"` must find only these categories and nothing else — an **allowlist, not a headcount**, because a supplied item loses its marker. **Three are supplied**: the WA number (2026-08-11, `src/modules/home/home.constants.ts`), and the **rate card** and **bank accounts** (2026-08-15, `src/server/rates.ts` and `src/server/payment-accounts.ts` — two accounts, both a.n. MARIANA ULFAH). **Four remain outstanding**: address + maps coords, photos, logo file, hero copy. Named `content` not `phase2` because the re-cut made "Phase 2" the landing page.
 4. **`DATABASE_URL` and R2 secrets** never in client code, never `NEXT_PUBLIC_*`. Browser never touches Neon or R2 — only route handlers do.
 5. **Rules section** ("Ketentuan") verbatim Indonesian from the PRD. UI copy Indonesian, code/comments English.
 6. **Animation guardrails**: CSS transforms + GSAP only. Every animation goes through `src/lib/motion.ts` — GSAP has no built-in `prefers-reduced-motion` handling, so a direct `gsap.to()` in a component is banned. **One** WebGL moment permitted, hero only, under the conditions in docs/architecture.md (dynamic import, static fallback, ≤ 40KB gzip, deletable in one commit) — that cap excludes three.js and pixi.js. No Lottie >100KB. No autoplay video unless the Phase 1b hero-video gate passes. No CLS. Stay inside the performance budget in docs/architecture.md.
 7. **Performance**: LCP < 2.5s mobile, Lighthouse mobile Performance ≥ 85, order section reachable within 1–2 scrolls at 375px. Verified per section as it merges, not batched to the end of the phase.
 8. Every non-trivial module under `src/` gets a colocated Vitest `*.test.ts`, run by `pnpm check:unit` (glob: `src/`). Never claim something works without running the check and quoting output.
-9. **Stack is fixed** — Next 16, TypeScript, Tailwind v4, GSAP, TanStack Query, MSW, zod, react-hook-form, zustand, `date-fns` + `@date-fns/tz`, `react-icons`, `clsx` + `tailwind-merge`, Vitest v4. All versions are resolved and pinned in the table in docs/architecture.md. Anything else needs user approval and must clear the budget there. **Three packages are `/booking`-only and must never reach `/`**: `axios`, `zod`, `react-hook-form` — the landing page uses native `fetch` from `src/modules/home/home.service.ts`. **GSAP loads lazily** via `src/lib/motion.ts`. Both rules exist because the measured framework baseline is 126.5KB, not the 90 that was estimated, and without them `/` breaches the budget before a single component is written. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
+9. **Stack is fixed** — Next 16, TypeScript, Tailwind v4, GSAP, TanStack Query, zod, react-hook-form, zustand, `date-fns` + `@date-fns/tz`, `react-icons`, `clsx` + `tailwind-merge`, Vitest v4. All versions are resolved and pinned in the table in docs/architecture.md. Anything else needs user approval and must clear the budget there. **Two packages are `/booking`-only and must never reach `/`**: `zod` and `react-hook-form` — the landing page uses native `fetch` from `src/modules/home/home.service.ts`. **axios was the third and was removed 2026-08-15** when the first real measurement of `/booking` put it 24.2KB over the ceiling. **GSAP loads lazily** via `src/lib/motion.ts`, and so does **zod on `/booking`** — imported at submit time, since it is 63.2KB that first load does not need. Both rules exist because the measured framework baseline is 126.5KB, not the 90 that was estimated, and without them `/` breaches the budget before a single component is written. Scope discipline on zustand: server state belongs to TanStack Query, cross-page state travels in the URL — a store duplicating either has outgrown its purpose.
 10. **One writing session per worktree.** Two sessions editing this repo simultaneously shipped two defects in one day — overstated contrast ratios and a WCAG 1.4.11 failure — because neither could see the other's work. Commit before handing off, or use `claude --worktree <branch>`. And **`.impeccable/critique/` is gitignored**, so a graded review of a design artifact is invisible to `git log` and to the next session: read it before editing anything under `docs/DESIGN.*`. That exact blind spot is what produced both defects.
 
 @AGENTS.md

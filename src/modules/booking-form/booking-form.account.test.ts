@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { formatAccountNumber } from "./booking-form.account";
+import { copyableAccountNumber, formatAccountNumber } from "./booking-form.account";
 
 describe("formatAccountNumber", () => {
   it("groups in fours, whatever the length", () => {
@@ -36,5 +36,24 @@ describe("formatAccountNumber", () => {
     for (const digits of ["12345678", "123456789012", "1234567890123456"]) {
       expect(formatAccountNumber(digits).endsWith(" ")).toBe(false);
     }
+  });
+});
+
+describe("copyableAccountNumber — what the clipboard actually receives", () => {
+  it("strips the dashes the client writes into the BRI number", () => {
+    // The real value, verbatim from the client on 2026-08-15. Fifteen digits is
+    // what BRI issues, and what a banking app's account field accepts.
+    expect(copyableAccountNumber("4736-01-017915-53-2")).toBe("473601017915532");
+    expect(copyableAccountNumber("4736-01-017915-53-2")).toHaveLength(15);
+  });
+
+  it("leaves an already-bare number alone", () => {
+    expect(copyableAccountNumber("7255105108")).toBe("7255105108");
+  });
+
+  it("never returns the spaced display form", () => {
+    // The screen shows groups of four; a paste of that string is the defect
+    // this function exists to prevent.
+    expect(copyableAccountNumber(formatAccountNumber("7255105108"))).toBe("7255105108");
   });
 });

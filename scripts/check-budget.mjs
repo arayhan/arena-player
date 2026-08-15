@@ -35,6 +35,7 @@
 // number cannot be parsed, this exits non-zero rather than falling back to a
 // default: a budget check guessing its own budget is worse than no check.
 
+import { spawn } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { gzipSync } from "node:zlib";
@@ -159,8 +160,7 @@ function declaredRoutes() {
 const declared = declaredRoutes();
 if (declared === null) die(`cannot read ${APP_PATHS}, so the route list is unknown`);
 
-const rows = pages.sort().map((html) => {
-  const body = readFileSync(html, "utf8");
+function rowFor(route, body) {
   const chunks = [...new Set(body.match(/static\/chunks\/[a-zA-Z0-9_.-]+\.js/g) ?? [])];
 
   let shipped = 0;
@@ -174,8 +174,71 @@ const rows = pages.sort().map((html) => {
     detail.push({ chunk, size, isLegacy });
   }
 
-  return { route: routeOf(html), shipped, excluded, detail };
-});
+  return { route, shipped, excluded, detail };
+}
+
+const rows = pages.sort().map((html) => rowFor(routeOf(html), readFileSync(html, "utf8")));
+
+// Anything declared but not prerendered is dynamic; ask the server for it.
+const dynamicRoutes = declared.filter((route) => !rows.some((r) => r.route === route));
+if (dynamicRoutes.length > 0) {
+  const served = await htmlFromServer(dynamicRoutes);
+  for (const [route, body] of served) rows.push(rowFor(route, body));
+  rows.sort((a, b) => a.route.localeCompare(b.route));
+}
+
+// --- dynamic routes: measured by ASKING THE SERVER ---------------------------
+//
+// A route that reads searchParams is dynamic, emits no prerendered HTML, and
+// used to fail this check with "measure it another way and add it here
+// deliberately". This is that other way, and it is deliberate: `/booking` reads
+// `?date=&time=` from the pasted WhatsApp link and is never going to be static.
+//
+// IT IS THE SAME MEASUREMENT, NOT A SECOND ONE. The script list is parsed out
+// of the HTML the browser actually receives — for a static route that HTML sits
+// on disk, and for a dynamic route the production server is the only place it
+// exists. Booting `next start` once and fetching the route yields the identical
+// evidence rather than an estimate assembled from manifests, which is exactly
+// what the note above rejects.
+//
+// A guess would have been cheaper and wrong: /booking is the route the nine
+// import zones and the whole zod/axios/react-hook-form confinement exist to
+// police, so sizing it by anything other than what ships is the one shortcut
+// this file may not take.
+async function htmlFromServer(routes) {
+  const port = 3987;
+  const bin = join(ROOT, "node_modules", "next", "dist", "bin", "next");
+  const server = spawn(process.execPath, [bin, "start", "--port", String(port)], {
+    cwd: ROOT,
+    stdio: "ignore",
+  });
+
+  try {
+    // Poll rather than sleep: a fixed wait is either too short on a cold cache
+    // or wasted time on a warm one.
+    const deadline = Date.now() + 60_000;
+    for (;;) {
+      if (Date.now() > deadline) throw new Error(`next start did not answer on :${port} in 60s`);
+      try {
+        const probe = await fetch(`http://127.0.0.1:${port}/`);
+        if (probe.ok) break;
+      } catch {
+        /* not listening yet */
+      }
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+
+    const out = new Map();
+    for (const route of routes) {
+      const response = await fetch(`http://127.0.0.1:${port}${route}`);
+      if (!response.ok) throw new Error(`${route} answered ${response.status}`);
+      out.set(route, await response.text());
+    }
+    return out;
+  } finally {
+    server.kill();
+  }
+}
 
 // --- --report: what measure-bundle.mjs used to print --------------------------
 if (REPORT_ONLY) {

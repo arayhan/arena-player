@@ -25,3 +25,19 @@ export function formatAccountNumber(accountNumber: string): string {
   if (!/^\d+$/.test(accountNumber)) return accountNumber;
   return accountNumber.replace(/(\d{4})(?=\d)/g, "$1 ");
 }
+
+/**
+ * What the clipboard gets: digits and nothing else.
+ *
+ * THE CLIENT'S BRI NUMBER IS `4736-01-017915-53-2`. That is how they write it
+ * and how a visitor checks it against their statement, so the screen keeps every
+ * dash. A banking app's account field takes digits — pasting the punctuated form
+ * either fails outright or is silently truncated at the first dash, and the
+ * visitor blames the app rather than the punctuation this UI carried over.
+ *
+ * Stripping never invents: `4736-01-017915-53-2` yields the fifteen digits BRI
+ * actually issues, and a number that was already bare comes back unchanged.
+ */
+export function copyableAccountNumber(accountNumber: string): string {
+  return accountNumber.replace(/\D/g, "");
+}

@@ -24,13 +24,15 @@ Two consequences that shape the code: selecting a slot **holds nothing** — onl
 
 ## API contract
 
-Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build against MSW handlers implementing exactly these shapes — agents must read this section rather than inventing response bodies.
+Written during Phase 1a task 5, before any UI consumes it. The demo routes in `src/app/api/` implement exactly these shapes — agents must read this section rather than inventing response bodies.
 
-> **MSW must be retired in Phase 4.** It registers a service worker, so a stray `mockServiceWorker.js` in a production build intercepts real requests and serves fake availability — failing silently, as a working-looking site showing wrong data. Gate registration on `NODE_ENV`, confirm the file is absent from the built output, handle unregistering for browsers that already loaded the dev site, and verify in the network panel that production makes real calls. Full checklist in [PRD.md](PRD.md) Phase 4.
+> **MSW WAS RETIRED ON 2026-08-15, ahead of Phase 4, and this is what replaced it.** Four route handlers under `src/app/api/` serve the demo: `availability` (seeded per date, from `src/server/demo-availability.ts`), `rates` and `payment-accounts` (the client's own content), and `bookings` (validates, answers 201, **stores nothing**). `src/mocks/` is deleted, `public/mockServiceWorker.js` is gone, the msw dependency is out of package.json, and the ESLint ban on importing the package stays so nobody rebuilds the hazard.
 >
-> **Step 07 built the gate rather than deferring it.** `src/app/providers.tsx` compares `process.env.NODE_ENV`, which the bundler inlines, so in a production build the branch is a literal `false` and the dynamic `import("@/mocks/browser")` is never emitted — msw is not in any page's module graph, not merely unreached. Verified against a real `pnpm build`: `grep -rl "mockServiceWorker\|setupWorker\|TEST409" .next/static/` returns nothing. A runtime flag would have shipped the mock and then trusted a value.
+> **What forced it: the client asked for a link they could open.** A service worker is compiled out of production builds by hard rule, so a deployed URL had no API at all — the very gate that made MSW safe made it useless for a demo. Retiring it early also removes the failure this note used to warn about, permanently: a stray `mockServiceWorker.js` intercepting real requests and serving invented availability, with nothing in the console and nothing in the network tab that looks wrong.
 >
-> **`curl` cannot test this mock and never could.** A service worker intercepts browser fetches only, so `curl localhost:3000/api/availability` reaches Next's router and 404s regardless. The handlers are exercised through `msw/node` in `src/mocks/handlers.test.ts`, against the same `handlers` array the browser loads.
+> **The routes are still demo stubs and each says so at its top.** Availability is generated; no booking is stored. Phase 4 replaces the insides — Neon, the transaction, the `23505` catch — and the contract below does not move.
+>
+> **`curl` works now, and that is a real gain.** The old handlers ran in a service worker, so `curl localhost:3000/api/availability` reached Next's router and 404'd regardless; the routes are exercisable from a shell and unit-tested by calling the exported `GET`/`POST` directly in `src/app/api/api-routes.test.ts`.
 
 **`GET /api/availability?date=YYYY-MM-DD` — FIRM.** Nothing on the backend agenda changes it.
 
@@ -57,7 +59,7 @@ Written during Phase 1a task 5, before any UI consumes it. Phases 2–3 build ag
 | `TEST400`     | `400 validation_failed` with a `fields` object                         |
 | anything else | normal validation, then `201`                                          |
 
-Chosen over a URL flag because it needs no special path through `api-client.ts` that would outlive the mock, and because a reviewer can reproduce a 409 during a walkthrough by typing. `src/mocks/handlers.ts` exports `ERROR_TRIGGERS`, and the whole folder is deleted in Phase 4.
+Chosen over a URL flag because it needs no special path through `api-client.ts`, and because a reviewer can reproduce a 409 during a walkthrough by typing. The triggers moved intact from the retired mock into `src/app/api/bookings/route.ts`; they are unreachable for a real team name, which is the property that makes them safe.
 
 **Status mapping — the database has four states, this API has three.** Write it down or it gets guessed:
 
@@ -92,7 +94,7 @@ That is a server-side simplification, not the label the user sees. The client kn
 
 **`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
 
-Request — `multipart/form-data`. Field names are the contract: the form, the MSW handler, and the Phase 4 route handler must all use exactly these, and the `fields` keys in a 400 response are these same names.
+Request — `multipart/form-data`. Field names are the contract: the form, the demo route and the Phase 4 route must all use exactly these, and the `fields` keys in a 400 response are these same names.
 
 | Field      | Type   | Required    | Rule                                                                                                                                                                                                                                                       |
 | ---------- | ------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -137,7 +139,7 @@ Two error states the UI must handle visibly, and they are **not** interchangeabl
 - **409** → "Yah, slot ini baru saja diambil orang lain." with a link back to `/#order`. The slot is gone; offer another.
 - **429** → a distinct Indonesian message saying to wait and retry. Nothing is wrong with their booking. Showing the 409 copy here would tell a legitimate user their slot was taken when it was not.
 
-MSW must mock all four codes, or Phase 3 builds UI for states it has never seen.
+The demo route must answer all four codes, or Phase 3 builds UI for states it has never seen.
 
 ## Framework decision (FINAL)
 
@@ -259,11 +261,32 @@ Excludes the 38.7KB polyfill chunk, which Next emits with `noModule` — only le
 | `react-icons`, six icons                                        | 2.2                            |
 | zustand                                                         | 0.7                            |
 | GSAP + ScrollTrigger + `@gsap/react` — **lazy, off first load** | (43.6)                         |
-| axios — **`/booking` only**                                     | (17.5)                         |
-| zod — **`/booking` only**                                       | **63.2** — measured, see below |
+| ~~axios~~ — **removed 2026-08-15**                              | (17.5, reclaimed)              |
+| zod — **`/booking` only, LAZY since 2026-08-15**                | **63.2** — measured, see below |
 | react-hook-form — `/booking` only                               | not yet measured, Phase 3      |
 | **Projected subtotal on `/` once all of the above is imported** | **156.4**                      |
 | **Headroom for every component on the landing page**            | **~84**                        |
+
+#### The first real measurement of `/booking` — 2026-08-15
+
+`check:budget` had never sized this route. It reads `?date=&time=`, so it is dynamic, emits no prerendered HTML, and the check refused to report green over a route it could not examine — it failed loudly and said "measure it another way and add it here deliberately". This is that: the script boots `next start` once and fetches any declared route with no prerendered HTML, measuring the **same evidence** the static routes are measured by — the script tags a browser is actually served — rather than an estimate assembled from manifests.
+
+What it found, and what two changes did about it:
+
+```
+/booking  before          264.2 KB   BREACH, 24.2 over the 240 ceiling
+          - axios          -16.5     its only justification, onUploadProgress on the
+                                      2MB proof upload, is a field that is HIDDEN
+          - zod off        -62.9     three response checks became hand-written
+            first load                validators; the form schema is imported at
+                                      submit and warmed on first focus
+          --------------------------
+          after            184.8 KB   55.2 KB headroom
+```
+
+`/` measured 176.2KB throughout and was unaffected by either change.
+
+**zod did not leave the stack.** It still validates the form, with its tests and its Indonesian messages intact; it is imported dynamically at submit, the same device `src/lib/motion.ts` uses for GSAP. The three response validators are hand-written in `booking-form.contract.ts` — the technique `/` has used in `assertContract` since Phase 1a, for exactly this reason.
 
 #### zod costs 63.2KB on `/`, and that number is why the route split exists
 
@@ -339,7 +362,7 @@ Closing the gap needed ~30KB. These two found 61:
 
 **GSAP loads lazily, through `src/lib/motion.ts`.** Hard rule 6 already forbids a direct `gsap.to()` in a component and routes every animation through that one file, so making it dynamic-import GSAP is a single-file change rather than a sweep. The constraint it creates: nothing can animate before the chunk arrives, so a hero _entrance_ must be CSS. Scroll-triggered work below the fold is unaffected — the chunk lands long before the user scrolls to it.
 
-**axios is a `/booking` dependency, not a shared one.** `/` makes one GET for availability and native `fetch` does that in 0KB. `/booking` keeps axios because `onUploadProgress` reports progress on the 2MB proof upload and `fetch` cannot — on Indonesian mobile data, an upload with no progress indicator reads as a frozen page.
+**axios was a `/booking` dependency and is now gone — 2026-08-15.** It was kept for `onUploadProgress` on the 2MB proof upload, which `fetch` cannot report; on Indonesian mobile data an upload with no progress indicator reads as a frozen page. **That field is hidden**, so 16.5KB was being paid for by a feature that does not render, and the first real measurement of `/booking` needed it back. `src/services/api-client.ts` is now a small `fetch` wrapper with the same shape — one `baseURL`, a 30s timeout, no throw below 500. Restoring the upload means re-adding axios and re-running the budget, or an `XMLHttpRequest` path, which is what axios wraps anyway.
 
 This is the same rule zod and react-hook-form already live under, now with a third member. "No bare `fetch` in a component" still holds: `/` calls through `src/modules/home/home.service.ts`.
 
@@ -365,25 +388,25 @@ It is a re-export barrel, so tree-shaking is the risk, and against ~17–21KB of
 
 ## The route split — how `/` is kept from paying for the form
 
-Three packages are `/booking`-only: `react-hook-form`, `zod`, and **axios** (17.5KB measured, added to this list in step 02 to pay for the framework overrun). `/` must never load any of them.
+Two packages are `/booking`-only: `react-hook-form` and `zod` — and **zod is lazy even there**, imported at submit time rather than on first load. `/` must never load either. axios was the third until 2026-08-15.
 
 Intent is not a mechanism. Three layers, in the order they catch a mistake:
 
 **1. Structure.** The module split does the work. `src/modules/booking-form/**` owns the form and everything it needs; `src/modules/home/**` renders `/` and imports none of it.
 
-| Package           | May be imported from                                             |
-| ----------------- | ---------------------------------------------------------------- |
-| `axios`           | `src/services/api-client.ts`, `src/modules/booking-form/**`      |
-| `react-hook-form` | `src/modules/booking-form/**`                                    |
-| `zod`             | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**` |
+| Package           | May be imported from                                              |
+| ----------------- | ----------------------------------------------------------------- |
+| ~~`axios`~~       | removed 2026-08-15; the zone stays so it cannot return unmeasured |
+| `react-hook-form` | `src/modules/booking-form/**`                                     |
+| `zod`             | `src/modules/booking-form/**`, `src/app/api/**`, `src/server/**`  |
 
 Route handlers and `src/server/` run server-side, so `zod` there costs the client bundle nothing — the rule is about client code, not about the package.
 
-`/` calls the availability endpoint with native `fetch` from `src/modules/home/home.service.ts`. The PRD's "no bare `fetch` in a component" rule is about the _component_, not the transport: the component calls `home.queries.ts`, which calls the service. `src/services/api-client.ts` is the axios instance and is `/booking`-only.
+`/` calls the availability endpoint with native `fetch` from `src/modules/home/home.service.ts`. The PRD's "no bare `fetch` in a component" rule is about the _component_, not the transport: the component calls `home.queries.ts`, which calls the service. `src/services/api-client.ts` is the `/booking` transport — a `fetch` wrapper since axios left on 2026-08-15.
 
 **Feature modules never import each other.** That rule is load-bearing here, not stylistic: one `home` → `booking-form` import is all it takes for a later `import { z }` inside `booking-form` to ship zod to `/` with nothing failing. Shared vocabulary goes in `src/domain/`, which is why that folder exists instead of living inside the booking module.
 
-**No `index.ts` barrels under `src/modules/`.** A barrel re-exporting the form drags zod, react-hook-form, and axios along with any single import from that module. Import deep paths.
+**No `index.ts` barrels under `src/modules/`.** A barrel re-exporting the form drags zod and react-hook-form along with any single import from that module. Import deep paths.
 
 **2. Lint, at author time.** An ESLint `no-restricted-imports` zone rule enforces the table above, plus `@/server/*` importable only from `src/app/api/**`. Everything not listed — `src/app/page.tsx`, `src/modules/home/**`, `src/components/**`, `src/domain/**`, `src/lib/**`, `src/utils/**` — is barred from all three packages. This is the layer that gives a useful error message, naming the rule instead of a byte count.
 
@@ -448,7 +471,7 @@ arena-player-web/
 │   ├── logo.svg                # AP monogram placeholder — TODO(content)
 │   ├── favicon.ico             # derived from the logo
 │   ├── og-image.png            # derived from the logo
-│   └── mockServiceWorker.js    # MSW, dev only — MUST be absent from prod builds
+│   └── (logo assets only — mockServiceWorker.js left with MSW on 2026-08-15)
 ├── db/                         # NOT under src/ — SQL run by hand, never imported
 │   ├── migrations/            # run manually in the Neon SQL editor
 │   └── README.md
@@ -506,7 +529,7 @@ arena-player-web/
 │   ├── utils/                  # web-only helpers
 │   │   ├── error.ts            # isNetworkError/isServerError/isClientError, apiErrorMessage()
 │   │   └── formatter.ts        # date, phone, and file-size display formatting
-│   └── mocks/                  # MSW handlers — dev only, retired in Phase 4
+│   └── test/                   # test-only shims (server-only stub, aliased by Vitest)
 ├── scripts/
 │   └── check-setup.test.ts     # live Neon + R2 preflight — Phase 4, needs .env.local
 └── vitest.config.ts
@@ -541,7 +564,6 @@ Every version below was resolved against the registry on 2026-08-08 and is pinne
 | `tailwindcss` / `@tailwindcss/postcss` | 4.3.3                                                                                                                       |
 | `typescript` (dev)                     | 5.9.3                                                                                                                       |
 | `eslint` (dev)                         | 9.39.5                                                                                                                      |
-| `msw` (dev)                            | 2.15.0                                                                                                                      |
 | `vitest` (dev)                         | 4.1.10                                                                                                                      |
 | `@neondatabase/serverless`             | **not installed** — Phase 4                                                                                                 |
 | `@aws-sdk/client-s3`                   | **not installed** — Phase 4                                                                                                 |
@@ -558,7 +580,7 @@ Every version below was resolved against the registry on 2026-08-08 and is pinne
 
 ### pnpm 11 blocks install scripts
 
-An unapproved dependency build script fails the whole install. Decisions live in `pnpm-workspace.yaml` under `allowBuilds`, each with the reason inline. `msw` is allowed: its postinstall re-copies `mockServiceWorker.js` so the worker cannot drift from the installed library version.
+An unapproved dependency build script fails the whole install. Decisions live in `pnpm-workspace.yaml` under `allowBuilds`, each with the reason inline. Two are refused (`sharp`, `unrs-resolver`) and none is currently allowed — the one that was, `msw`, left with the dependency on 2026-08-15.
 
 ## Import conventions
 

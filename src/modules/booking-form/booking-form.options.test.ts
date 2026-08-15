@@ -13,6 +13,13 @@ import type { AvailabilityRow } from "@/utils/slot-display";
 
 import { buildTimeOptions } from "./booking-form.options";
 
+/** The client's own rate card, as `GET /api/rates` sends it. */
+const rates = TIME_SLOTS.map((slot) => ({
+  slot,
+  price:
+    Number(slot.slice(0, 2)) < 12 ? 400_000 : Number(slot.slice(0, 2)) < 18 ? 600_000 : 800_000,
+}));
+
 const allAvailable: AvailabilityRow[] = TIME_SLOTS.map((slot) => ({
   slot,
   status: "available" as const,
@@ -23,7 +30,7 @@ const at = (utcHour: number) => new Date(Date.UTC(2026, 7, 11, utcHour, 0, 0));
 
 describe("buildTimeOptions", () => {
   it("returns all nine hours in the day's own order", () => {
-    const options = buildTimeOptions(allAvailable, "2026-08-11", at(9));
+    const options = buildTimeOptions(allAvailable, "2026-08-11", rates, at(9));
     expect(options).toHaveLength(9);
     expect(options.map((o) => o.slot)).toEqual([...TIME_SLOTS]);
   });
@@ -32,7 +39,7 @@ describe("buildTimeOptions", () => {
     // 17.00 WITA: six hours have started. A day that looks like it has three
     // hours in it reads as nearly sold out; a day with six dimmed rows reads as
     // a day that is mostly behind us, which is the true and more useful fact.
-    const options = buildTimeOptions(allAvailable, "2026-08-11", at(9));
+    const options = buildTimeOptions(allAvailable, "2026-08-11", rates, at(9));
     const elapsed = options.filter((o) => o.status === "elapsed");
     expect(elapsed).toHaveLength(6);
     expect(elapsed.every((o) => o.selectable)).toBe(false);
@@ -43,7 +50,7 @@ describe("buildTimeOptions", () => {
       slot,
       status: "booked" as const,
     }));
-    const options = buildTimeOptions(booked, "2026-08-11", at(9));
+    const options = buildTimeOptions(booked, "2026-08-11", rates, at(9));
     expect(options.slice(0, 6).every((o) => o.status === "elapsed")).toBe(true);
     expect(options.slice(6).every((o) => o.status === "booked")).toBe(true);
   });
@@ -54,17 +61,24 @@ describe("buildTimeOptions", () => {
       { slot: TIME_SLOTS[7], status: "pending" },
       { slot: TIME_SLOTS[8], status: "booked" },
     ];
-    const options = buildTimeOptions(mixed, "2026-08-11", at(0));
+    const options = buildTimeOptions(mixed, "2026-08-11", rates, at(0));
     expect(options.map((o) => o.selectable)).toEqual([true, false, false]);
   });
 
-  it("quotes a price on selectable hours only", () => {
+  it("shows no price when the rate card has not arrived", () => {
+    // The request can fail or still be in flight. A row with no rate shows no
+    // figure rather than a guessed one.
+    const options = buildTimeOptions(allAvailable, "2026-08-11", [], at(0));
+    expect(options.every((o) => o.priceLabel === undefined)).toBe(true);
+  });
+
+  it("quotes the client's own figure on selectable hours only", () => {
     const mixed: AvailabilityRow[] = [
       { slot: TIME_SLOTS[6], status: "available" },
       { slot: TIME_SLOTS[7], status: "booked" },
     ];
-    const [free, taken] = buildTimeOptions(mixed, "2026-08-11", at(0));
-    expect(free.priceLabel).toBeTruthy();
+    const [free, taken] = buildTimeOptions(mixed, "2026-08-11", rates, at(0));
+    expect(free.priceLabel).toBe("Rp 800.000");
     expect(taken.priceLabel).toBeUndefined();
   });
 
@@ -74,11 +88,13 @@ describe("buildTimeOptions", () => {
       { slot: TIME_SLOTS[7], status: "pending" },
       { slot: TIME_SLOTS[8], status: "booked" },
     ];
-    expect(buildTimeOptions(rows, "2026-08-11", at(0)).map((o) => o.statusLabel)).toEqual([
+    expect(buildTimeOptions(rows, "2026-08-11", rates, at(0)).map((o) => o.statusLabel)).toEqual([
       "Tersedia",
       "Menunggu Konfirmasi",
       "Terisi",
     ]);
-    expect(buildTimeOptions(allAvailable, "2026-08-11", at(9))[0].statusLabel).toBe("Sudah lewat");
+    expect(buildTimeOptions(allAvailable, "2026-08-11", rates, at(9))[0].statusLabel).toBe(
+      "Sudah lewat",
+    );
   });
 });

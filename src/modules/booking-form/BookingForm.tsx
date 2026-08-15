@@ -10,12 +10,14 @@ import { cn } from "@/lib/cn";
 
 import { buildTimeOptions } from "./booking-form.options";
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
+import { formatRupiah, downPayment, isFullyPriced, sumRates } from "./booking-form.money";
 import {
   useBookingAvailability,
   useCreateBooking,
+  useRates,
   useRefreshAvailability,
 } from "./booking-form.queries";
-import { bookingFormSchema, type BookingFormValues } from "./booking-form.schema";
+import type { BookingFormValues } from "./booking-form.schema";
 import type { BookingOutcome } from "./booking-form.service";
 import { DateSelect } from "./components/DateSelect";
 import { PaymentAccounts } from "./components/PaymentAccounts";
@@ -188,12 +190,13 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // rejects, and one that can fall out of step for a render. Derived from the
   // same rows in one place, the two cannot disagree at all.
   const availability = useBookingAvailability(bookingDate);
+  const rates = useRates();
   const timeOptions = useMemo(
-    () => buildTimeOptions(availability.data ?? [], bookingDate),
+    () => buildTimeOptions(availability.data ?? [], bookingDate, rates.data ?? []),
     // The clock is deliberately NOT a dependency: an hour sliding into "sudah
     // lewat" under the visitor's finger is worse than a row that is a minute
     // stale, and the server refuses a past slot anyway.
-    [availability.data, bookingDate],
+    [availability.data, bookingDate, rates.data],
   );
   const bookable = useMemo(
     () => new Set(timeOptions.filter((o) => o.selectable).map((o) => o.slot)),
@@ -256,13 +259,28 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     return null;
   }, [mutation.isSuccess, mutation.isError, mutation.data]);
 
-  const submit = handleSubmit((values) => {
+  // ZOD ARRIVES AT SUBMIT TIME, NOT AT PAGE LOAD — the same device
+  // `src/lib/motion.ts` uses for GSAP, and for the same reason. It measured
+  // 63.2KB gzip and `check:budget` put this route **24.2KB over its 240KB
+  // ceiling** the first time it could size it at all (the route is dynamic, so
+  // it emits no prerendered HTML and had never been measured). The three
+  // response checks became hand-written validators in booking-form.contract.ts;
+  // this is the other half — the form schema loads when a visitor submits.
+  //
+  // WARMED ON FIRST INTERACTION, so the wait never lands on the button. The
+  // moment anything in the form is focused, the chunk starts downloading; by
+  // the time a name and a schedule are filled in it is long since cached.
+  const schemaModule = useRef<Promise<typeof import("./booking-form.schema")> | null>(null);
+  const loadSchema = () => (schemaModule.current ??= import("./booking-form.schema"));
+
+  const submit = handleSubmit(async (values) => {
     // Refuses the press here rather than on the button: the button keeps
     // aria-disabled instead of the native attribute, which keeps it in the
     // tab order, so the handler is what actually has to say no.
     if (mutation.isPending) return;
 
     clearErrors();
+    const { bookingFormSchema } = await loadSchema();
     // `selectedSlots`, not `values.slots` — the derived list is the one every
     // other consumer shows, and posting the raw form value would send an hour
     // the picker already told the visitor was gone.
@@ -540,6 +558,36 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               </p>
             ) : null}
 
+            {/* THE TOTAL, AND THE HALF THAT IS ACTUALLY DUE. The payment copy has
+                promised "Transfer DP 50% dari harga sewa" since Phase 3 opened;
+                until the client supplied the rate card on 2026-08-15 the page
+                could not keep that promise, and two hours at 800rb reads very
+                differently from one row saying 800.000.
+
+                IT ONLY RENDERS WHEN EVERY SELECTED HOUR IS PRICED. A partial sum
+                is a wrong number a visitor transfers against — see
+                `isFullyPriced`, which is the gate rather than a nicety. */}
+            {isFullyPriced(selectedSlots, rates.data ?? []) ? (
+              <dl className="mt-3 border-2 border-[var(--color-band)] bg-[var(--color-bg-subtle)] px-3 py-2 text-[length:var(--text-sm)]">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt lang="id" className="text-[var(--color-fg-muted)]">
+                    Total sewa
+                  </dt>
+                  <dd className="font-semibold tabular-nums">
+                    {formatRupiah(sumRates(selectedSlots, rates.data ?? []))}
+                  </dd>
+                </div>
+                <div className="mt-1 flex items-baseline justify-between gap-3">
+                  <dt lang="id" className="text-[var(--color-fg-muted)]">
+                    DP 50%
+                  </dt>
+                  <dd className="font-semibold tabular-nums text-[var(--color-interactive)]">
+                    {formatRupiah(downPayment(sumRates(selectedSlots, rates.data ?? [])))}
+                  </dd>
+                </div>
+              </dl>
+            ) : null}
+
             {errors.slots ? (
               <p
                 id="slots-error"
@@ -594,7 +642,12 @@ export function BookingForm({ date, slot }: BookingFormProps) {
       </section>
 
       {showForm ? (
-        <form onSubmit={submit} noValidate className="flex flex-col gap-5 px-4 py-5 md:px-6">
+        <form
+          onSubmit={submit}
+          onFocusCapture={loadSchema}
+          noValidate
+          className="flex flex-col gap-5 px-4 py-5 md:px-6"
+        >
           <div>
             {/* THE LABEL NAMES BOTH READINGS, THE KEY NAMES NEITHER. "Nama Tim"
                 alone left a visitor booking a casual game with friends unsure

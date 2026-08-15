@@ -1,8 +1,7 @@
-import { z } from "zod";
-
-import { isTimeSlot, TIME_SLOTS } from "@/domain/slots";
-import { SLOT_STATUSES } from "@/domain/status";
+import type { TimeSlot } from "@/domain/slots";
 import { apiClient } from "@/services/api-client";
+
+import { assertAvailability, assertPaymentAccounts, assertRates } from "./booking-form.contract";
 import type { AvailabilityRow } from "@/utils/slot-display";
 
 import type { BookingFormValues } from "./booking-form.schema";
@@ -14,20 +13,12 @@ import type { BookingFormValues } from "./booking-form.schema";
  * landing page cannot spend it. Feature modules never import each other, so
  * this route reads the same endpoint through its own transport.
  *
- * ZOD IS ALREADY PAID FOR HERE. `/booking` loads it for the form schema, so
- * validating the response costs four lines instead of twenty, and the nine-entry
- * contract is checked rather than assumed: a nine-entry response that quietly
- * becomes eight renders as a missing row and nothing else.
+ * VALIDATED BY HAND, LIKE `/`. zod validated these three responses until
+ * 2026-08-15, when the first real measurement of this route put it 24.2KB over
+ * the budget — see booking-form.contract.ts. The nine-entry contract is still
+ * checked rather than assumed: a response that quietly becomes eight renders as
+ * a missing row and nothing else.
  */
-const availabilitySchema = z
-  .array(
-    z.object({
-      slot: z.string().refine(isTimeSlot),
-      status: z.enum(SLOT_STATUSES),
-    }),
-  )
-  .length(TIME_SLOTS.length);
-
 export async function fetchAvailability(
   date: string,
   signal?: AbortSignal,
@@ -41,7 +32,8 @@ export async function fetchAvailability(
     throw new Error(`availability request failed: ${response.status}`);
   }
 
-  return availabilitySchema.parse(response.data) as AvailabilityRow[];
+  assertAvailability(response.data);
+  return response.data;
 }
 
 /**
@@ -52,15 +44,11 @@ export async function fetchAvailability(
  * A schema that demanded `.min(1)` would turn "not supplied" into a red failure
  * state, which is a different and wrong thing to tell a visitor.
  */
-const paymentAccountsSchema = z.array(
-  z.object({
-    bank: z.string().min(1),
-    accountNumber: z.string().min(1),
-    accountHolder: z.string().min(1),
-  }),
-);
-
-export type PaymentAccount = z.infer<typeof paymentAccountsSchema>[number];
+export interface PaymentAccount {
+  bank: string;
+  accountNumber: string;
+  accountHolder: string;
+}
 
 export async function fetchPaymentAccounts(signal?: AbortSignal): Promise<PaymentAccount[]> {
   const response = await apiClient.get("/payment-accounts", { signal });
@@ -72,7 +60,30 @@ export async function fetchPaymentAccounts(signal?: AbortSignal): Promise<Paymen
     throw new Error(`payment accounts request failed: ${response.status}`);
   }
 
-  return paymentAccountsSchema.parse(response.data);
+  assertPaymentAccounts(response.data);
+  return response.data;
+}
+
+/**
+ * The rate card from `GET /api/rates`.
+ *
+ * ITS OWN REQUEST, NOT A FIELD ON AVAILABILITY, and that is hard rule 2 made
+ * structural: `/` fetches availability and renders no number of any kind, so a
+ * price must never be in a body the landing page receives. Prices arrive as
+ * INTEGERS — formatting lives in `booking-form.money.ts`, so a currency decision
+ * is never made in two places.
+ */
+export type SlotRate = { slot: TimeSlot; price: number };
+
+export async function fetchRates(signal?: AbortSignal): Promise<SlotRate[]> {
+  const response = await apiClient.get("/rates", { signal });
+
+  if (response.status !== 200) {
+    throw new Error(`rates request failed: ${response.status}`);
+  }
+
+  assertRates(response.data);
+  return response.data;
 }
 
 /** The 201 body. */
@@ -125,11 +136,14 @@ export async function createBooking(
   body.append("website", values.website);
   if (values.proof) body.append("proof", values.proof);
 
-  const response = await apiClient.post("/bookings", body);
+  const response = await apiClient.post<{ fields?: Record<string, string> } & BookingCreated>(
+    "/bookings",
+    body,
+  );
 
   switch (response.status) {
     case 201:
-      return { kind: "created", booking: response.data as BookingCreated };
+      return { kind: "created", booking: response.data };
     case 409:
       // The slot went between page load and submit. Nothing was wrong with
       // what they filled in — offer another slot, do not blame the form.
@@ -139,7 +153,7 @@ export async function createBooking(
     case 400:
       return {
         kind: "validation_failed",
-        fields: (response.data?.fields ?? {}) as Record<string, string>,
+        fields: response.data?.fields ?? {},
       };
     default:
       return { kind: "server_error" };

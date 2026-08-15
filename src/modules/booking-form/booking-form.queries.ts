@@ -26,6 +26,7 @@ import {
   createBooking,
   fetchAvailability,
   fetchPaymentAccounts,
+  fetchRates,
   type BookingOutcome,
 } from "./booking-form.service";
 
@@ -74,6 +75,23 @@ export function usePaymentAccounts() {
   return useQuery({
     queryKey: ["payment-accounts"] as const,
     queryFn: ({ signal }) => fetchPaymentAccounts(signal),
+    staleTime: 60 * 60 * 1000,
+    retry: 1,
+  });
+}
+
+/**
+ * The rate card.
+ *
+ * Cached as hard as the accounts, and for the same reason: a price changes when
+ * the client decides it does, not while somebody is filling in a form. The
+ * default `staleTime` of zero would refetch on every mount and spend a round
+ * trip on the mobile connection this site is designed for.
+ */
+export function useRates() {
+  return useQuery({
+    queryKey: ["rates"] as const,
+    queryFn: ({ signal }) => fetchRates(signal),
     staleTime: 60 * 60 * 1000,
     retry: 1,
   });

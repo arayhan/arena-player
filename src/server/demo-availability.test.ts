@@ -4,7 +4,7 @@ import { TIME_SLOTS } from "@/domain/slots";
 import { SLOT_STATUSES } from "@/domain/status";
 import { bookingWindow } from "@/domain/dates";
 
-import { availabilityFor } from "./availability";
+import { availabilityFor } from "./demo-availability";
 
 // 04:00Z is 12:00 at the field. It was 05:00Z with a comment reading "12:00 in
 // Jakarta", which stopped being true the moment the zone moved to WITA — that

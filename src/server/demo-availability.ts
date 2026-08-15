@@ -1,16 +1,31 @@
+import "server-only";
+
 /**
- * The fake availability the whole of Phases 2 and 3 is built against.
+ * The seeded availability the demo runs on, and the ONLY availability this
+ * project has until Phase 4 wires Neon.
+ *
+ * IT MOVED HERE FROM `src/mocks/` ON 2026-08-15, when the client asked for a
+ * link they could open. MSW is a service worker and is compiled out of
+ * production builds by hard rule, so a deployed URL had no API at all — the
+ * generator had to become a real route's data source rather than a browser
+ * fixture. `src/mocks/` is gone entirely; there is no second implementation of
+ * this contract left to drift.
  *
  * TWO PROPERTIES MATTER MORE THAN THE DATA ITSELF.
  *
- * 1. It is DERIVED from TIME_SLOTS, never restated. A mock with its own slot
- *    strings is a second source of truth that drifts from src/domain/ in
+ * 1. It is DERIVED from TIME_SLOTS, never restated. A generator with its own
+ *    slot strings is a second source of truth that drifts from src/domain/ in
  *    silence and only surfaces when the real backend lands.
  *
  * 2. It is DETERMINISTIC per date. Random statuses make the order section
  *    flicker on every refetch, which reads as a bug in the component being
  *    built rather than in the data feeding it — and makes a screenshot
  *    impossible to compare against the one from a minute ago.
+ *
+ * IT INVENTS AVAILABILITY, WHICH IS THE ONE THING IT IS ALLOWED TO INVENT.
+ * Nobody transfers money to a slot status, and the client is being shown a
+ * schedule board, not a booking ledger. Prices and account numbers are the
+ * client's own content and live in `rates.ts` and `payment-accounts.ts`.
  */
 import { TIME_SLOTS, type TimeSlot } from "@/domain/slots";
 import { toSlotStatus, type BookingStatus, type SlotStatus } from "@/domain/status";

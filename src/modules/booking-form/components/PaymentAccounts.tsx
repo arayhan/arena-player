@@ -5,7 +5,7 @@ import { FiCheck, FiCopy } from "react-icons/fi";
 
 import { cn } from "@/lib/cn";
 
-import { formatAccountNumber } from "../booking-form.account";
+import { copyableAccountNumber, formatAccountNumber } from "../booking-form.account";
 import { usePaymentAccounts } from "../booking-form.queries";
 
 /**
@@ -154,9 +154,11 @@ function AccountRow({
   async function copy() {
     if (timer.current) clearTimeout(timer.current);
     try {
-      // THE RAW DIGITS, NEVER THE GROUPED FORM ON SCREEN. A banking app that
-      // rejects "1234 5678 90" gets blamed for spaces this UI added.
-      await navigator.clipboard.writeText(account.accountNumber);
+      // DIGITS ONLY, NEVER WHAT IS ON SCREEN. The screen carries the client's
+      // own punctuation — their BRI number is written `4736-01-017915-53-2` —
+      // and a banking app's account field takes neither dashes nor the grouping
+      // spaces this UI adds. A paste that fails gets blamed on the app.
+      await navigator.clipboard.writeText(copyableAccountNumber(account.accountNumber));
       setState("copied");
     } catch {
       // `navigator.clipboard` rejects outside a secure context and when the

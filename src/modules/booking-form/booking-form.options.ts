@@ -1,7 +1,7 @@
 import type { TimeSlot } from "@/domain/slots";
 import { partitionSlots, type AvailabilityRow, type DisplayStatus } from "@/utils/slot-display";
 
-import { SLOT_PRICE_LABEL } from "./booking-form.constants";
+import { formatRupiah, type SlotRate } from "./booking-form.money";
 
 /**
  * One row of the time field's dropdown.
@@ -19,7 +19,11 @@ export interface TimeOption {
   selectable: boolean;
   /** The state word a visitor reads: Tersedia, Terisi, Menunggu Konfirmasi, Sudah lewat. */
   statusLabel: string;
-  /** Set on selectable hours only — nothing else has a price worth quoting. */
+  /**
+   * Set on selectable hours that have a rate. Nothing else has a price worth
+   * quoting, and an hour whose rate has not arrived shows no figure at all —
+   * a price is the one placeholder a visitor acts on.
+   */
   priceLabel?: string;
 }
 
@@ -57,20 +61,26 @@ const STATUS_LABEL: Record<DisplayStatus, string> = {
 export function buildTimeOptions(
   rows: readonly AvailabilityRow[],
   date: string,
+  rates: readonly SlotRate[] = [],
   now: Date = new Date(),
 ): TimeOption[] {
   const { elapsed, live } = partitionSlots(rows, date, now);
+  const priceOf = new Map(rates.map((rate) => [rate.slot, rate.price]));
 
   return [...elapsed, ...live].map(({ slot, status }) => {
     const selectable = status === "available";
+    const price = priceOf.get(slot);
+
     return {
       slot,
       status,
       selectable,
       statusLabel: STATUS_LABEL[status],
-      // TODO(content): rate card — the label is a placeholder sentence, never an
-      // invented figure. See booking-form.constants.ts.
-      ...(selectable ? { priceLabel: SLOT_PRICE_LABEL } : {}),
+      // A REAL FIGURE OR NONE. The client supplied the rate card on 2026-08-15,
+      // so this is their number rather than a placeholder sentence — and if the
+      // rates request has not landed, the row shows no price instead of a
+      // guessed one. An invented price is the one placeholder a visitor acts on.
+      ...(selectable && price !== undefined ? { priceLabel: formatRupiah(price) } : {}),
     };
   });
 }

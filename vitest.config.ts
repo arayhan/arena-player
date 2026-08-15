@@ -8,6 +8,18 @@ export default defineConfig({
       // a test resolves a different file from the one the app ships and passes
       // against code nobody runs.
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+
+      // `server-only` THROWS BY DESIGN when it is imported outside a React
+      // Server Component, and that is the whole value of the package: a
+      // client component reaching into src/server/ fails at build time rather
+      // than shipping a database URL to a browser. Vitest is neither, so the
+      // guard fires on modules that are perfectly legitimate to unit test —
+      // src/server/rates.ts is a pure function over TIME_SLOTS.
+      //
+      // Aliasing it to an empty module here is the documented workaround and
+      // it costs nothing: the guard that matters runs in `next build`, which
+      // `pnpm check:ship` executes for real.
+      "server-only": fileURLToPath(new URL("./src/test/server-only-stub.ts", import.meta.url)),
     },
   },
   test: {

@@ -17,7 +17,7 @@ Delivery is sequenced **frontend-first**. Phases 1a–3 build the UI against a m
 | 4     | Backend — **mandatory** | Neon schema, both API routes, anti-double-booking, R2 upload. **Nothing real works without it**           | Design discussion after Phase 3 |
 | —     | Genuinely later         | WhatsApp bot, real content swap, deploy, handover                                                         | After Phase 4                   |
 
-**Phases 1a–3 produce a site that looks finished but cannot take a single real booking.** It runs entirely against the MSW mock. Phase 4 is where the hardest and most expensive work sits — the race condition that [database.md](database.md) calls the most expensive bug in this project. Worth stating plainly so a convincing Phase 3 demo is not mistaken for a nearly-done product.
+**Phases 1a–3 produce a site that looks finished but cannot take a single real booking.** Since 2026-08-15 it runs against four DEMO route handlers in `src/app/api/` — availability is generated and no booking is stored — which replaced the MSW mock so the client could open a deployed link. Phase 4 is where the hardest and most expensive work sits — the race condition that [database.md](database.md) calls the most expensive bug in this project. Worth stating plainly so a convincing Phase 3 demo is not mistaken for a nearly-done product.
 
 **Scope of this repo:** `arena-player-web` is the public-facing site only — landing page, booking form, availability API. The admin app is **out of scope for this repo** and will live in a separate repo (`arena-player-admin`) when it is built. Nothing in this repo should add auth, admin routes, or an admin UI.
 
@@ -35,7 +35,7 @@ No product UI ships here. It ends with a repo that runs, rules that are written 
 | 4   | Development rules                   | Written conventions the agents must follow — naming, file layout, component patterns, accessibility baseline (labels, `aria-describedby` on errors, focus management, keyboard operability), what never goes in `src/app/`                                                                                                                                             |
 | 5   | Lock the API contract               | Exact request/response JSON for both routes, including the 409 shape, written into [architecture.md](architecture.md)                                                                                                                                                                                                                                                  |
 | 6   | Shared primitives                   | **`src/domain/slots.ts`** (canonical `TIME_SLOTS`), **`src/domain/dates.ts`** (field-local WITA helpers, today + 13 days), **`status.ts`**, and **`phone.ts`**, each with a colocated `*.test.ts`. They live in `src/domain/` because the admin repo keeps a byte-identical copy at the same path — see the shared-code contract in [architecture.md](architecture.md) |
-| 7   | Mock layer + data plumbing          | MSW handlers implementing that contract **and importing task 6's primitives**, `QueryClientProvider`, axios instance                                                                                                                                                                                                                                                   |
+| 7   | Mock layer + data plumbing          | Handlers implementing that contract (MSW originally; real demo routes since 2026-08-15) **and importing task 6's primitives**, `QueryClientProvider`, axios instance                                                                                                                                                                                                   |
 | 8   | Performance budget + motion wrapper | The KB/LCP budget written into [architecture.md](architecture.md), and `src/lib/motion.ts` wrapping `gsap.matchMedia()`                                                                                                                                                                                                                                                |
 
 **`check:docs` (task 3)** automates the mechanical half of doc review. Three review rounds found that roughly half the issues were pure greps — and that mechanical edits are now the largest source of _new_ defects, so this catches the agent's own mistakes. It asserts: no `TODO(phase2)` survives anywhere, every `TODO(content)` names one of the **seven** declared categories — an allowlist rather than a headcount, since a supplied item loses its marker — no bare "Phase 1" references (only 1a/1b/4), and the phase overview table names the same phases as the detail sections. Wire it to a `Stop` hook exiting 2 so failures loop back — guard on `stop_hook_active` or it recurses forever. The judgment half of review (does a skill still match the PRD? is a rationale still true?) is **not** automatable and stays a human ask.
@@ -162,7 +162,7 @@ Explicitly EXCLUDED from this repo: the admin application. Deferred past Phase 4
 - Neon Postgres (serverless) + Cloudflare R2 (payment proofs). Both accessed only from route handlers via env vars, zero hardcoded keys. Developer's own accounts until the handover discussion; ownership transferred to the client then.
 - GSAP + ScrollTrigger (with `@gsap/react`) for animation — chosen over Framer Motion for pinned and scrubbed scroll timelines, which is what the heavy scroll-driven direction below actually needs. Not both: two animation runtimes for one job is ~35KB of redundancy
 - axios for frontend HTTP calls, wrapped by TanStack Query — the query layer supplies caching, request dedup, retry, and loading/error state that raw axios would otherwise be hand-rolled per component
-- MSW for the mock API layer that Phases 1a–3 develop against
+- ~~MSW for the mock API layer~~ — retired 2026-08-15 in favour of demo route handlers under `src/app/api/`
 - **zod** for validation — one schema serving client and, later, server. Bought deliberately ahead of Phase 4 so the "which rules are shared" question on its agenda is already answered
 - **react-hook-form** for `/booking` — the form has a file upload, per-field errors, `aria-describedby` wiring, and focus-on-submit, all of which are fiddly to hand-roll correctly
 - **zustand** for client state. Note the scope: server state is TanStack Query's, the two selections could be `useState`, and cross-page state travels via `/booking?date=…&time=…` query params. Keep the store small — if it starts duplicating server data or URL state, that is the signal it has outgrown its purpose
@@ -190,7 +190,7 @@ Full token table, typography, and animation budget: [DESIGN.md](DESIGN.md).
 1. **Hero** — full viewport. Logo, headline, subheadline, primary CTA button "Pesan Lapangan" (smooth-scrolls to `#order`). Scroll-driven entrance animation.
 2. **Order section ("Pesan Lapangan")** — the core of the page, must be reachable within the first 1–2 scrolls on mobile. Anchor id `#order`:
    - Date picker: next 14 days, horizontal scrollable pills on mobile
-   - Time slot grid: 06.00–08.00 through 22.00–24.00 (2-hour slots, 9 per day), fetched from `GET /api/availability` — the MSW mock in Phases 2–3, real Neon data once the backend lands
+   - Time slot grid: 06.00–08.00 through 22.00–24.00 (2-hour slots, 9 per day), fetched from `GET /api/availability` — seeded demo data until Phase 4, real Neon data once the backend lands
    - NO prices shown in this section — pricing belongs on `/booking`
    - Slot states: available (selectable), PENDING (disabled, label "Menunggu Konfirmasi"), BOOKED (disabled)
    - On submit with a selected slot: open `https://wa.me/<PLACEHOLDER_NUMBER>?text=<template>` — **WhatsApp only, one destination**. Template = "Halo, saya mau booking lapangan Arena Player tanggal {DD MMM YYYY} jam {slot}".
@@ -365,7 +365,7 @@ Phase 1a:
 - [x] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
 - [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
-- [x] MSW handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired
+- [x] Handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired. (The MSW layer became real routes on 2026-08-15; the generator moved to `src/server/demo-availability.ts` unchanged)
 - [x] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [x] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
@@ -411,7 +411,7 @@ Phase 4 (backend) is **mandatory before launch** — only its design discussion 
 
 ## Phase 4 — Backend (mandatory, design discussion deferred)
 
-**Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its _design_ is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the MSW mock from Phase 1a.
+**Not optional and not "later" in the same sense as the rest of this section** — the site takes no real bookings until this ships. Only its _design_ is deferred, to a dedicated discussion held after Phase 3. Until then the Phase 2 grid and Phase 3 form run against the demo routes in `src/app/api/`, which store nothing.
 
 Also lands here: `scripts/check-setup.test.ts` (`pnpm check:setup`), which is deliberately not built in Phase 1a because it connects to Neon and R2 and neither exists before this phase. It is a Vitest file like the ones colocated under `src/`, kept under a separate glob so `check:unit` never requires credentials.
 

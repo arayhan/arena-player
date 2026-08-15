@@ -1,21 +1,25 @@
 /**
- * The handlers exercised through msw/node.
+ * The four demo routes, tested by calling them directly.
  *
- * This is the only way they CAN be exercised: the browser worker is a service
- * worker, so it intercepts nothing outside a real browser — which is why
- * `curl localhost:3000/api/availability` can never reach this mock, whatever
- * the step file's acceptance block claimed.
+ * THESE REPLACE THE MSW HANDLER TESTS, and the change is a simplification
+ * rather than a port: a route handler is a plain function from `Request` to
+ * `Response`, so there is no worker to start, no server to listen, and no
+ * interception layer between the assertion and the code. The old suite needed
+ * `msw/node` and a lifecycle; this one needs `fetch`'s own types.
+ *
+ * WHAT THEY DO NOT PROVE. That a booking is stored — nothing is. The POST route
+ * is a demo stub and says so at its top; these tests pin the CONTRACT it must
+ * keep when Phase 4 puts a database behind it.
  */
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { TIME_SLOTS } from "@/domain/slots";
 import { bookingWindow, todayAtField } from "@/domain/dates";
+import { TIME_SLOTS } from "@/domain/slots";
 
-import { server } from "./server";
-
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+import { GET as availability } from "./availability/route";
+import { POST as bookings } from "./bookings/route";
+import { GET as paymentAccounts } from "./payment-accounts/route";
+import { GET as rates } from "./rates/route";
 
 const BASE = "http://localhost:3000";
 const TODAY = todayAtField();
@@ -26,9 +30,8 @@ function bookingForm(
 ): FormData {
   const form = new FormData();
   form.set("date", bookingWindow()[1]);
-  // REPEATED KEY, one per hour. A booking may cover several since 2026-08-15,
-  // and `set` would keep only the last — which is exactly the bug this helper
-  // would hide from every test below it.
+  // REPEATED KEY, one per hour — `set` would keep only the last, which is
+  // exactly the bug this helper would hide from every test below it.
   for (const slot of slots) form.append("slots", slot);
   form.set("teamName", "Rajawali FC");
   form.set("phone", "081234567890");
@@ -38,70 +41,86 @@ function bookingForm(
   return form;
 }
 
-const post = (form: FormData) => fetch(`${BASE}/api/bookings`, { method: "POST", body: form });
+const post = (form: FormData) =>
+  bookings(new Request(`${BASE}/api/bookings`, { method: "POST", body: form }));
 
 describe("GET /api/availability", () => {
   it("returns nine entries in canonical order", async () => {
-    const res = await fetch(`${BASE}/api/availability?date=${TODAY}`);
+    const res = await availability(new Request(`${BASE}/api/availability?date=${TODAY}`));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toHaveLength(9);
     expect(body.map((r: { slot: string }) => r.slot)).toEqual([...TIME_SLOTS]);
   });
 
-  it("400s on a date outside the 14-day window", async () => {
-    const res = await fetch(`${BASE}/api/availability?date=2030-01-01`);
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "invalid_date" });
+  it("400s outside the window, on a malformed date, and on a missing one", async () => {
+    const at = (query: string) => availability(new Request(`${BASE}/api/availability${query}`));
+    expect((await at("?date=2030-01-01")).status).toBe(400);
+    expect((await at("?date=9-8-2026")).status).toBe(400);
+    expect((await at("?date=2026-02-31")).status).toBe(400);
+    expect((await at("")).status).toBe(400);
+  });
+});
+
+describe("GET /api/rates", () => {
+  it("prices all nine slots in canonical order", async () => {
+    const res = await rates();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.map((r: { slot: string }) => r.slot)).toEqual([...TIME_SLOTS]);
   });
 
-  it("400s on a malformed date and on a missing one", async () => {
-    expect((await fetch(`${BASE}/api/availability?date=9-8-2026`)).status).toBe(400);
-    expect((await fetch(`${BASE}/api/availability`)).status).toBe(400);
+  it("uses the client's three brackets, including the two edges they did not spell out", async () => {
+    // 06.00 takes the morning rate and 18.00 takes the evening one. Both were
+    // confirmed rather than guessed — see src/server/rates.ts.
+    const body: { slot: string; price: number }[] = await (await rates()).json();
+    const priceOf = (slot: string) => body.find((r) => r.slot === slot)?.price;
+
+    expect(priceOf("06.00 - 08.00")).toBe(400_000);
+    expect(priceOf("10.00 - 12.00")).toBe(400_000);
+    expect(priceOf("12.00 - 14.00")).toBe(600_000);
+    expect(priceOf("16.00 - 18.00")).toBe(600_000);
+    expect(priceOf("18.00 - 20.00")).toBe(800_000);
+    expect(priceOf("22.00 - 24.00")).toBe(800_000);
   });
 
-  it("400s on a date that looks valid but is not a real day", async () => {
-    expect((await fetch(`${BASE}/api/availability?date=2026-02-31`)).status).toBe(400);
+  it("sends integers, never formatted strings", async () => {
+    // Formatting is the client's job. A currency decision made in two places
+    // is a currency decision that disagrees with itself.
+    const body: { price: unknown }[] = await (await rates()).json();
+    expect(body.every((r) => typeof r.price === "number")).toBe(true);
   });
 });
 
 describe("GET /api/payment-accounts", () => {
-  it("answers with an EMPTY list, because no account has been supplied", async () => {
-    // The assertion that matters most in this file. An account number nobody
-    // verified is the one placeholder a visitor acts on — they transfer money to
-    // it. Empty is the honest answer and the form says so in words.
-    const res = await fetch(`${BASE}/api/payment-accounts`);
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual([]);
-  });
-
-  it("returns one CONTOH row behind the dev-only trigger", async () => {
-    const res = await fetch(`${BASE}/api/payment-accounts?mock=accounts`);
+  it("returns the client's two accounts, verbatim", async () => {
+    const res = await paymentAccounts();
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toHaveLength(1);
-    // Every field says CONTOH on purpose: a plausible-looking bank and number
-    // would look finished in a screenshot, and a screenshot is how a made-up
-    // account reaches somebody about to pay.
-    expect(body[0].bank).toContain("CONTOH");
-    expect(body[0].accountHolder).toContain("CONTOH");
-    expect(body[0].accountNumber).toBe("0000000000");
-  });
-
-  it("500s behind the error trigger, so the retry path is reachable in a browser", async () => {
-    const res = await fetch(`${BASE}/api/payment-accounts?mock=accounts-error`);
-    expect(res.status).toBe(500);
+    expect(body).toHaveLength(2);
+    expect(body[0]).toEqual({
+      bank: "BCA",
+      accountNumber: "7255105108",
+      accountHolder: "MARIANA ULFAH",
+    });
+    // The BRI number keeps its dashes: that is how the client writes it and how
+    // a visitor checks it. The COPY path strips them, not this one.
+    expect(body[1]).toEqual({
+      bank: "BRI",
+      accountNumber: "4736-01-017915-53-2",
+      accountHolder: "MARIANA ULFAH",
+    });
   });
 });
 
-describe("POST /api/bookings — all four codes are reachable", () => {
+describe("POST /api/bookings — every code the UI must be able to show", () => {
   it("201 on a good booking", async () => {
     const res = await post(bookingForm());
     expect(res.status).toBe(201);
     expect(await res.json()).toMatchObject({ status: "pending" });
   });
 
-  it("409 on the reserved team name — the state Phase 3 must be able to rehearse", async () => {
+  it("409 on the reserved team name", async () => {
     const res = await post(bookingForm({ teamName: "TEST409" }));
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: "slot_taken" });
@@ -135,13 +154,10 @@ describe("POST /api/bookings — real validation, not only the triggers", () => 
   });
 
   it("takes several hours in one booking", async () => {
-    const res = await post(bookingForm({}, [TIME_SLOTS[4], TIME_SLOTS[7]]));
-    expect(res.status).toBe(201);
+    expect((await post(bookingForm({}, [TIME_SLOTS[4], TIME_SLOTS[7]]))).status).toBe(201);
   });
 
   it("rejects an empty selection and a repeated hour", async () => {
-    // A booking with no hours is not a booking, and the same hour twice would
-    // become two rows racing each other for one slot.
     expect((await post(bookingForm({}, []))).status).toBe(400);
     const repeated = await post(bookingForm({}, [TIME_SLOTS[4], TIME_SLOTS[4]]));
     expect(repeated.status).toBe(400);
@@ -149,9 +165,6 @@ describe("POST /api/bookings — real validation, not only the triggers", () => 
   });
 
   it("accepts a booking with NO proof, because the dropzone is hidden", async () => {
-    // Optional here mirrors the schema, which went optional when the field was
-    // hidden on 2026-08-15. Requiring it would refuse every booking the current
-    // form can produce.
     const noProof = bookingForm();
     noProof.delete("proof");
     expect((await post(noProof)).status).toBe(201);
