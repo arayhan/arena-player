@@ -37,6 +37,7 @@ export function Hero() {
   const rootRef = useRef<HTMLElement>(null);
   const plateRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLSpanElement>(null);
+  const offerRef = useRef<HTMLParagraphElement>(null);
 
   // THE OFF-SCREEN-IS-OFF RULE, ENFORCED RATHER THAN ASSUMED. DESIGN.md
   // requires every continuously-running animation to stop when its section
@@ -121,6 +122,57 @@ export function Hero() {
           ease: "power3.out",
           stagger: 0.06,
         });
+
+        // THE OFFER PLATE ARRIVES AFTER THE COLUMN HAS SETTLED, and it is the
+        // one element here deliberately NOT carrying `data-rise`. Sharing that
+        // selector would mean sharing its ease, and the whole point is that this
+        // one lands differently: `back.out` overshoots a few pixels and settles,
+        // which is what makes the eye go back to it after the column is already
+        // still. The delay clears the four staggered elements (0.18s of stagger
+        // plus their 0.55s), so it reads as an arrival rather than a straggler.
+        const offer = offerRef.current;
+        if (offer) {
+          gsap.from(offer, {
+            y: 20,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.28,
+            ease: "back.out(1.6)",
+          });
+
+          // THE PULSE — the only continuously-running thing in this hero, and it
+          // is scoped to the GLYPH, never the plate. A whole badge breathing
+          // beside a flat painted sign reads as a rendering fault; one small
+          // mark moving in one place reads as a signal.
+          const glyph = offer.querySelector("[data-offer-glyph]");
+          if (glyph) {
+            const pulse = gsap.to(glyph, {
+              scale: 1.09,
+              duration: 1.1,
+              ease: "sine.inOut",
+              repeat: -1,
+              yoyo: true,
+              transformOrigin: "50% 50%",
+              paused: true,
+            });
+
+            // OFF-SCREEN-IS-OFF, satisfied with ScrollTrigger rather than a
+            // fourth hand-rolled IntersectionObserver. The gain is not brevity:
+            // a trigger created inside this context is REVERTED with it, so the
+            // observer cannot outlive the component — which is exactly what a
+            // hand-rolled one inside `animate` would do, since `animate` has no
+            // cleanup channel of its own.
+            ScrollTrigger.create({
+              trigger: plate,
+              start: "top bottom",
+              end: "bottom top",
+              onToggle: (self) => {
+                if (self.isActive) pulse.play();
+                else pulse.pause();
+              },
+            });
+          }
+        }
 
         ScrollTrigger.refresh();
       },
@@ -287,7 +339,68 @@ export function Hero() {
           WhatsApp.
         </p>
 
-        <div data-rise className="mt-9 flex flex-col gap-3 min-[420px]:flex-row">
+        {/* THE OFFER PLATE — a smaller enamel field riveted onto the big one.
+            Everything about its shape is a rule rather than a preference:
+
+            SQUARE, because `--radius-control` is 0 and the date pill is the only
+            fully round shape on the page — its roundness is what says "this row
+            scrolls", and a second pill would spend that signal.
+
+            NOT AN EYEBROW. The system allows exactly one, above the h1, and
+            `Mini Soccer · WITA · 06.00–24.00` already spent it. So this is body
+            face at `--text-sm`, sentence case — never the small tracked
+            uppercase that is the eyebrow's costume.
+
+            NO STATUS TRIPLE. Amber and red were computed against white plates
+            only and DESIGN.md forbids placing them on a navy ground, so the
+            obvious "promo chip" in warning yellow is out of bounds here.
+
+            THE HAIRLINE IS NOT DECORATION, IT IS THE FIX FOR A MEASUREMENT.
+            navy-700 fill against the navy-900 plate computes 1.31:1 — the field
+            was very nearly invisible as a field, which defeats the one thing
+            this element exists to do. blue-400 measures 6.72:1 against the
+            plate, well clear of the 3:1 non-text bar, and it is a FULL border
+            rather than a left tab: the side-tab accent is banned twice in this
+            project and was added and removed once already.
+
+            Measured on this fill: blue-50 text 11.94:1, blue-400 hours 5.11:1. */}
+        <p
+          ref={offerRef}
+          lang="id"
+          className="mt-9 flex w-fit max-w-[38ch] items-start gap-3 border border-[var(--color-interactive-on-band)] bg-[var(--color-border-on-band)] px-4 py-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-on-band)]"
+        >
+          {/* Feather's own camera, drawn inline rather than imported. The
+              landing page has no `react-icons` import and PROGRESS.md records
+              that as deliberate — "so the landing page's budget is untouched".
+              Same 24px grid and 2px stroke as FiImage over on the form, so the
+              two surfaces still read as one icon family. */}
+          <svg
+            data-offer-glyph
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mt-[2px] h-5 w-5 shrink-0 text-[color:var(--color-interactive-on-band)]"
+          >
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          <span>
+            <strong className="font-semibold">Gratis fotografer</strong> di 1 jam pertama,{" "}
+            <span className="font-semibold text-[color:var(--color-interactive-on-band)]">
+              16.00–24.00
+            </span>
+          </span>
+        </p>
+
+        {/* mt-4, not the mt-9 this row used to carry. The offer and the CTA are
+            one act-now cluster — that grouping is the whole argument for letting
+            the offer borrow the interactive blue — so they sit tight to each
+            other and the generous gap moves above the offer instead. */}
+        <div data-rise className="mt-4 flex flex-col gap-3 min-[420px]:flex-row">
           <Button
             href="#order"
             variant="on-band"
