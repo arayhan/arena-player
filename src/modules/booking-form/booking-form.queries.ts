@@ -22,7 +22,12 @@ import { useCallback } from "react";
 import { isWithinBookingWindow } from "@/domain/dates";
 
 import type { BookingFormValues } from "./booking-form.schema";
-import { createBooking, fetchAvailability, type BookingOutcome } from "./booking-form.service";
+import {
+  createBooking,
+  fetchAvailability,
+  fetchPaymentAccounts,
+  type BookingOutcome,
+} from "./booking-form.service";
 
 export function useCreateBooking(date: string) {
   return useMutation<BookingOutcome, Error, BookingFormValues>({
@@ -50,6 +55,27 @@ export function useBookingAvailability(date: string) {
     queryKey: availabilityKey(date),
     queryFn: ({ signal }) => fetchAvailability(date, signal),
     enabled: isWithinBookingWindow(date),
+  });
+}
+
+/**
+ * The transfer destinations.
+ *
+ * A LONG `staleTime`, WHICH IS THE OPPOSITE OF THE SLOT ROWS ON PURPOSE. Slots
+ * change by the minute and are the reason this page exists; bank accounts change
+ * about once a year. Refetching them on every mount would spend a round trip on
+ * the mobile connection this site is designed for, to be told the same thing.
+ *
+ * `retry: 1` rather than the default three: if the accounts cannot be read, the
+ * panel says so and offers the retry itself, and two extra silent attempts only
+ * make the failure take longer to appear.
+ */
+export function usePaymentAccounts() {
+  return useQuery({
+    queryKey: ["payment-accounts"] as const,
+    queryFn: ({ signal }) => fetchPaymentAccounts(signal),
+    staleTime: 60 * 60 * 1000,
+    retry: 1,
   });
 }
 

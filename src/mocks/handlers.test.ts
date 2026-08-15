@@ -65,6 +65,35 @@ describe("GET /api/availability", () => {
   });
 });
 
+describe("GET /api/payment-accounts", () => {
+  it("answers with an EMPTY list, because no account has been supplied", async () => {
+    // The assertion that matters most in this file. An account number nobody
+    // verified is the one placeholder a visitor acts on — they transfer money to
+    // it. Empty is the honest answer and the form says so in words.
+    const res = await fetch(`${BASE}/api/payment-accounts`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual([]);
+  });
+
+  it("returns one CONTOH row behind the dev-only trigger", async () => {
+    const res = await fetch(`${BASE}/api/payment-accounts?mock=accounts`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toHaveLength(1);
+    // Every field says CONTOH on purpose: a plausible-looking bank and number
+    // would look finished in a screenshot, and a screenshot is how a made-up
+    // account reaches somebody about to pay.
+    expect(body[0].bank).toContain("CONTOH");
+    expect(body[0].accountHolder).toContain("CONTOH");
+    expect(body[0].accountNumber).toBe("0000000000");
+  });
+
+  it("500s behind the error trigger, so the retry path is reachable in a browser", async () => {
+    const res = await fetch(`${BASE}/api/payment-accounts?mock=accounts-error`);
+    expect(res.status).toBe(500);
+  });
+});
+
 describe("POST /api/bookings — all four codes are reachable", () => {
   it("201 on a good booking", async () => {
     const res = await post(bookingForm());

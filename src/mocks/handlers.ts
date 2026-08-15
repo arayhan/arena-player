@@ -8,7 +8,7 @@
  * These are the only backend Phases 2 and 3 have. The site will look finished
  * while taking zero real bookings.
  */
-import { HttpResponse, http } from "msw";
+import { HttpResponse, delay, http } from "msw";
 
 import { isWithinBookingWindow } from "@/domain/dates";
 import { isTimeSlot } from "@/domain/slots";
@@ -41,6 +41,59 @@ export const handlers = [
     }
 
     return HttpResponse.json(availabilityFor(date));
+  }),
+
+  /**
+   * GET /api/payment-accounts — the transfer destinations for `/booking`.
+   *
+   * IT ANSWERS WITH AN EMPTY LIST, AND THAT IS THE TRUTH RATHER THAN A STUB.
+   * TODO(content): bank account + holder. The client has never supplied one, and
+   * **no fabricated account may exist anywhere in this codebase** — every other
+   * missing item is inert if it leaks, while an invented account number is one a
+   * visitor transfers money to. An empty array is a valid answer by contract:
+   * "the field has not given us an account yet" is the state this project has
+   * been in for its whole life, and the form says so in words.
+   *
+   * TWO DEV-ONLY TRIGGERS, so the other two branches are reachable in a browser
+   * instead of only in a unit test. Both live behind MSW, which never ships:
+   *
+   *   ?mock=accounts        one row, CONTOH in every field
+   *   ?mock=accounts-slow   the same row after 1.5s, so the skeleton is visible
+   *   ?mock=accounts-error  500, for the retry path
+   *
+   * THE TRIGGER IS READ FROM THE PAGE'S URL, not the request's. The client asks
+   * for `/api/payment-accounts` with no params — as the Phase 4 route will — so
+   * a trigger the service had to forward would mean shaping production code
+   * around a dev fixture. In the browser this handler can simply look at where
+   * the visitor is. The request's own params are still checked first, because
+   * that is what the node tests can set.
+   *
+   * The sample row's every field says CONTOH on purpose. A plausible-looking
+   * bank and number would look finished in a screenshot, and a screenshot is
+   * exactly how a made-up account reaches somebody about to pay.
+   */
+  http.get("*/api/payment-accounts", async ({ request }) => {
+    const fromRequest = new URL(request.url).searchParams.get("mock");
+    const fromPage =
+      typeof location === "undefined" ? null : new URLSearchParams(location.search).get("mock");
+    const trigger = fromRequest ?? fromPage;
+
+    if (trigger === "accounts-error") {
+      return HttpResponse.json({ error: "server_error" }, { status: 500 });
+    }
+
+    if (trigger === "accounts" || trigger === "accounts-slow") {
+      if (trigger === "accounts-slow") await delay(1500);
+      return HttpResponse.json([
+        {
+          bank: "BANK CONTOH",
+          accountNumber: "0000000000",
+          accountHolder: "CONTOH — DATA UJI",
+        },
+      ]);
+    }
+
+    return HttpResponse.json([]);
   }),
 
   // POST /api/bookings — PROVISIONAL shape, multipart.

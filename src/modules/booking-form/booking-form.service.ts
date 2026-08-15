@@ -44,6 +44,37 @@ export async function fetchAvailability(
   return availabilitySchema.parse(response.data) as AvailabilityRow[];
 }
 
+/**
+ * One transfer destination from `GET /api/payment-accounts`.
+ *
+ * THE LIST MAY BE EMPTY AND THAT IS NOT AN ERROR. The client has supplied no
+ * account yet, so an empty array is the honest answer the form renders in words.
+ * A schema that demanded `.min(1)` would turn "not supplied" into a red failure
+ * state, which is a different and wrong thing to tell a visitor.
+ */
+const paymentAccountsSchema = z.array(
+  z.object({
+    bank: z.string().min(1),
+    accountNumber: z.string().min(1),
+    accountHolder: z.string().min(1),
+  }),
+);
+
+export type PaymentAccount = z.infer<typeof paymentAccountsSchema>[number];
+
+export async function fetchPaymentAccounts(signal?: AbortSignal): Promise<PaymentAccount[]> {
+  const response = await apiClient.get("/payment-accounts", { signal });
+
+  // The axios instance never throws below 500, so a 4xx would otherwise reach
+  // `parse` as a body of the wrong shape and fail with a schema message instead
+  // of the transport one.
+  if (response.status !== 200) {
+    throw new Error(`payment accounts request failed: ${response.status}`);
+  }
+
+  return paymentAccountsSchema.parse(response.data);
+}
+
 /** The 201 body. */
 export interface BookingCreated {
   id: string;

@@ -18,6 +18,7 @@ import {
 import { bookingFormSchema, type BookingFormValues } from "./booking-form.schema";
 import type { BookingOutcome } from "./booking-form.service";
 import { DateSelect } from "./components/DateSelect";
+import { PaymentAccounts } from "./components/PaymentAccounts";
 import { TimeMultiSelect } from "./components/TimeMultiSelect";
 
 export interface BookingFormProps {
@@ -567,15 +568,15 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           Informasi Pembayaran
         </h2>
 
-        {/* TODO(content): bank account + holder. Rendered as a visible gap,
-            not invented digits — an account number nobody verified sends a
-            payment to the wrong place, which is worse than an obvious
-            blank. Product Principle 7: a placeholder must look like one. */}
-        <div className="mt-3 border-2 border-dashed border-[var(--color-band)] bg-[var(--color-bg-subtle)] p-3">
-          <p lang="id" className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]">
-            Nomor rekening &amp; nama pemilik menyusul — menunggu data dari pihak lapangan.
-          </p>
-        </div>
+        {/* THE ACCOUNTS COME FROM THE API SINCE 2026-08-15. This was one
+            hard-coded sentence in a dashed box; the destinations are a list the
+            server owns, so the panel fetches them and handles loading, empty and
+            failure separately. It still renders the same sentence today, because
+            the list is still empty — the difference is that emptiness is now a
+            fact reported by the server rather than typed into a component.
+            See PaymentAccounts.tsx for why an invented account is the one
+            placeholder this project can never ship. */}
+        <PaymentAccounts />
 
         {/* TODO(content): rate card. NO PLACEHOLDER NUMBER MAY BE INVENTED
             HERE. `/booking` is the one page a real rupiah figure is allowed

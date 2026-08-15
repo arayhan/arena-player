@@ -75,6 +75,21 @@ Chosen over a URL flag because it needs no special path through `api-client.ts` 
 
 That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `src/domain/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
 
+**`GET /api/payment-accounts` — ADDED 2026-08-15.** The transfer destinations `/booking` shows once a visitor has arrived through the WhatsApp link.
+
+```jsonc
+// 200 — an array, possibly EMPTY
+[{ "bank": "BCA", "accountNumber": "1234567890", "accountHolder": "Nama Pemilik" }]
+```
+
+**An empty array is a valid answer, not an error**, and it is the answer today: the client has never supplied an account. The form renders that in words — _"Nomor rekening & nama pemilik menyusul"_ — and reserves its failure state for a request that actually failed. Collapsing the two would tell a visitor to retry a fact, or to wait for a network that is fine.
+
+**`Cache-Control: public, s-maxage=3600`.** Unlike the availability GET, this is a **pure read** — no lazy expiry hidden inside it — so caching it carries none of the contradiction recorded against that endpoint above. Accounts change about once a year.
+
+**NO FABRICATED ACCOUNT MAY EXIST ANYWHERE IN THIS CODEBASE**, which is why the mock answers `[]` rather than with sample digits. Every other missing item is inert if it leaks; an invented account number is one a visitor transfers money to. The mock's two dev-only triggers (`?mock=accounts`, `?mock=accounts-error`, plus `accounts-slow` for the skeleton) exist so the other branches are reachable in a browser, and the sample row says `CONTOH` in every field for the same reason — a plausible-looking bank and number would look finished in a screenshot, and a screenshot is how a made-up account reaches somebody about to pay.
+
+> **Phase 4 owes the SOURCE, and it is not chosen here.** A `payment_accounts` table the admin app edits, or environment configuration. The accounts would be maintained from the admin repo, and that conversation has not happened — see [database.md](database.md).
+
 **`POST /api/bookings` — PROVISIONAL.** Shape below assumes multipart; presigned-URL upload would replace the `proof` part with a `proofKey` string and leave every other field unchanged.
 
 Request — `multipart/form-data`. Field names are the contract: the form, the MSW handler, and the Phase 4 route handler must all use exactly these, and the `fields` keys in a 400 response are these same names.
