@@ -45,11 +45,11 @@ const post = (form: FormData) =>
   bookings(new Request(`${BASE}/api/bookings`, { method: "POST", body: form }));
 
 describe("GET /api/availability", () => {
-  it("returns nine entries in canonical order", async () => {
+  it("returns eighteen entries in canonical order", async () => {
     const res = await availability(new Request(`${BASE}/api/availability?date=${TODAY}`));
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toHaveLength(9);
+    expect(body).toHaveLength(TIME_SLOTS.length);
     expect(body.map((r: { slot: string }) => r.slot)).toEqual([...TIME_SLOTS]);
   });
 
@@ -63,30 +63,23 @@ describe("GET /api/availability", () => {
 });
 
 describe("GET /api/rates", () => {
-  it("prices all nine slots in canonical order", async () => {
+  it("returns an empty rate card — the 2-hour figures do not survive 1-hour slots", async () => {
+    // TIME_SLOTS went from nine 2-hour slots to eighteen 1-hour ones on
+    // 2026-08-15, the same day the client's 400k/600k/800k figures arrived.
+    // Those numbers priced a 2-hour block; halving them would invent a number
+    // hard rule 2 forbids, so rateCard() reports no prices at all until an
+    // hourly figure exists. An empty array is a valid response under
+    // assertRates in booking-form.contract.ts.
     const res = await rates();
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.map((r: { slot: string }) => r.slot)).toEqual([...TIME_SLOTS]);
+    expect(body).toEqual([]);
   });
 
-  it("uses the client's three brackets, including the two edges they did not spell out", async () => {
-    // 06.00 takes the morning rate and 18.00 takes the evening one. Both were
-    // confirmed rather than guessed — see src/server/rates.ts.
-    const body: { slot: string; price: number }[] = await (await rates()).json();
-    const priceOf = (slot: string) => body.find((r) => r.slot === slot)?.price;
-
-    expect(priceOf("06.00 - 08.00")).toBe(400_000);
-    expect(priceOf("10.00 - 12.00")).toBe(400_000);
-    expect(priceOf("12.00 - 14.00")).toBe(600_000);
-    expect(priceOf("16.00 - 18.00")).toBe(600_000);
-    expect(priceOf("18.00 - 20.00")).toBe(800_000);
-    expect(priceOf("22.00 - 24.00")).toBe(800_000);
-  });
-
-  it("sends integers, never formatted strings", async () => {
+  it("sends integers, never formatted strings, on any future row", async () => {
     // Formatting is the client's job. A currency decision made in two places
-    // is a currency decision that disagrees with itself.
+    // is a currency decision that disagrees with itself. Nothing to iterate
+    // over today, but the contract still holds for the day a row exists.
     const body: { price: unknown }[] = await (await rates()).json();
     expect(body.every((r) => typeof r.price === "number")).toBe(true);
   });

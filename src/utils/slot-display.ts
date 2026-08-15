@@ -92,8 +92,8 @@ export function partitionSlots(
   return { elapsed, live };
 }
 
-/** Hours per slot. Nine 2-hour slots span 06.00–24.00. */
-const HOURS_PER_SLOT = 2;
+/** Hours per slot. Eighteen 1-hour slots span 06.00–24.00, since 2026-08-15. */
+const HOURS_PER_SLOT = 1;
 
 /** The longest unbroken stretch of bookable hours on a day. */
 export interface FreeRun {
@@ -108,13 +108,16 @@ export interface FreeRun {
 /**
  * The minimum run worth pointing at, in slots.
  *
- * THREE, NOT TWO, AND THIS NUMBER IS THE WHOLE DESIGN. A run of two is
- * ordinary — most days have several — so badging them would put a marker on
- * half the grid and the signal would read as decoration. Three consecutive
- * slots is six hours, which is rare enough to be worth saying and long enough
- * for a group to plan around.
+ * SIX, NOT THREE, SINCE SLOTS BECAME 1-HOUR ON 2026-08-15 — AND THIS NUMBER IS
+ * STILL THE WHOLE DESIGN, RE-DERIVED RATHER THAN CARRIED OVER. The design was
+ * never "three slots"; it was "six hours, rare enough to be worth saying and
+ * long enough for a group to plan around." Three 1-hour slots is three hours,
+ * which is ordinary — most days have several — and leaving the old slot count
+ * in place would badge most of the grid, exactly the decoration this number
+ * exists to prevent. Six 1-hour slots is six hours again, the same real-world
+ * quantity the design was always about.
  */
-const MIN_RUN_SLOTS = 3;
+const MIN_RUN_SLOTS = 6;
 
 /**
  * Find the one run worth surfacing, or nothing.

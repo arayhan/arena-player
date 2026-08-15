@@ -14,7 +14,7 @@ import { availabilityFor } from "./demo-availability";
 const NOON = new Date("2026-08-09T04:00:00Z");
 
 describe("availabilityFor", () => {
-  it("returns all nine slots in canonical order, every time", () => {
+  it("returns all eighteen slots in canonical order, every time", () => {
     for (const date of bookingWindow(NOON)) {
       const rows = availabilityFor(date, NOON);
       expect(rows.map((r) => r.slot)).toEqual([...TIME_SLOTS]);
@@ -53,11 +53,11 @@ describe("availabilityFor", () => {
   });
 
   it("marks today's elapsed hours booked, which is the server-side simplification", () => {
-    // At 12:00 Jakarta the 06.00 and 08.00 slots have gone. The CLIENT renders
+    // At 12:00 WITA the 06.00 and 07.00 slots have gone. The CLIENT renders
     // those as `Sudah lewat`, but the wire format says booked.
     const today = availabilityFor("2026-08-09", NOON);
-    expect(today[0]).toEqual({ slot: "06.00 - 08.00", status: "booked" });
-    expect(today[1]).toEqual({ slot: "08.00 - 10.00", status: "booked" });
+    expect(today[0]).toEqual({ slot: "06.00 - 07.00", status: "booked" });
+    expect(today[1]).toEqual({ slot: "07.00 - 08.00", status: "booked" });
   });
 
   it("hardcodes no slot string — every one comes from TIME_SLOTS", () => {

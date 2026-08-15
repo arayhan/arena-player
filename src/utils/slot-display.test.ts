@@ -5,7 +5,7 @@
  * code they cover. The elapsed split is the one piece of this logic that can be
  * wrong without LOOKING wrong: a page opened at 19.00 that renders the whole day
  * as "Terisi" is not a crash and not a visual defect — it is a correct-looking
- * page telling the visitor the field is full when six of those hours simply
+ * page telling the visitor the field is full when several of those hours simply
  * passed. So these tests pin the hour rather than trusting the clock.
  */
 import { describe, expect, it } from "vitest";
@@ -32,35 +32,50 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
       new Date(Date.UTC(2026, 7, 10, 21, 0, 0)),
     );
     expect(elapsed).toHaveLength(0);
-    expect(live).toHaveLength(9);
+    expect(live).toHaveLength(18);
   });
 
-  it("splits six elapsed and three live at 17.00 WITA — the motivating case", () => {
-    // 09:00Z = 17:00 WITA. The last elapsed slot starts at 16.00.
+  it("splits twelve elapsed and six live at 17.00 WITA — the motivating case", () => {
+    // 09:00Z = 17:00 WITA. The last elapsed slot starts at 17.00 (inclusive
+    // boundary — a slot starting NOW cannot be sold either).
     const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(9));
-    expect(elapsed).toHaveLength(6);
-    expect(live).toHaveLength(3);
-    expect(live.map((s) => s.slot)).toEqual(["18.00 - 20.00", "20.00 - 22.00", "22.00 - 24.00"]);
+    expect(elapsed).toHaveLength(12);
+    expect(live).toHaveLength(6);
+    expect(live.map((s) => s.slot)).toEqual([
+      "18.00 - 19.00",
+      "19.00 - 20.00",
+      "20.00 - 21.00",
+      "21.00 - 22.00",
+      "22.00 - 23.00",
+      "23.00 - 24.00",
+    ]);
   });
 
   it("counts a slot that has ALREADY STARTED as elapsed, not live", () => {
-    // 11:00Z = 19:00 WITA, which is one hour INTO the 18.00-20.00 slot.
-    // isPastSlot compares `currentHour >= slotStartHour`, so a running hour is
-    // past — and that is right: nobody can book an hour already underway.
+    // 11:00Z = 19:00 WITA, which is the moment the 19.00-20.00 slot begins.
+    // isPastSlot compares `currentHour >= slotStartHour`, so a slot starting
+    // NOW is past — and that is right: nobody can book an hour already
+    // underway.
     //
-    // This test exists because the first draft of it asserted 6 elapsed here,
-    // reasoning from the mock in DESIGN.html rather than from the rule. The
-    // code was correct and the expectation was not, which is the third time a
-    // boundary assumption has been wrong in this repo before the code was.
+    // This test exists because the first draft of it asserted a smaller
+    // elapsed count here, reasoning from the mock in DESIGN.html rather than
+    // from the rule. The code was correct and the expectation was not, which
+    // is the third time a boundary assumption has been wrong in this repo
+    // before the code was.
     const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(11));
-    expect(elapsed).toHaveLength(7);
-    expect(live.map((s) => s.slot)).toEqual(["20.00 - 22.00", "22.00 - 24.00"]);
+    expect(elapsed).toHaveLength(14);
+    expect(live.map((s) => s.slot)).toEqual([
+      "20.00 - 21.00",
+      "21.00 - 22.00",
+      "22.00 - 23.00",
+      "23.00 - 24.00",
+    ]);
   });
 
-  it("keeps all nine together — nothing is dropped by the split", () => {
+  it("keeps all eighteen together — nothing is dropped by the split", () => {
     for (const hour of [0, 4, 8, 12, 16, 20]) {
       const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(hour));
-      expect(elapsed.length + live.length).toBe(9);
+      expect(elapsed.length + live.length).toBe(18);
     }
   });
 
@@ -72,7 +87,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
       status: "booked" as const,
     }));
     const { elapsed } = partitionSlots(rows, "2026-08-11", at(9));
-    expect(elapsed).toHaveLength(6);
+    expect(elapsed).toHaveLength(12);
     expect(elapsed.every((s) => s.status === "elapsed")).toBe(true);
   });
 
@@ -88,7 +103,7 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
   it("treats an entire future date as live regardless of the hour", () => {
     const { elapsed, live } = partitionSlots(allAvailable, "2026-08-20", at(23));
     expect(elapsed).toHaveLength(0);
-    expect(live).toHaveLength(9);
+    expect(live).toHaveLength(18);
   });
 
   it("treats an entire past date as elapsed", () => {
@@ -96,14 +111,14 @@ describe("partitionSlots — the split that stops today reading as sold out", ()
     // behind the window collapses whole. It cannot be reached through the UI,
     // but a pasted URL can ask for it.
     const { elapsed, live } = partitionSlots(allAvailable, "2026-08-01", at(12));
-    expect(elapsed).toHaveLength(9);
+    expect(elapsed).toHaveLength(18);
     expect(live).toHaveLength(0);
   });
 
   it("preserves canonical slot order within each partition", () => {
     const { elapsed, live } = partitionSlots(allAvailable, "2026-08-11", at(9));
-    expect(elapsed.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(0, 6));
-    expect(live.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(6));
+    expect(elapsed.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(0, 12));
+    expect(live.map((s) => s.slot)).toEqual(TIME_SLOTS.slice(12));
   });
 
   it("handles an empty response without throwing", () => {
@@ -115,17 +130,24 @@ describe("longestFreeRun — the anti-dilution rules ARE the design", () => {
   const run = (...statuses: DisplaySlot["status"][]): DisplaySlot[] =>
     statuses.map((status, i) => ({ slot: TIME_SLOTS[i], status }));
 
-  it("returns null for a run of two — ordinary, and badging it marks half the grid", () => {
-    expect(longestFreeRun(run("available", "available", "booked"))).toBeNull();
+  it("returns null for a run below the six-slot threshold", () => {
+    // Five is ordinary — most days have a run at least that long — so
+    // badging it would read as decoration rather than a real signal.
+    expect(
+      longestFreeRun(
+        run("available", "available", "available", "available", "available", "booked"),
+      ),
+    ).toBeNull();
   });
 
-  it("returns three slots as SIX HOURS — the unit a visitor reads", () => {
-    // The shape preview said "3 jam" and that was wrong: a slot is two hours.
-    expect(longestFreeRun(run("available", "available", "available"))).toEqual({
-      startSlot: TIME_SLOTS[0],
-      slots: 3,
-      hours: 6,
-    });
+  it("returns six slots as SIX HOURS — the unit a visitor reads", () => {
+    // MIN_RUN_SLOTS is 6 since 2026-08-15 (1-hour slots): the design was
+    // always "six hours, rare enough to be worth saying," never "three slots."
+    expect(
+      longestFreeRun(
+        run("available", "available", "available", "available", "available", "available"),
+      ),
+    ).toEqual({ startSlot: TIME_SLOTS[0], slots: 6, hours: 6 });
   });
 
   it("returns only the LONGEST run when a day has several", () => {
@@ -134,50 +156,91 @@ describe("longestFreeRun — the anti-dilution rules ARE the design", () => {
         "available",
         "available",
         "available",
+        "available",
+        "available",
+        "available",
         "booked",
+        "available",
+        "available",
+        "available",
+        "available",
         "available",
         "available",
         "available",
         "available",
       ),
     );
-    expect(result?.slots).toBe(4);
-    expect(result?.startSlot).toBe(TIME_SLOTS[4]);
+    expect(result?.slots).toBe(8);
+    expect(result?.startSlot).toBe(TIME_SLOTS[7]);
   });
 
   it("gives an earlier run the tie — it leaves the evening open behind it", () => {
     const result = longestFreeRun(
-      run("available", "available", "available", "booked", "available", "available", "available"),
+      run(
+        "available",
+        "available",
+        "available",
+        "available",
+        "available",
+        "available",
+        "booked",
+        "available",
+        "available",
+        "available",
+        "available",
+        "available",
+        "available",
+      ),
     );
     expect(result?.startSlot).toBe(TIME_SLOTS[0]);
   });
 
   it("BREAKS a run on pending and on booked, not only on booked", () => {
     // Pending is somebody else's slot too. Counting through it would promise
-    // six hours that cannot all be had.
-    expect(longestFreeRun(run("available", "pending", "available", "available"))).toBeNull();
-    expect(longestFreeRun(run("available", "booked", "available", "available"))).toBeNull();
+    // hours that cannot all be had. Each side here is three slots — below the
+    // six-slot threshold alone, but seven combined, which is what proves the
+    // break (not just the threshold) is what makes this null.
+    expect(
+      longestFreeRun(
+        run(
+          "available",
+          "available",
+          "available",
+          "pending",
+          "available",
+          "available",
+          "available",
+        ),
+      ),
+    ).toBeNull();
+    expect(
+      longestFreeRun(
+        run("available", "available", "available", "booked", "available", "available", "available"),
+      ),
+    ).toBeNull();
   });
 
   it("badges the FIRST slot of the run, never the middle", () => {
-    const result = longestFreeRun(run("booked", "available", "available", "available"));
+    const result = longestFreeRun(
+      run("booked", "available", "available", "available", "available", "available", "available"),
+    );
     expect(result?.startSlot).toBe(TIME_SLOTS[1]);
   });
 
   it("counts elapsed hours as gone, because it is handed the live array", () => {
     // The contract: pass partitionSlots' `live`, never the raw response. A
-    // morning that already passed is not six bookable hours — and here that is
-    // load-bearing, since `elapsed` is not `available` and so breaks the run.
-    // at(9) is 17:00 WITA — three hours left, exactly the minimum run.
+    // day that already passed is not still six bookable hours — and here that
+    // is load-bearing, since `elapsed` is not `available` and so breaks the
+    // run. at(9) is 17:00 WITA — six hours left, exactly the minimum run.
     const { live } = partitionSlots(allAvailable, "2026-08-11", at(9));
-    expect(live).toHaveLength(3);
+    expect(live).toHaveLength(6);
     expect(longestFreeRun(live)?.hours).toBe(6);
 
-    // at(11) is 19:00 WITA — two left, and two is below the threshold. The
+    // at(11) is 19:00 WITA — four left, and four is below the threshold. The
     // badge disappears as the evening runs out, which is correct: there is no
     // longer a long block to offer.
     const late = partitionSlots(allAvailable, "2026-08-11", at(11));
-    expect(late.live).toHaveLength(2);
+    expect(late.live).toHaveLength(4);
     expect(longestFreeRun(late.live)).toBeNull();
   });
 
@@ -189,9 +252,11 @@ describe("longestFreeRun — the anti-dilution rules ARE the design", () => {
     expect(longestFreeRun(run("booked", "pending", "booked"))).toBeNull();
   });
 
-  it("handles a whole day free — nine slots, eighteen hours", () => {
+  it("handles a whole day free — eighteen slots, eighteen hours", () => {
+    // 18 slots x 1 hour is still 18 hours total — the same span the old 9
+    // slots x 2 hours covered, since the day itself did not change length.
     const { live } = partitionSlots(allAvailable, "2026-08-20", at(12));
-    expect(longestFreeRun(live)).toEqual({ startSlot: TIME_SLOTS[0], slots: 9, hours: 18 });
+    expect(longestFreeRun(live)).toEqual({ startSlot: TIME_SLOTS[0], slots: 18, hours: 18 });
   });
 });
 
@@ -199,9 +264,9 @@ describe("countAvailable — feeds the scarcity line", () => {
   it("counts only available, not pending or booked", () => {
     const { live } = partitionSlots(
       [
-        { slot: "18.00 - 20.00", status: "pending" },
-        { slot: "20.00 - 22.00", status: "available" },
-        { slot: "22.00 - 24.00", status: "booked" },
+        { slot: "18.00 - 19.00", status: "pending" },
+        { slot: "20.00 - 21.00", status: "available" },
+        { slot: "22.00 - 23.00", status: "booked" },
       ],
       "2026-08-11",
       at(11),

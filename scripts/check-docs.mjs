@@ -213,13 +213,17 @@ for (const f of ALL) {
   const quoted = (slice) => (slice?.match(/["']([^"']+)["']/g) ?? []).map((s) => s.slice(1, -1));
   const read = (f) => linesOf(f).join("\n");
 
-  // Every file that writes the schema out. The migration is authoritative; the
-  // other two are copies that must agree with it.
-  const SQL_SOURCES = [
-    ...ALL.filter((f) => /^db\/migrations\/.*\.sql$/.test(f)),
-    "docs/database.md",
-    "docs/PRD.md",
-  ];
+  // Every file that writes the CURRENT schema out. Only the LATEST migration
+  // is compared, not every migration ever written: a migration is immutable
+  // history the moment it is applied (hard rule — never edit an applied one),
+  // so an OLDER file's own CHECK text is EXPECTED to disagree with today's
+  // domain values once a later migration has superseded it. Comparing every
+  // migration file against current TIME_SLOTS would fail forever the moment a
+  // second migration exists, on a file nobody is allowed to touch to fix it.
+  // Filenames sort correctly because they are YYYYMMDD-prefixed.
+  const migrationFiles = ALL.filter((f) => /^db\/migrations\/.*\.sql$/.test(f)).sort();
+  const latestMigration = migrationFiles[migrationFiles.length - 1];
+  const SQL_SOURCES = [latestMigration, "docs/database.md", "docs/PRD.md"].filter(Boolean);
 
   const expected = {
     slots: quoted(between(read("src/domain/slots.ts"), "TIME_SLOTS = [", "]")),
@@ -279,26 +283,16 @@ for (const f of ALL) {
       }
     }
 
-    // docs/database.md claims at line 54 that its block IS the migration.
-    // Cheap to hold it to that; docs/PRD.md is deliberately exempt, since its
-    // block is a shorter comment-free summary and is covered by the value
-    // checks above.
-    const fenced = (f) => {
-      const text = read(f);
-      const open = text.indexOf("```sql");
-      if (open === -1) return null;
-      const close = text.indexOf("```", open + 6);
-      return close === -1 ? null : text.slice(open + 6, close).replace(/^\n/, "");
-    };
-    const migration = SQL_SOURCES.find((f) => f.startsWith("db/migrations/"));
-    const block = fenced("docs/database.md");
-    if (migration && block !== null && block !== read(migration)) {
-      fail(
-        "schema-value-drift",
-        `docs/database.md — its SQL block is no longer byte-identical to ${migration}, ` +
-          `which that file states it is`,
-      );
-    }
+    // THERE IS NO "docs/database.md IS byte-identical to THE migration" CHECK
+    // ANYMORE. That held only while db/migrations/ contained exactly one file,
+    // when the whole schema WAS one migration. Since 2026-08-15's ALTER
+    // migration, docs/database.md's fenced block is documented (in its own
+    // prose, at the top of the Schema section) as the CURRENT schema — what
+    // running every migration in order produces — not literally any single
+    // file's bytes. The CLAIMS loop above still holds it to the values that
+    // actually matter (the constraint lists agree with domain), which is the
+    // guarantee this repo has been burned by losing, not character-identity
+    // with one file among several.
   }
 }
 

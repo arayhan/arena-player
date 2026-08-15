@@ -25,12 +25,13 @@ create table bookings (
   created_at timestamptz not null default now(),
 
   -- uniq_active_slot below compares time_slot as TEXT. Without this constraint
-  -- '06.00 - 08.00' and '06.00-08.00' are different rows booking the same slot,
+  -- '06.00 - 07.00' and '06.00-07.00' are different rows booking the same slot,
   -- and the race guard silently does nothing. src/domain/slots.ts canonicalises in app
   -- code; this enforces it in the database. Keep the two in lockstep.
   constraint time_slot_canonical check (time_slot in (
-    '06.00 - 08.00','08.00 - 10.00','10.00 - 12.00','12.00 - 14.00','14.00 - 16.00',
-    '16.00 - 18.00','18.00 - 20.00','20.00 - 22.00','22.00 - 24.00'
+    '06.00 - 07.00','07.00 - 08.00','08.00 - 09.00','09.00 - 10.00','10.00 - 11.00','11.00 - 12.00',
+    '12.00 - 13.00','13.00 - 14.00','14.00 - 15.00','15.00 - 16.00','16.00 - 17.00','17.00 - 18.00',
+    '18.00 - 19.00','19.00 - 20.00','20.00 - 21.00','21.00 - 22.00','22.00 - 23.00','23.00 - 24.00'
   )),
   constraint status_valid check (status in ('pending','confirmed','rejected','expired')),
   constraint notes_length check (notes is null or length(notes) <= 500)
@@ -51,7 +52,9 @@ create index bookings_pending_expiry_idx
 commit;
 ```
 
-This block lives at `db/migrations/20260809_create_bookings.sql`, byte-identical, and `pnpm check:docs` holds it to that — plus the same values in [PRD.md](PRD.md), which carries a shorter comment-free variant of the same DDL. `schema-value-drift` asserts across all three that `time_slot_canonical` matches `TIME_SLOTS`, `status_valid` matches `BOOKING_STATUSES`, `uniq_active_slot`'s `WHERE` matches `ACTIVE_STATUSES`, and `notes_length` is 500. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
+**THIS BLOCK IS THE CURRENT SCHEMA, NOT A SINGLE MIGRATION FILE, SINCE 2026-08-15.** Until then `db/migrations/` held exactly one file and this block was byte-identical to it; that stopped being possible the day a second migration arrived. `db/migrations/20260809_create_bookings.sql` creates the table with the ORIGINAL nine 2-hour slots; `db/migrations/20260815_alter_time_slot_1h.sql` drops and re-adds `time_slot_canonical` with the eighteen 1-hour slots shown above. Never edit an applied migration — this block is what running both, in order, against a fresh database produces, kept as ONE reference rather than asking a reader to mentally apply a diff.
+
+`pnpm check:docs`'s `schema-value-drift` holds the LATEST migration, this block, and [PRD.md](PRD.md) (which carries a shorter comment-free variant of the same DDL) to the same values: `time_slot_canonical` matches `TIME_SLOTS`, `status_valid` matches `BOOKING_STATUSES`, `uniq_active_slot`'s `WHERE` matches `ACTIVE_STATUSES`, and `notes_length` is 500. An EARLIER migration's own constraint text is not compared — it is history, and is expected to show what the schema used to require, not what it requires now. Migration files are **never auto-applied** — the user runs them manually, in filename order, in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
 
 ## PHASE 4 CANNOT WRITE ITS ROUTE UNTIL THESE THREE ARE SETTLED
 

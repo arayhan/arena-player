@@ -3,8 +3,9 @@
  *
  * `assertContract` exists to survive a change it cannot see: the route handler
  * behind `fetchAvailability` gets a real database in Phase 4 without this file
- * being touched. That is exactly when a nine-entry contract quietly becoming
- * eight would surface — as a missing row in the grid and nothing else.
+ * being touched. That is exactly when an eighteen-entry contract quietly
+ * becoming seventeen would surface — as a missing row in the grid and nothing
+ * else.
  *
  * So the malformed cases below are the point. The happy path is the easy half.
  *
@@ -52,10 +53,10 @@ afterEach(() => vi.unstubAllGlobals());
 const wellFormed = TIME_SLOTS.map((slot) => ({ slot, status: "available" as const }));
 
 describe("fetchAvailability — the happy path", () => {
-  it("returns all nine entries, in canonical order", async () => {
+  it("returns all eighteen entries, in canonical order", async () => {
     respondWith(wellFormed);
     const rows = await fetchAvailability(TODAY);
-    expect(rows).toHaveLength(9);
+    expect(rows).toHaveLength(TIME_SLOTS.length);
     expect(rows.map((r) => r.slot)).toEqual([...TIME_SLOTS]);
   });
 
@@ -100,8 +101,11 @@ describe("assertContract — the branches that exist for Phase 4", () => {
     });
 
   malformed("rejects an empty array", []);
-  malformed("rejects eight entries — the silent-missing-row case", wellFormed.slice(0, 8));
-  malformed("rejects ten entries", [...wellFormed, wellFormed[0]]);
+  malformed(
+    "rejects one entry short — the silent-missing-row case",
+    wellFormed.slice(0, wellFormed.length - 1),
+  );
+  malformed("rejects one entry too many", [...wellFormed, wellFormed[0]]);
   malformed("rejects a body that is not an array", { slots: wellFormed });
   malformed("rejects a string body", "nine slots");
   malformed("rejects null", null);

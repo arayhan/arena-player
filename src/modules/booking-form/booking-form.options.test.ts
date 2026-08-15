@@ -29,19 +29,20 @@ const allAvailable: AvailabilityRow[] = TIME_SLOTS.map((slot) => ({
 const at = (utcHour: number) => new Date(Date.UTC(2026, 7, 11, utcHour, 0, 0));
 
 describe("buildTimeOptions", () => {
-  it("returns all nine hours in the day's own order", () => {
+  it("returns all eighteen hours in the day's own order", () => {
     const options = buildTimeOptions(allAvailable, "2026-08-11", rates, at(9));
-    expect(options).toHaveLength(9);
+    expect(options).toHaveLength(TIME_SLOTS.length);
     expect(options.map((o) => o.slot)).toEqual([...TIME_SLOTS]);
   });
 
   it("keeps elapsed hours in the list rather than dropping them", () => {
-    // 17.00 WITA: six hours have started. A day that looks like it has three
-    // hours in it reads as nearly sold out; a day with six dimmed rows reads as
-    // a day that is mostly behind us, which is the true and more useful fact.
+    // 17.00 WITA: twelve hours have started (06.00 through 17.00, inclusive
+    // boundary). A day that looks like it has six hours in it reads as nearly
+    // sold out; a day with twelve dimmed rows reads as a day that is mostly
+    // behind us, which is the true and more useful fact.
     const options = buildTimeOptions(allAvailable, "2026-08-11", rates, at(9));
     const elapsed = options.filter((o) => o.status === "elapsed");
-    expect(elapsed).toHaveLength(6);
+    expect(elapsed).toHaveLength(12);
     expect(elapsed.every((o) => o.selectable)).toBe(false);
   });
 
@@ -51,8 +52,8 @@ describe("buildTimeOptions", () => {
       status: "booked" as const,
     }));
     const options = buildTimeOptions(booked, "2026-08-11", rates, at(9));
-    expect(options.slice(0, 6).every((o) => o.status === "elapsed")).toBe(true);
-    expect(options.slice(6).every((o) => o.status === "booked")).toBe(true);
+    expect(options.slice(0, 12).every((o) => o.status === "elapsed")).toBe(true);
+    expect(options.slice(12).every((o) => o.status === "booked")).toBe(true);
   });
 
   it("marks only available hours selectable", () => {
@@ -73,12 +74,14 @@ describe("buildTimeOptions", () => {
   });
 
   it("quotes the client's own figure on selectable hours only", () => {
+    // TIME_SLOTS[6] is "12.00 - 13.00" — the afternoon bracket in this
+    // fixture's own formula (< 18 -> 600_000), not the evening one.
     const mixed: AvailabilityRow[] = [
       { slot: TIME_SLOTS[6], status: "available" },
       { slot: TIME_SLOTS[7], status: "booked" },
     ];
     const [free, taken] = buildTimeOptions(mixed, "2026-08-11", rates, at(0));
-    expect(free.priceLabel).toBe("Rp 800.000");
+    expect(free.priceLabel).toBe("Rp 600.000");
     expect(taken.priceLabel).toBeUndefined();
   });
 
