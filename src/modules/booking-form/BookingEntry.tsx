@@ -29,10 +29,13 @@ export interface BookingEntryProps {
 const CTA_CLASS =
   "type-display mt-8 inline-flex h-14 items-center justify-center bg-[var(--color-accent-strong)] px-6 text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors hover:bg-[var(--color-accent-strong-hover)]";
 
-// A PLATE, not a rounded card. Same 3px Signal Blue edge the happy path and the
-// landing page's order panel both carry, so all three read as one product.
-const PANEL_CLASS =
-  "border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)] p-6 md:p-8";
+// A PLATE, not a rounded card. Same 3px navy edge the happy path and the landing
+// page's order panel both carry, so all three read as one product. These notices
+// are this URL in its other states — an edge that changed with the state would
+// have given one route two visual languages depending on whether the slot was
+// still valid. Signal Blue until 2026-08-15; see the plate comment in
+// BookingForm.tsx for why the accent came off every structural edge.
+const PANEL_CLASS = "border-[3px] border-[var(--color-band)] bg-[var(--color-bg)] p-6 md:p-8";
 
 // Hand-written Indonesian month abbreviations, the same technique
 // src/modules/home/order.utils.ts uses for the wa.me message template.

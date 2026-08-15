@@ -756,7 +756,9 @@ The closing heading carries no numeral: it is a call to action, not a step, and 
 
 Two columns above 980px — copy and legend left, the panel right. One column below, **panel first**, because the two-scroll rule is about reaching the grid and not about reaching the paragraph that introduces it.
 
-**The panel** is white, square, 1px `grey-200`, `shadow-lg`, holding the date row, the slot grid and the hand-off bar.
+**The panel** is white, square, **3px `navy-900`**, `shadow-lg`, holding the date row, the slot grid and the hand-off bar.
+
+> **The edge moved twice.** It was written here as 1px `grey-200`, built as 3px `blue-600` in the redesign, and went **navy on 2026-08-15** on the user's call — at the same time as `/booking`'s plate, so the two surfaces never drift. **`blue-600` means interactive** in this system: links, focus, available slot borders, selected states. A plate edge is structure and nothing about it is clickable, so the accent was spending itself on the one part of the panel a visitor cannot act on. With the edge navy, the **available slot cells are the only blue on the plate** — which is the whole point of having an accent.
 
 **The legend** is three rows — Tersedia, Menunggu konfirmasi, Terisi — each a 40×22px chip in the state's surface and border with an `sm` label. It carries the three **live** states only; `elapsed` is explained by its own collapsed group's label, and a fourth row would imply elapsed slots are something a visitor might act on.
 
@@ -881,11 +883,11 @@ This is the only centred composition on the page, which is what makes it read as
 
 **The route joined the direction on 2026-08-14**, chosen by the user from two layout candidates; the rejected one split it into a receipt rail and a form column above 980px. It had never followed the 2026-08-12 redesign, and the gap was measurable rather than a matter of taste: a **1100px** container against the page's 1280px, **14px** section corners and **10px** controls against a system that is 0px, grey hairlines where the landing page draws 2px navy rules, and no display face anywhere.
 
-**Three stacked rounded cards became one plate.** A 3px `blue-600` edge, `gap-0`, and the summary, the payment note and the form as panels divided by the plate's own **2px navy rules** — the same object the order panel is, so the two surfaces finally read as one product. Panels draw `border-b` only; the plate draws its outer edge once, so no seam doubles.
+**Three stacked rounded cards became one plate.** A 3px **`navy-900`** edge (`blue-600` until 2026-08-15 — see the order panel above for why every structural edge gave the accent back), `gap-0`, and the summary, the payment note and the form as panels divided by the plate's own **2px navy rules** — the same object the order panel is, so the two surfaces finally read as one product. Panels draw `border-b` only; the plate draws its outer edge once, so no seam doubles.
 
 **The proof field is a dropzone**, added 2026-08-14. A square target, **dashed at rest and solid `blue-600` over a `blue-50` wash while a file is over it** — a border weight and fill change rather than colour alone, and the same "this is live, take it" vocabulary the slot grid uses. The label switches from _Tarik gambar ke sini_ to _Lepas di sini_. Dashed is the one border on this plate that is not a rule, and that is deliberate: every other edge is a fixed division, so a broken edge is the only one that reads as _something goes in here_.
 
-**It grew to 160px on 2026-08-15**, with a **44px `FiImage` mark above the label** and the label at `h3`. At the 112px it launched with, it was the quietest control on a plate of hard-ruled fields — and the only one that has to explain itself to a visitor who has never used a dropzone. The alternative considered and rejected was to make it a ruled field of the plate with the mark in a filled navy square: better system fit, but it loses the dashed edge, which is the affordance doing the actual explaining. **Icons come from `react-icons`, never generated** — a generated glyph drifts in stroke weight and optical grid the moment a second one joins it. It is the package's only use in the codebase and reaches `/booking` alone, never `/`.
+**It grew to 160px on 2026-08-15**, with a **44px `FiImage` mark above the label**. The label went to `h3` in the same round and **came back to `label` the same day**: the mark is what carries the emphasis, and a 20-32px label made the zone shout twice while putting its type out of step with every other label on the plate. At the 112px it launched with, it was the quietest control on a plate of hard-ruled fields — and the only one that has to explain itself to a visitor who has never used a dropzone. The alternative considered and rejected was to make it a ruled field of the plate with the mark in a filled navy square: better system fit, but it loses the dashed edge, which is the affordance doing the actual explaining. **Icons come from `react-icons`, never generated** — a generated glyph drifts in stroke weight and optical grid the moment a second one joins it. It is the package's only use in the codebase and reaches `/booking` alone, never `/`.
 
 **It is still a real `<input type="file">`.** The input is `sr-only`, never `hidden`: it keeps its place in the tab order, so a keyboard visitor reaches it and opens the picker with Enter exactly as before, and the zone shows that input's focus ring through `has-[:focus-visible]`. A `display: none` input is the usual cost of a hand-rolled dropzone and removes the only accessible way to attach a file — which this form may not do, because keyboard-operable upload is an established requirement. **Both entry points validate through one function**, so a drop cannot smuggle a file past the size and type check that the picker would have refused.
 
@@ -893,7 +895,10 @@ This is the only centred composition on the page, which is what makes it read as
 
 ### Inputs / Fields
 
-- **Style:** 48px tall, square, 1px `grey-200` border, 12px padding, white fill.
+- **Style:** 48px tall, square, **2px `navy-900` border**, 12px padding, white fill. On `/booking` a field is a ruled box like a slot cell, not a floating input.
+
+> **A field rendered grey for a day, and nothing in the file said grey.** `INPUT_CLASS` set the navy border; `INPUT_VALID_CLASS` was appended after it through `cn()` and named `--color-border` (`grey-200`), so tailwind-merge kept the last colour and the two text inputs came out lighter than the textarea and dropzone beside them, which do not go through that constant. Fixed 2026-08-15. **Merge order is a value, not a formatting detail** — when two utilities in a `cn()` chain set the same property, the later one silently wins and no tool reports it.
+
 - **Focus:** 3px `blue-600` outline at 3px offset. Never `outline: none` without a replacement.
 - **Error:** 2px `red-800` border **and** `red-100` field fill, with `red-800` message text tied to the field via `aria-describedby`.
 - **Disabled:** `grey-50` fill, muted text.

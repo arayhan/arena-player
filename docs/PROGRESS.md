@@ -825,3 +825,19 @@ A SILENT NO-OP CAUGHT BEFORE IT SHIPPED. My first splice inserted the icon by ma
 THE LIVE SERVER DIED before either variant was accepted, so the choice was made by asking rather than by the toolbar. The variant scaffolding is fully removed from source — asserted, not eyeballed: the write fails if the string `impeccable` survives anywhere in the file.
 
 `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 files identical, `check:docs` 15 checks over 111 files, 115 tests passed. One pre-existing `react-hooks/incompatible-library` warning, unrelated.
+
+[2026-08-15] [designer] THE ACCENT COMES OFF EVERY STRUCTURAL EDGE — three asks on /booking, two defects found on the way.
+
+THE PLATE EDGE IS NAVY ON BOTH SURFACES. `blue-600` means one thing in this system — interactive: links, focus rings, available slot borders, selected states. A plate edge is structure; nothing about it is clickable, so the accent was spending itself on the one part of the panel a visitor cannot act on. The user extended the change to the landing page's order panel rather than let the two surfaces diverge. Measured after: `/booking` plate `3px rgb(1, 26, 67)`, `/` order plate the same, and inside the order plate the only blue left is the **`Tersedia` state label** at `rgb(37, 99, 235)` — the accent now sits exclusively on the states a visitor acts on, which is the whole argument.
+
+A FIELD RENDERED GREY FOR A DAY AND NOTHING IN THE FILE SAID GREY. `INPUT_CLASS` set the navy border; `INPUT_VALID_CLASS` was appended after it through `cn()` and named `--color-border`, so tailwind-merge kept the last colour and the two text inputs came out lighter than the textarea and dropzone beside them, which do not go through that constant. **Merge order is a value, not a formatting detail** — when two utilities in a `cn()` chain set the same property the later one silently wins, and no tool reports it. Measured after: `#teamName`, `#phone` and `#notes` all `2px rgb(1, 26, 67)`.
+
+THE DROPZONE COMMENT WAS DUPLICATED. Yesterday's splice replaced the wrapper but not the comment above it, so the file carried the pre-`bolder` block describing a 112px zone directly above the current block describing the 160px one. Deleted. A splice that locates its range by content still has to account for what sits OUTSIDE that range.
+
+THE DROPZONE LABEL IS BACK AT `label`, 15px. It went to `h3` in the bolder round; the 44px mark is what carries the emphasis, and a 20-32px label made the zone shout twice while putting its type out of step with every other label on the plate. Measured: `font-size: 15px`, zone 174px tall, icon 44x44.
+
+"NAMA TIM" BECAME "NAMA TIM / PEMESAN", and `autoComplete` went from `organization` to `name`. The field is the name the admin messages on WhatsApp, which is a person about as often as it is a squad. **The payload key stays `teamName` and the column stays `team_name`** — API contract, `database.md`, and the admin repo all read them, so the column is a partial misnomer by choice now rather than by oversight. The zod messages dropped "tim" with the label.
+
+THE OPEN QUESTION IN THE PLAN IS ANSWERED, BY MEASUREMENT. `INPUT_CLASS` sets `outline-none` and `globals.css` sets a global `:focus-visible` outline; which wins is a cascade question I refused to settle by reading. Focused `#teamName` computes `solid / 2px / rgb(37, 99, 235) / 2px offset` and matches `:focus-visible`. The ring is there — **no WCAG 2.4.7 failure**. The already-recorded 2px-vs-3px divergence from DESIGN.md is unchanged and still owed.
+
+Zero horizontal overflow on both routes at 375 and 1280. `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 files identical, `check:docs` 15 checks over 111 files, 115 tests passed.

@@ -38,7 +38,14 @@ const INPUT_CLASS =
   // is 0px system-wide since 2026-08-13, and on this plate a field is a
   // ruled box like a slot cell rather than a floating input.
   "h-12 w-full border-2 border-[var(--color-band)] bg-[var(--color-bg)] px-3 text-[var(--color-fg)] outline-none";
-const INPUT_VALID_CLASS = "border-[var(--color-border)]";
+// THE MERGE ORDER IS LOAD-BEARING HERE. This class is passed to `cn()` AFTER
+// `INPUT_CLASS`, so tailwind-merge drops the navy above and keeps whatever
+// border colour this string names. It said `--color-border` — a grey #e5e7eb
+// hairline — from the carbonize round until 2026-08-15, which is why the two
+// text inputs rendered grey while the textarea and the dropzone beside them,
+// neither of which goes through this constant, rendered navy. Nothing in the
+// file said "grey": the navy was written and silently overridden.
+const INPUT_VALID_CLASS = "border-[var(--color-band)]";
 const INPUT_ERROR_CLASS = "border-[var(--color-danger-line)] bg-[var(--color-danger-surface)]";
 
 const LABEL_CLASS = "block text-[length:var(--text-sm)] font-semibold text-[var(--color-fg)]";
@@ -226,17 +233,24 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // needs a different slot, not a resubmit of this one.
   const showForm = outcome?.kind !== "created" && outcome?.kind !== "slot_taken";
 
-  // THE PLATE. One object with a 3px Signal Blue edge, exactly like the order
-  // panel on the landing page, and no gap between its children — the panels
-  // inside are divided by the plate's own rules rather than separated by space.
-  // That is the whole point of the layout round the user accepted on
-  // 2026-08-14: restyling three rounded cards would have left them three cards.
+  // THE PLATE. One object with a 3px navy edge, exactly like the order panel on
+  // the landing page, and no gap between its children — the panels inside are
+  // divided by the plate's own rules rather than separated by space. That is the
+  // whole point of the layout round the user accepted on 2026-08-14: restyling
+  // three rounded cards would have left them three cards.
+  //
+  // THE EDGE WAS SIGNAL BLUE UNTIL 2026-08-15. DESIGN.md reserves `blue-600` for
+  // one meaning — interactive: links, focus rings, available slot borders,
+  // selected states. A plate edge is STRUCTURE; nothing about it is clickable.
+  // Navy returns the accent to its one job, and inside the order panel it leaves
+  // the available-slot borders as the only blue on the plate. Both surfaces moved
+  // together, by the user's call, so the two never drift apart.
   //
   // A LINE COMMENT, NOT A JSX ONE. `{/* … */}` placed directly after `return (`
   // is a second child of the return expression, which is a syntax error rather
   // than a comment — it broke the build once on the way in.
   return (
-    <div className="flex flex-col border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)]">
+    <div className="flex flex-col border-[3px] border-[var(--color-band)] bg-[var(--color-bg)]">
       {/* DESIGN.md's `display` role is written for the hero: one headline, three
           short lines, one word per line, measured against "PILIH JAM." (its
           longest word is 5 characters). "Lengkapi Pemesanan" is two 8-9 letter
@@ -327,13 +341,20 @@ export function BookingForm({ date, slot }: BookingFormProps) {
       {showForm ? (
         <form onSubmit={submit} noValidate className="flex flex-col gap-5 px-4 py-5 md:px-6">
           <div>
+            {/* THE LABEL NAMES BOTH READINGS, THE KEY NAMES NEITHER. "Nama Tim"
+                alone left a visitor booking a casual game with friends unsure
+                whose name the admin wanted; the field is the name that will be
+                messaged on WhatsApp, which for half the bookings is a person and
+                for the other half is a squad. `teamName` and the `team_name`
+                column stay exactly as they are — they are the API contract, they
+                are in database.md, and the admin repo reads them. */}
             <label htmlFor="teamName" className={LABEL_CLASS}>
-              Nama Tim
+              Nama Tim / Pemesan
             </label>
             <input
               id="teamName"
               type="text"
-              autoComplete="organization"
+              autoComplete="name"
               aria-invalid={Boolean(errors.teamName)}
               aria-describedby={describedBy(errors.teamName && "teamName-error")}
               className={cn(
@@ -448,24 +469,6 @@ export function BookingForm({ date, slot }: BookingFormProps) {
                 `sr-only`, not `hidden` — it keeps its place in the tab order, so a
                 keyboard visitor reaches it and opens the picker with Enter exactly
                 as before. A `display: none` input would have removed the only
-                accessible way to attach a file, which is the usual cost of a
-                hand-rolled dropzone and is not one this form can pay: DESIGN.md
-                lists "the file upload is keyboard-operable" as an established
-                requirement.
-
-                The zone shows the input's focus ring with `has-[:focus-visible]`,
-                so focus is visible on the thing a sighted keyboard user is looking
-                at rather than on a 1px offscreen box.
-
-                DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed reads as
-                "something goes here"; the switch to a solid accent edge plus the
-                blue wash is the same "this is live, take it" vocabulary the slot
-                grid uses, and it is a border WEIGHT and FILL change rather than
-                colour alone. */}
-            {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
-                `sr-only`, not `hidden` — it keeps its place in the tab order, so a
-                keyboard visitor reaches it and opens the picker with Enter exactly
-                as before. A `display: none` input would have removed the only
                 accessible way to attach a file.
 
                 The zone shows the input's focus ring with `has-[:focus-visible]`,
@@ -483,8 +486,11 @@ export function BookingForm({ date, slot }: BookingFormProps) {
                 SIZED TO BE FOUND. At the 112px it started as, this was the quietest
                 control on a plate of hard-ruled fields — and it is the only one that
                 has to explain itself to somebody who has never used a dropzone.
-                160px tall, a 44px mark, and the label at h3: the same object, loud
-                enough to be the step it actually is. */}
+                160px tall with a 44px mark: the same object, loud enough to be the
+                step it actually is. THE LABEL STAYS AT `label` SIZE — it went to h3
+                on the way in and came back on 2026-08-15. The mark is what carries
+                the emphasis; a 20-32px label made the zone shout twice and put the
+                type out of step with every other label on the plate. */}
             <div
               onDragEnter={onDragEnter}
               onDragOver={onDragOver}
@@ -517,7 +523,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
               />
               <span
                 lang="id"
-                className="type-display text-[length:var(--text-h3)] font-medium tracking-[0.06em] uppercase"
+                className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
               >
                 {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
               </span>

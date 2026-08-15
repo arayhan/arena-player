@@ -270,7 +270,12 @@ export function OrderSection() {
         // slot cells keep their own entrance for when DATA arrives, which is a
         // different event from the plate entering the viewport.
         data-reveal
-        className="@container relative z-10 overflow-hidden border-[3px] border-[var(--color-interactive)] bg-[var(--color-bg)]"
+        // THE EDGE IS NAVY, NOT SIGNAL BLUE, SINCE 2026-08-15. DESIGN.md reserves
+        // `blue-600` for one meaning — interactive — and a plate edge is structure:
+        // nothing about it is clickable. With the edge navy, the available slot
+        // cells inside are the only blue on this plate, which is what the accent
+        // is for. Changed together with /booking's plate so the two never drift.
+        className="@container relative z-10 overflow-hidden border-[3px] border-[var(--color-band)] bg-[var(--color-bg)]"
       >
         {/* HEAD, PANEL ONE: the date row. Divided from what follows by the same
             2px navy rule the fields use, so the plate reads as one ruled object

@@ -21,8 +21,12 @@ export const bookingFormSchema = z.object({
   teamName: z
     .string()
     .trim()
-    .min(2, "Nama tim minimal 2 karakter")
-    .max(60, "Nama tim maksimal 60 karakter"),
+    // The messages say "Nama", not "Nama tim": the label reads "Nama Tim /
+    // Pemesan" since 2026-08-15, and an error naming only half the field tells
+    // a solo booker the wrong thing about what they got wrong. The KEY stays
+    // `teamName` — it is the API contract and the `team_name` column.
+    .min(2, "Nama minimal 2 karakter")
+    .max(60, "Nama maksimal 60 karakter"),
 
   // Accepts 08xx, 62xx or +62xx AS TYPED. The server normalises to
   // 628xxxxxxxxx before insert — the client deliberately does not, so what the
