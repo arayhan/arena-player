@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/cn";
 
-import type { DisplaySlot } from "../order.utils";
+import type { DisplaySlot } from "@/utils/slot-display";
 
 const STATE_LABEL: Record<DisplaySlot["status"], string> = {
   available: "Tersedia",
@@ -55,11 +55,29 @@ export function SlotCell({
   selected,
   onSelect,
   runHours,
+  priceLabel,
 }: {
   slot: DisplaySlot["slot"];
   status: DisplaySlot["status"];
   selected: boolean;
   onSelect: () => void;
+  /**
+   * The rate for this slot, ALREADY FORMATTED. Rendered only when passed.
+   *
+   * `/` PASSES NOTHING, AND THIS PROP IS WHY THAT IS ENFORCEABLE RATHER THAN
+   * REMEMBERED. CLAUDE.md hard rule 2 says the landing page renders no number
+   * of any kind; `/booking` is the exception, and only after the visitor has
+   * arrived through the WhatsApp link. Now that one cell serves both surfaces,
+   * the price has to be something the CALLER supplies — a price computed inside
+   * this component would appear on the landing page the moment somebody wired
+   * it up, and nothing would fail.
+   *
+   * It takes no colour of its own. Five fills pass under this cell and the
+   * button already sets the correct ink for each, including the hover inversion
+   * and the selected override, so inheriting is what keeps every one of them
+   * legible without a sixth contrast calculation.
+   */
+  priceLabel?: string;
   /**
    * Set ONLY on the first slot of the day's longest free run, and only when
    * that run is three slots or more. At most one cell on the page carries it.
@@ -240,6 +258,16 @@ export function SlotCell({
       >
         {label}
       </span>
+
+      {/* THE RATE. Set at `xs` under the state label, quieter than both the hour
+          and the state, because it is the third question a visitor asks and not
+          the first: which hour, is it free, what does it cost. It inherits the
+          cell's ink deliberately — see the prop's own note. */}
+      {priceLabel ? (
+        <span lang="id" className="text-[length:var(--text-xs)]">
+          {priceLabel}
+        </span>
+      ) : null}
 
       {/* THE FREE-RUN AFFORDANCE. A quiet second line, not a coloured chip: the
           state label is what the cell exists to carry, and a badge competing

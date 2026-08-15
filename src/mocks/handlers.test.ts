@@ -20,10 +20,16 @@ afterAll(() => server.close());
 const BASE = "http://localhost:3000";
 const TODAY = todayAtField();
 
-function bookingForm(overrides: Record<string, string | Blob> = {}): FormData {
+function bookingForm(
+  overrides: Record<string, string | Blob> = {},
+  slots: readonly string[] = [TIME_SLOTS[4]],
+): FormData {
   const form = new FormData();
   form.set("date", bookingWindow()[1]);
-  form.set("slot", TIME_SLOTS[4]);
+  // REPEATED KEY, one per hour. A booking may cover several since 2026-08-15,
+  // and `set` would keep only the last — which is exactly the bug this helper
+  // would hide from every test below it.
+  for (const slot of slots) form.append("slots", slot);
   form.set("teamName", "Rajawali FC");
   form.set("phone", "081234567890");
   form.set("website", ""); // honeypot: present and empty
@@ -85,7 +91,7 @@ describe("POST /api/bookings — all four codes are reachable", () => {
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "validation_failed",
-      fields: { phone: "invalid_format" },
+      fields: { teamName: "invalid_format" },
     });
   });
 });
@@ -94,15 +100,35 @@ describe("POST /api/bookings — real validation, not only the triggers", () => 
   it("rejects a near-miss slot format rather than accepting it", async () => {
     // '18.00-20.00' is a DIFFERENT slot to uniq_active_slot, which compares
     // time_slot as text. Accepting it books the same hour twice.
-    const res = await post(bookingForm({ slot: "18.00-20.00" }));
+    const res = await post(bookingForm({}, ["18.00-20.00"]));
     expect(res.status).toBe(400);
-    expect((await res.json()).fields).toMatchObject({ slot: "invalid_slot" });
+    expect((await res.json()).fields).toMatchObject({ slots: "invalid_slot" });
   });
 
-  it("rejects a date outside the window and a missing proof", async () => {
+  it("takes several hours in one booking", async () => {
+    const res = await post(bookingForm({}, [TIME_SLOTS[4], TIME_SLOTS[7]]));
+    expect(res.status).toBe(201);
+  });
+
+  it("rejects an empty selection and a repeated hour", async () => {
+    // A booking with no hours is not a booking, and the same hour twice would
+    // become two rows racing each other for one slot.
+    expect((await post(bookingForm({}, []))).status).toBe(400);
+    const repeated = await post(bookingForm({}, [TIME_SLOTS[4], TIME_SLOTS[4]]));
+    expect(repeated.status).toBe(400);
+    expect((await repeated.json()).fields).toMatchObject({ slots: "duplicate_slot" });
+  });
+
+  it("accepts a booking with NO proof, because the dropzone is hidden", async () => {
+    // Optional here mirrors the schema, which went optional when the field was
+    // hidden on 2026-08-15. Requiring it would refuse every booking the current
+    // form can produce.
     const noProof = bookingForm();
     noProof.delete("proof");
-    expect((await post(noProof)).status).toBe(400);
+    expect((await post(noProof)).status).toBe(201);
+  });
+
+  it("rejects a date outside the window", async () => {
     expect((await post(bookingForm({ date: "2030-01-01" }))).status).toBe(400);
   });
 
@@ -110,7 +136,7 @@ describe("POST /api/bookings — real validation, not only the triggers", () => 
     // The one place this API lies on purpose: a 400 tells the bot what tripped
     // it. Note the deliberately invalid slot — the honeypot is checked FIRST,
     // so a bot cannot learn anything from a validation message either.
-    const res = await post(bookingForm({ website: "https://spam.example", slot: "nonsense" }));
+    const res = await post(bookingForm({ website: "https://spam.example" }, ["nonsense"]));
     expect(res.status).toBe(201);
     expect(await res.json()).toMatchObject({ status: "pending" });
   });

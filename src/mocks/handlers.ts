@@ -47,7 +47,11 @@ export const handlers = [
   http.post("*/api/bookings", async ({ request }) => {
     const form = await request.formData();
     const teamName = String(form.get("teamName") ?? "");
-    const slot = String(form.get("slot") ?? "");
+    // REPEATED KEYS, NOT A JOINED STRING. One booking may cover several hours
+    // since 2026-08-15, and FormData carries repeated fields natively — so
+    // neither side has to agree on a separator, which matters when the values
+    // themselves contain " - ".
+    const slots = form.getAll("slots").map(String);
     const date = String(form.get("date") ?? "");
 
     // Honeypot first, before anything else can reject the request for a
@@ -66,8 +70,14 @@ export const handlers = [
       return HttpResponse.json({ error: "rate_limited" }, { status: 429 });
     }
     if (triggered === 400) {
+      // TARGETS A RENDERED FIELD. This named `phone` until 2026-08-15, when the
+      // phone input was hidden — a 400 pointing at a field the form does not
+      // render marks nothing, focuses nothing, and reads as a submit button
+      // that does nothing at all. The client now falls back to the form-level
+      // alert for exactly that case, and this trigger still has to demonstrate
+      // the normal path: a field error landing on its own input.
       return HttpResponse.json(
-        { error: "validation_failed", fields: { phone: "invalid_format" } },
+        { error: "validation_failed", fields: { teamName: "invalid_format" } },
         { status: 400 },
       );
     }
@@ -84,9 +94,17 @@ export const handlers = [
     // rehearsal for that route, so it has to be as strict as the route must be.
     const fields: Record<string, string> = {};
     if (!isWithinBookingWindow(date)) fields.date = "invalid_date";
-    if (!isTimeSlot(slot)) fields.slot = "invalid_slot";
+    if (slots.length === 0) fields.slots = "required";
+    else if (!slots.every(isTimeSlot)) fields.slots = "invalid_slot";
+    else if (new Set(slots).size !== slots.length) fields.slots = "duplicate_slot";
     if (teamName.trim().length < 2) fields.teamName = "too_short";
-    if (!(form.get("proof") instanceof File)) fields.proof = "required";
+
+    // PROOF IS OPTIONAL WHILE THE DROPZONE IS HIDDEN, and still type-checked
+    // when it arrives. Requiring it here would refuse every booking the current
+    // form can produce; dropping the check entirely would let the field come
+    // back with nothing rehearsing the Phase 4 route's own validation.
+    const proof = form.get("proof");
+    if (proof !== null && !(proof instanceof File)) fields.proof = "invalid";
 
     if (Object.keys(fields).length > 0) {
       return HttpResponse.json({ error: "validation_failed", fields }, { status: 400 });

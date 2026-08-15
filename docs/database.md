@@ -53,6 +53,39 @@ commit;
 
 This block lives at `db/migrations/20260809_create_bookings.sql`, byte-identical, and `pnpm check:docs` holds it to that — plus the same values in [PRD.md](PRD.md), which carries a shorter comment-free variant of the same DDL. `schema-value-drift` asserts across all three that `time_slot_canonical` matches `TIME_SLOTS`, `status_valid` matches `BOOKING_STATUSES`, `uniq_active_slot`'s `WHERE` matches `ACTIVE_STATUSES`, and `notes_length` is 500. Migration files are **never auto-applied** — the user runs them manually in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
 
+## PHASE 4 CANNOT WRITE ITS ROUTE UNTIL THESE THREE ARE SETTLED
+
+**The form moved on 2026-08-15 and the schema did not.** Deliberately: the DDL
+above is the client's database truth, nothing has been applied yet, and inventing
+a migration to chase a UI decision is how the two drift apart in opposite
+directions. Recorded here instead, as blocking work rather than a nice-to-have.
+
+1. **One booking now covers SEVERAL hours.** `POST /api/bookings` takes `slots`,
+   repeated once per hour (see [architecture.md](architecture.md)). There is no
+   multi-slot row and there must not be one: `uniq_active_slot` is a per-(date,
+   slot) partial index and it is the whole anti-double-booking guard. So the
+   route inserts **one row per slot inside one transaction**, and **any `23505`
+   rolls the entire booking back and answers 409** naming the slot that went.
+   Partial success is the outcome to design against — a visitor who asked for
+   20.00–24.00 and silently got 20.00–22.00 arrives at a field they believe is
+   theirs for four hours. Hard rule 1 is unchanged and now applies per row:
+   insert, catch, respond; never check-then-insert.
+2. **`phone text not null` has no value to store.** The input is hidden
+   (`SHOW_PHONE_FIELD` in `BookingForm.tsx`) because the visitor arrives through
+   the admin's WhatsApp chat, which already carries their number. The form sends
+   an empty string. Either the column becomes nullable, or the admin app writes
+   the number it learns from the chat, or the field comes back. **No fabricated
+   number may ever be inserted to satisfy the constraint.**
+3. **`proof_key text not null` has nothing to point at.** The dropzone is hidden
+   for the same reason — payment proof is handled in that chat. Same three
+   options, same prohibition on inventing a value. Note the knock-on: with no
+   upload there is no R2 write, so the orphaned-proof sweeper below has nothing
+   to sweep **while this stays hidden** — it is not solved, only dormant.
+
+A booking that spans several slots is also a **pricing** question the rate card
+has to answer: whether four hours costs twice two hours. The picker labels every
+slot `Harga menyusul` until it arrives, and no number is invented in the meantime.
+
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 
 1. Create a Neon project.

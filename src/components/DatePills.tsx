@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/cn";
 
-import { formatPill } from "../order.utils";
+import { formatPill } from "@/utils/slot-display";
 
 /**
  * The 14-day date row, along the head of the plate.

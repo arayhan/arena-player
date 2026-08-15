@@ -1,22 +1,57 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 
-import type { TimeSlot } from "@/domain/slots";
+import { isWithinBookingWindow, todayAtField } from "@/domain/dates";
+import { TIME_SLOTS, type TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
+import { partitionSlots } from "@/utils/slot-display";
 
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
-import { useCreateBooking } from "./booking-form.queries";
+import {
+  useBookingAvailability,
+  useCreateBooking,
+  useRefreshAvailability,
+} from "./booking-form.queries";
 import { bookingFormSchema, type BookingFormValues } from "./booking-form.schema";
 import type { BookingOutcome } from "./booking-form.service";
+import { SchedulePicker } from "./components/SchedulePicker";
 
 export interface BookingFormProps {
+  /** The date the entry link carried, and the picker's starting date. */
   date: string;
-  slot: TimeSlot;
+  /**
+   * The slot the entry link carried, preselected in the picker. **Null for an
+   * expired link**, which now opens the picker with nothing chosen rather than
+   * ending at a notice: an expired link is exactly when a visitor needs to pick
+   * a different time.
+   */
+  slot: TimeSlot | null;
 }
+
+/**
+ * TWO FIELDS ARE HIDDEN, AND THESE CONSTANTS ARE THE WHOLE MECHANISM — so
+ * bringing either back is one word, and the reason travels with the switch
+ * instead of living in a commit message.
+ *
+ * PHONE, hidden 2026-08-15: the visitor arrives through the admin's WhatsApp
+ * link, so the admin already has the number from the chat that sent them here.
+ * Asking for it again is a field that buys nothing.
+ *
+ * PROOF, hidden the same day: payment proof is handled in that same chat for
+ * now. The dropzone, its drag handlers, `booking-form.proof.ts` and the
+ * react-icons mark all stay in this file — hidden is not deleted.
+ *
+ * WHAT THIS DOES NOT TOUCH: the payload keys, `booking-form.schema.ts`'s field
+ * names, or the columns. The schema validates both fields IF a value is present
+ * and requires neither, which is what lets a hidden field submit without ever
+ * fabricating a phone number. `phone not null` and `proof_key not null` in
+ * db/migrations still contradict that — recorded in database.md as Phase 4 debt.
+ */
+const SHOW_PHONE_FIELD = false;
+const SHOW_PROOF_FIELD = false;
 
 // A PANEL OF ONE PLATE, NOT A CARD — carbonized 2026-08-14 from the
 // layout round the user accepted on /booking. It was
@@ -99,7 +134,24 @@ function describedBy(...ids: Array<string | false | undefined>): string | undefi
  * `setError`.
  */
 export function BookingForm({ date, slot }: BookingFormProps) {
-  const mutation = useCreateBooking(date, slot);
+  // THE DATE IS STATE NOW, NOT JUST A PROP. The picker can move it, and the
+  // link's date is only where it starts. One booking is one date, so this is
+  // also what the mutation posts.
+  //
+  // A DATE OUTSIDE THE WINDOW FALLS BACK TO TODAY, and without this the expired
+  // branch would hang: `useBookingAvailability` is disabled outside the 14-day
+  // window by contract, so a link pointing at last week would leave the picker
+  // showing loading skeletons forever — no error, no rows, nothing to click.
+  const [bookingDate, setBookingDate] = useState(() =>
+    isWithinBookingWindow(date) ? date : todayAtField(),
+  );
+
+  // Server-side field errors that have no input on screen to attach to. See
+  // the submission effect below for why they cannot be dropped.
+  const [unmappedFields, setUnmappedFields] = useState<string[]>([]);
+
+  const mutation = useCreateBooking(bookingDate);
+  const refetchAvailability = useRefreshAvailability(bookingDate);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -108,14 +160,59 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     setError,
     clearErrors,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<BookingFormValues>({
-    defaultValues: { teamName: "", phone: "", notes: "", website: "", proof: null },
+    defaultValues: {
+      // The link's slot is a STARTING selection, not a lock. An expired link
+      // arrives with none and the picker opens empty.
+      slots: slot ? [slot] : [],
+      teamName: "",
+      phone: "",
+      notes: "",
+      website: "",
+      proof: null,
+    },
   });
 
   const notes = watch("notes") ?? "";
   const proofFile = watch("proof");
+  const chosenSlots = watch("slots") ?? [];
+
+  // THE ROWS LIVE HERE, NOT IN THE PICKER, because the selection they have to
+  // agree with lives here. An earlier draft fetched inside the picker and pruned
+  // this form's selection from an effect — a setState cascade React's own lint
+  // rejects, and one that can fall out of step for a render. Derived from the
+  // same rows in one place, the two cannot disagree at all.
+  const availability = useBookingAvailability(bookingDate);
+  const { elapsed, live } = useMemo(
+    () => partitionSlots(availability.data ?? [], bookingDate),
+    [availability.data, bookingDate],
+  );
+  const bookable = useMemo(
+    () => new Set(live.filter((s) => s.status === "available").map((s) => s.slot)),
+    [live],
+  );
+
+  // AN HOUR THAT WENT WHILE THE LINK SAT IN A WHATSAPP CHAT. The entry link
+  // carries the hour the admin picked earlier, and the visitor may open it a day
+  // later. Until the rows arrive nothing is known, so the chosen list stands as
+  // it is; once they do, an hour the grid shows as taken stops counting as
+  // selected and is named in the picker instead of vanishing.
+  //
+  // DERIVED, NEVER STORED. Writing the pruned list back into form state would be
+  // the effect this replaced. Everything downstream — the summary, the payload,
+  // the toggle handler — reads `selectedSlots`, so the stale value in the form
+  // has no consumer and cannot leak into a booking.
+  //
+  // THIS IS NOT THE CHECK-THEN-INSERT THE RACE RULE FORBIDS. It refuses no
+  // submission and asks nothing before sending; it only stops carrying an hour
+  // the rows on screen already show as gone. The database stays the authority,
+  // through `uniq_active_slot` and the 409.
+  const rowsReady = !availability.isPending && !availability.isError;
+  const selectedSlots = rowsReady ? chosenSlots.filter((s) => bookable.has(s)) : chosenSlots;
+  const droppedSlots = rowsReady ? chosenSlots.filter((s) => !bookable.has(s)) : [];
 
   // Collapses the mutation's own state machine onto BookingOutcome so the
   // render below only ever switches on `.kind`. `mutation.data` already IS a
@@ -134,7 +231,10 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     if (mutation.isPending) return;
 
     clearErrors();
-    const parsed = bookingFormSchema.safeParse(values);
+    // `selectedSlots`, not `values.slots` — the derived list is the one every
+    // other consumer shows, and posting the raw form value would send an hour
+    // the picker already told the visitor was gone.
+    const parsed = bookingFormSchema.safeParse({ ...values, slots: selectedSlots });
     if (!parsed.success) {
       let firstField: string | undefined;
       for (const issue of parsed.error.issues) {
@@ -161,14 +261,31 @@ export function BookingForm({ date, slot }: BookingFormProps) {
 
     if (outcome.kind === "validation_failed") {
       let firstField: string | undefined;
+      const unrendered: string[] = [];
+
       for (const [field, message] of Object.entries(outcome.fields)) {
+        // A 400 MAY NAME A FIELD THIS FORM DOES NOT RENDER, and since two of
+        // them are hidden that is no longer hypothetical. `setError` on an
+        // unrendered field marks nothing, focuses nothing, and leaves a submit
+        // button that visibly does nothing at all — the worst failure a form
+        // has, because it looks like a broken button rather than a rejected
+        // value. Anything without an element on screen is collected and said
+        // out loud in the result panel instead.
+        if (document.getElementById(field) === null) {
+          unrendered.push(field);
+          continue;
+        }
         firstField ??= field;
         setError(field as keyof BookingFormValues, { type: "server", message });
       }
+
+      setUnmappedFields(unrendered);
       if (firstField) document.getElementById(firstField)?.focus();
+      else resultRef.current?.focus();
       return;
     }
 
+    setUnmappedFields([]);
     resultRef.current?.focus();
   }, [outcome, setError]);
 
@@ -282,29 +399,81 @@ export function BookingForm({ date, slot }: BookingFormProps) {
         Lengkapi Pemesanan
       </h1>
 
-      {/* Locked summary card. Not editable inline — go back to /#order to
-          change date or slot, same destination BookingEntry's other two
-          notices use. */}
-      <section aria-label="Ringkasan jadwal" className={PANEL_CLASS}>
-        <p
-          lang="id"
-          className="text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-[var(--color-fg-muted)] uppercase"
-        >
-          Jadwal terpilih
-        </p>
-        <p className="mt-2 text-[length:var(--text-h3)] font-semibold text-[var(--color-fg)]">
-          {formatSummaryDate(date)}
-        </p>
-        <p lang="id" className="mt-1 text-[color:var(--color-fg-muted)]">
-          Jam {slot}
-        </p>
-        <Link
-          href="/#order"
-          lang="id"
-          className="mt-3 inline-block text-[length:var(--text-sm)] font-semibold text-[var(--color-interactive)] underline underline-offset-2"
-        >
-          Ubah jadwal
-        </Link>
+      {/* THE SCHEDULE PANEL. It was a LOCKED summary until 2026-08-15 — the date
+          and hour arrived in the URL and "Ubah jadwal" sent the visitor back to
+          `/#order`, a full page away from a form they had already started, with
+          whatever they had typed lost on the way. The plate comes to them
+          instead, and it is the landing page's own plate: same cells, same
+          states, same date row.
+
+          THE SUMMARY LINE STAYS ABOVE IT. A picker alone answers "what can I
+          pick"; it does not answer "what did I pick" at a glance once the grid
+          has scrolled past. */}
+      <section aria-label="Jadwal" className="border-b-2 border-[var(--color-band)]">
+        <div className="px-4 pt-4 md:px-6">
+          <p
+            lang="id"
+            className="text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-[var(--color-fg-muted)] uppercase"
+          >
+            Jadwal terpilih
+          </p>
+          <p className="mt-2 text-[length:var(--text-h3)] font-semibold text-[var(--color-fg)]">
+            {formatSummaryDate(bookingDate)}
+          </p>
+          <p lang="id" className="mt-1 text-[color:var(--color-fg-muted)]">
+            {selectedSlots.length > 0 ? `Jam ${selectedSlots.join(", ")}` : "Belum ada jam dipilih"}
+          </p>
+        </div>
+
+        <SchedulePicker
+          date={bookingDate}
+          elapsed={elapsed}
+          live={live}
+          isPending={availability.isPending}
+          isError={availability.isError}
+          onRetry={() => void availability.refetch()}
+          dropped={droppedSlots}
+          onDateChange={(next) => {
+            setBookingDate(next);
+            // ONE BOOKING IS ONE DATE. Hours picked on the old date cannot ride
+            // along to the new one — they would be submitted against a date the
+            // visitor never saw them on. Clearing is the honest move, and the
+            // picker's own line says how many are selected so the change is
+            // visible rather than silent.
+            setValue("slots", [], { shouldDirty: true });
+          }}
+          selected={selectedSlots}
+          onToggle={(toggled) => {
+            // READ THROUGH `getValues`, NEVER THE WATCHED SNAPSHOT. Two taps
+            // inside one frame both close over the SAME render's value, so the
+            // second computes from a selection that does not yet include the
+            // first and silently overwrites it. Measured: two programmatic
+            // clicks in one tick produced one selected hour, not two. `getValues`
+            // reads the live form state, so each toggle sees the one before it.
+            const current = (getValues("slots") ?? []).filter((s) => bookable.has(s));
+            const next = current.includes(toggled)
+              ? current.filter((s) => s !== toggled)
+              : [...current, toggled];
+            // Sorted by the canonical order rather than by tap order, so the
+            // summary above reads as a schedule instead of a history of taps.
+            next.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+            setValue("slots", next, { shouldDirty: true });
+            if (next.length > 0) clearErrors("slots");
+          }}
+          invalid={Boolean(errors.slots)}
+          errorId={errors.slots ? "slots-error" : undefined}
+        />
+
+        {errors.slots ? (
+          <p
+            id="slots-error"
+            role="alert"
+            lang="id"
+            className="px-4 pb-4 text-[length:var(--text-sm)] text-[var(--color-danger-strong)] md:px-6"
+          >
+            {errors.slots.message}
+          </p>
+        ) : null}
       </section>
 
       {/* Payment info card. */}
@@ -376,35 +545,37 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             ) : null}
           </div>
 
-          <div>
-            <label htmlFor="phone" className={LABEL_CLASS}>
-              Nomor WhatsApp
-            </label>
-            <input
-              id="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              aria-invalid={Boolean(errors.phone)}
-              aria-describedby={describedBy(errors.phone && "phone-error")}
-              className={cn(
-                INPUT_CLASS,
-                "mt-1",
-                errors.phone ? INPUT_ERROR_CLASS : INPUT_VALID_CLASS,
-              )}
-              {...register("phone")}
-            />
-            {errors.phone ? (
-              <p
-                id="phone-error"
-                role="alert"
-                lang="id"
-                className="mt-1 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
-              >
-                {errors.phone.message}
-              </p>
-            ) : null}
-          </div>
+          {SHOW_PHONE_FIELD ? (
+            <div>
+              <label htmlFor="phone" className={LABEL_CLASS}>
+                Nomor WhatsApp
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                aria-invalid={Boolean(errors.phone)}
+                aria-describedby={describedBy(errors.phone && "phone-error")}
+                className={cn(
+                  INPUT_CLASS,
+                  "mt-1",
+                  errors.phone ? INPUT_ERROR_CLASS : INPUT_VALID_CLASS,
+                )}
+                {...register("phone")}
+              />
+              {errors.phone ? (
+                <p
+                  id="phone-error"
+                  role="alert"
+                  lang="id"
+                  className="mt-1 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
+                >
+                  {errors.phone.message}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div>
             <label htmlFor="notes" className={LABEL_CLASS}>
@@ -461,95 +632,122 @@ export function BookingForm({ date, slot }: BookingFormProps) {
             />
           </div>
 
-          <div>
-            <label htmlFor="proof" className={LABEL_CLASS}>
-              Bukti Transfer
-            </label>
-            {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
-                `sr-only`, not `hidden` — it keeps its place in the tab order, so a
-                keyboard visitor reaches it and opens the picker with Enter exactly
-                as before. A `display: none` input would have removed the only
-                accessible way to attach a file.
+          {SHOW_PROOF_FIELD ? (
+            <div>
+              <label htmlFor="proof" className={LABEL_CLASS}>
+                Bukti Transfer
+              </label>
+              {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
+                  `sr-only`, not `hidden` — it keeps its place in the tab order, so a
+                  keyboard visitor reaches it and opens the picker with Enter exactly
+                  as before. A `display: none` input would have removed the only
+                  accessible way to attach a file.
 
-                The zone shows the input's focus ring with `has-[:focus-visible]`,
-                so focus is visible on the thing a sighted keyboard user is looking
-                at rather than on a 1px offscreen box.
+                  The zone shows the input's focus ring with `has-[:focus-visible]`,
+                  so focus is visible on the thing a sighted keyboard user is looking
+                  at rather than on a 1px offscreen box.
 
-                DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed is the one
-                border treatment on this plate that is NOT a rule, and that is the
-                point: every other edge here is a fixed division, so a broken edge
-                reads as "something goes in here". The switch to a solid accent edge
-                plus the blue wash is the same "this is live, take it" vocabulary the
-                slot grid uses, and it changes border WEIGHT and FILL, not colour
-                alone.
+                  DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed is the one
+                  border treatment on this plate that is NOT a rule, and that is the
+                  point: every other edge here is a fixed division, so a broken edge
+                  reads as "something goes in here". The switch to a solid accent edge
+                  plus the blue wash is the same "this is live, take it" vocabulary the
+                  slot grid uses, and it changes border WEIGHT and FILL, not colour
+                  alone.
 
-                SIZED TO BE FOUND. At the 112px it started as, this was the quietest
-                control on a plate of hard-ruled fields — and it is the only one that
-                has to explain itself to somebody who has never used a dropzone.
-                160px tall with a 44px mark: the same object, loud enough to be the
-                step it actually is. THE LABEL STAYS AT `label` SIZE — it went to h3
-                on the way in and came back on 2026-08-15. The mark is what carries
-                the emphasis; a 20-32px label made the zone shout twice and put the
-                type out of step with every other label on the plate. */}
-            <div
-              onDragEnter={onDragEnter}
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
-              className={cn(
-                "mt-1 flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-7 text-center transition-colors duration-200",
-                "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-focus)]",
-                dragging
-                  ? "border-solid border-[var(--color-interactive)] bg-[var(--color-wash)]"
-                  : "border-[var(--color-band)] bg-[var(--color-bg)] hover:bg-[var(--color-bg-subtle)]",
-              )}
-              onClick={() => document.getElementById("proof")?.click()}
-            >
-              <input
-                id="proof"
-                type="file"
-                accept={PROOF_ACCEPT}
-                aria-invalid={Boolean(errors.proof)}
-                aria-describedby={describedBy(errors.proof && "proof-error")}
-                onChange={onProofChange}
-                className="sr-only"
-              />
-              {/* react-icons — the library PRODUCT.md names. Never an emoji, and
-                  never a generated glyph: those drift in stroke weight and optical
-                  grid the moment a second one is added. */}
-              <FiImage
-                aria-hidden="true"
-                className="size-11 shrink-0 text-[var(--color-fg-muted)]"
-              />
-              <span
-                lang="id"
-                className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
+                  SIZED TO BE FOUND. At the 112px it started as, this was the quietest
+                  control on a plate of hard-ruled fields — and it is the only one that
+                  has to explain itself to somebody who has never used a dropzone.
+                  160px tall with a 44px mark: the same object, loud enough to be the
+                  step it actually is. THE LABEL STAYS AT `label` SIZE — it went to h3
+                  on the way in and came back on 2026-08-15. The mark is what carries
+                  the emphasis; a 20-32px label made the zone shout twice and put the
+                  type out of step with every other label on the plate. */}
+              <div
+                onDragEnter={onDragEnter}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={cn(
+                  "mt-1 flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-7 text-center transition-colors duration-200",
+                  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-focus)]",
+                  dragging
+                    ? "border-solid border-[var(--color-interactive)] bg-[var(--color-wash)]"
+                    : "border-[var(--color-band)] bg-[var(--color-bg)] hover:bg-[var(--color-bg-subtle)]",
+                )}
+                onClick={() => document.getElementById("proof")?.click()}
               >
-                {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
-              </span>
-              <span lang="id" className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]">
-                atau klik untuk memilih file · JPG, PNG, WebP
-              </span>
+                <input
+                  id="proof"
+                  type="file"
+                  accept={PROOF_ACCEPT}
+                  aria-invalid={Boolean(errors.proof)}
+                  aria-describedby={describedBy(errors.proof && "proof-error")}
+                  onChange={onProofChange}
+                  className="sr-only"
+                />
+                {/* react-icons — the library PRODUCT.md names. Never an emoji, and
+                    never a generated glyph: those drift in stroke weight and optical
+                    grid the moment a second one is added. */}
+                <FiImage
+                  aria-hidden="true"
+                  className="size-11 shrink-0 text-[var(--color-fg-muted)]"
+                />
+                <span
+                  lang="id"
+                  className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
+                >
+                  {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
+                </span>
+                <span
+                  lang="id"
+                  className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
+                >
+                  atau klik untuk memilih file · JPG, PNG, WebP
+                </span>
+              </div>
+              {proofFile ? (
+                <p
+                  lang="id"
+                  className="mt-1 text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
+                >
+                  Terpilih: {proofFile.name}
+                </p>
+              ) : null}
+              {errors.proof ? (
+                <p
+                  id="proof-error"
+                  role="alert"
+                  lang="id"
+                  className="mt-1 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
+                >
+                  {errors.proof.message}
+                </p>
+              ) : null}
             </div>
-            {proofFile ? (
-              <p
-                lang="id"
-                className="mt-1 text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
-              >
-                Terpilih: {proofFile.name}
+          ) : null}
+
+          {/* THE 400 THAT NAMES A FIELD THIS FORM DOES NOT RENDER. With phone
+              and proof hidden, a server rejecting either would otherwise mark
+              nothing and focus nothing — a submit button that looks broken. The
+              form says so out loud instead, names the field, and points at the
+              only party who can act on it. It is deliberately not styled as a
+              form error next to an input, because there is no input. */}
+          {unmappedFields.length > 0 ? (
+            <div
+              ref={resultRef}
+              tabIndex={-1}
+              role="alert"
+              lang="id"
+              className="border-2 border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)] p-4 text-[var(--color-danger-strong)] outline-none"
+            >
+              <p className="font-semibold">Pemesanan ditolak server.</p>
+              <p className="mt-1 text-[length:var(--text-sm)]">
+                Ada data yang tidak diterima ({unmappedFields.join(", ")}) dan tidak bisa diperbaiki
+                dari halaman ini. Hubungi admin lewat WhatsApp.
               </p>
-            ) : null}
-            {errors.proof ? (
-              <p
-                id="proof-error"
-                role="alert"
-                lang="id"
-                className="mt-1 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
-              >
-                {errors.proof.message}
-              </p>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           {outcome?.kind === "rate_limited" ? (
             <div
@@ -624,11 +822,28 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           ) : (
             <>
               <p className="font-semibold text-[var(--color-danger-strong)]">
-                Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain.
+                Yah, jam ini baru saja diambil orang lain. Silakan pilih waktu lain.
               </p>
-              <Link href="/#order" className={CTA_CLASS}>
-                Lihat Jadwal Kosong
-              </Link>
+              {/* IT USED TO BE A LINK BACK TO `/#order`, AND THAT WAS THE ONLY
+                  PLACE TO GO WHEN THIS FORM COULD NOT CHANGE THE SCHEDULE. It
+                  can now, so a 409 keeps the visitor here: the picker is one
+                  panel up, everything they typed is still in it, and the fresh
+                  availability read shows the hour that just went. Sending them
+                  to another page to do what this page does would be the only
+                  step in the flow that loses work. */}
+              <button
+                type="button"
+                lang="id"
+                className={CTA_CLASS}
+                onClick={() => {
+                  mutation.reset();
+                  setValue("slots", [], { shouldDirty: true });
+                  void refetchAvailability();
+                  document.getElementById("slots")?.focus();
+                }}
+              >
+                Pilih Jam Lain
+              </button>
             </>
           )}
         </div>

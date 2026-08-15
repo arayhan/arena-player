@@ -841,3 +841,31 @@ THE DROPZONE LABEL IS BACK AT `label`, 15px. It went to `h3` in the bolder round
 THE OPEN QUESTION IN THE PLAN IS ANSWERED, BY MEASUREMENT. `INPUT_CLASS` sets `outline-none` and `globals.css` sets a global `:focus-visible` outline; which wins is a cascade question I refused to settle by reading. Focused `#teamName` computes `solid / 2px / rgb(37, 99, 235) / 2px offset` and matches `:focus-visible`. The ring is there — **no WCAG 2.4.7 failure**. The already-recorded 2px-vs-3px divergence from DESIGN.md is unchanged and still owed.
 
 Zero horizontal overflow on both routes at 375 and 1280. `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 files identical, `check:docs` 15 checks over 111 files, 115 tests passed.
+
+[2026-08-15] [designer+engineer] THE SCHEDULE MOVES INTO THE FORM, AND TWO FIELDS LEAVE IT.
+
+WHAT CHANGED, IN ONE LINE EACH. `/booking` can now change its own date and hours, several hours go into one booking, every slot carries a price label, and the WhatsApp number and proof dropzone stopped rendering.
+
+THE SLOT VOCABULARY MOVED OUT OF `home/`. `SlotCell` and `DatePills` are now `src/components/`, and `DisplaySlot` / `partitionSlots` / `longestFreeRun` / `formatPill` are `src/utils/slot-display.ts`. Two surfaces render a slot grid and feature modules never import each other, so the choice was extract or duplicate — and a second copy of `partitionSlots` means the two surfaces can disagree about which hours are bookable while both look correct. `order.utils.ts` keeps the one thing that is home's alone: the `wa.me` link. Verified no regression on `/` by measuring rather than looking: 9 cells, uniform 94px, plate edge still `3px rgb(1, 26, 67)`, states unchanged, zero horizontal overflow at 375 and 1280.
+
+THE PRICE IS A PROP, AND THAT IS THE ENFORCEMENT. `SlotCell` renders a price only when `priceLabel` is passed; `/` passes none. Hard rule 2 says the landing page carries no number of any kind, and with one component serving both surfaces, a price computed INSIDE the cell would appear on `/` the moment somebody wired it up, with nothing failing. Measured after: **0** cells on `/` contain a price string. The label itself is `Harga menyusul` with a `TODO(content)` marker — the rate card is still not supplied and no figure was invented.
+
+MULTI-SLOT IS A CONTRACT CHANGE, NOT A UI ONE. `slot` became `slots`, repeated once per hour in the FormData rather than joined with a separator — a separator is exactly where a value containing " - " would have gone wrong. Mock, mock tests and schema tests all moved with it. **Phase 4 owes one row per slot in ONE transaction, any 23505 rolling the whole booking back to a 409** — written into database.md and architecture.md. Partial success is the outcome to design against: a visitor who asked for four hours and silently got two arrives at a field they believe is theirs.
+
+TWO FIELDS HIDDEN BEHIND ONE CONSTANT EACH, NOT DELETED. `SHOW_PHONE_FIELD` and `SHOW_PROOF_FIELD`. The schema now validates both **if a value is present** and requires neither, which is what lets a hidden field submit without ever fabricating a phone number. **The user chose "hide it, keep everything" after being told the naive version cannot work** — a hidden field with a `.min(1)` rule leaves the form permanently unsubmittable with its error attached to an input nobody can see.
+
+`phone not null` AND `proof_key not null` NOW CONTRADICT THE FORM. Recorded in database.md as blocking Phase 4 work rather than patched: the migration is the client's DB truth, nothing has been applied, and inventing a migration to chase a UI decision is how the two drift in opposite directions.
+
+A 400 NAMING A HIDDEN FIELD USED TO MARK NOTHING. With two fields gone from the DOM, `setError` on an unrendered field focuses nothing and shows nothing — a submit button that looks broken rather than a rejected value. Unrendered fields are now collected into a form-level alert, and the mock's `TEST400` trigger moved from `phone` to a rendered field so it still rehearses the normal path.
+
+THREE DEFECTS FOUND BY MEASURING, NOT BY READING:
+
+1. TWO TAPS IN ONE FRAME DROPPED ONE. Both handlers closed over the same render's `selectedSlots`, so the second computed from a selection that did not yet include the first. Measured: two programmatic clicks in one tick produced ONE selected hour. Fixed by reading `getValues("slots")` — the live form state — instead of the watched snapshot.
+2. A PRESELECTED HOUR THAT IS NO LONGER FREE HAD NO CONTROL ATTACHED TO IT. The link carries an hour the admin chose earlier; a taken cell refuses selection, which means it also refuses DEselection, so the payload carried an hour the visitor could neither see selected nor remove — and a guaranteed 409. It is now dropped from the effective selection and named in an amber line. **Not a check-then-insert**: nothing is refused and nothing is asked before sending; the database stays the authority.
+3. MY FIRST FIX FOR (2) WAS A setState-IN-EFFECT CASCADE, and React's own lint caught it as an ERROR rather than a warning. The rewrite moved the availability query up into `BookingForm` and made both the surviving selection and the dropped list DERIVED — no state, nothing to keep in step, and the picker became presentational.
+
+ONE A11Y FINDING FROM LINT: `aria-invalid` is not supported on `role="group"`. Replaced with `data-invalid` plus the `role="alert"` message the group already points at through `aria-describedby`.
+
+A WEDGED DEV SERVER COST TWENTY MINUTES AND TAUGHT THE SAME LESSON AS THE STALE COMPILE EARLIER THIS WEEK: a crash at `SchedulePicker` line 115 and four `404`s on `/api/availability` were a Turbopack process serving a chunk from the middle of the refactor. Restarting it cleared both. When the browser disagrees with `tsc`, suspect the compile before the code.
+
+MEASURED AFTER, ON :3002 — two hours selected in one tick both land and the summary reads "Jam 10.00 - 12.00, 12.00 - 14.00"; the two-slot booking returns 201; no `#phone` and no `#proof` in the DOM; zero horizontal overflow at 375 on both routes; no console errors. `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 identical, `check:docs` 15 checks over 116 files, **127 tests passed** (was 115).

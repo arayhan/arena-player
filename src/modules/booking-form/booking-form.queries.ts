@@ -16,15 +16,57 @@
  * resolving them. The component treats `isError` the same as a
  * `{ kind: "server_error" }` outcome.
  */
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
-import type { TimeSlot } from "@/domain/slots";
+import { isWithinBookingWindow } from "@/domain/dates";
 
 import type { BookingFormValues } from "./booking-form.schema";
-import { createBooking, type BookingOutcome } from "./booking-form.service";
+import { createBooking, fetchAvailability, type BookingOutcome } from "./booking-form.service";
 
-export function useCreateBooking(date: string, slot: TimeSlot) {
+export function useCreateBooking(date: string) {
   return useMutation<BookingOutcome, Error, BookingFormValues>({
-    mutationFn: (values) => createBooking(date, slot, values),
+    mutationFn: (values) => createBooking(date, values),
   });
+}
+
+/**
+ * The picker's availability read.
+ *
+ * THE KEY IS SPELLED THE SAME AS `/`'s, deliberately: `["availability", date]`
+ * in home.queries.ts and here. One QueryClient serves both routes, so a visitor
+ * who browsed the landing grid and then opened the form for the same date gets
+ * the cached rows instead of a second round trip on a mobile connection. Two
+ * spellings would be two caches that never see each other's data.
+ *
+ * `enabled` mirrors the landing page's rule for the same reason it exists there:
+ * a date outside the 14-day window is a documented 400, and firing the request
+ * to be told so spends a round trip the domain could have saved.
+ */
+export const availabilityKey = (date: string) => ["availability", date] as const;
+
+export function useBookingAvailability(date: string) {
+  return useQuery({
+    queryKey: availabilityKey(date),
+    queryFn: ({ signal }) => fetchAvailability(date, signal),
+    enabled: isWithinBookingWindow(date),
+  });
+}
+
+/**
+ * Force the picker's rows to be re-read.
+ *
+ * WRITTEN FOR THE 409. A slot taken between page load and submit means the
+ * cached rows are demonstrably stale — the server just said so — and offering
+ * the visitor a fresh choice from a stale grid would let them pick the same
+ * gone hour twice. Invalidating by KEY rather than passing a `refetch` up from
+ * the picker keeps the query owned by one component; the form only says "this
+ * date's rows are wrong now".
+ */
+export function useRefreshAvailability(date: string) {
+  const queryClient = useQueryClient();
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: availabilityKey(date) }),
+    [queryClient, date],
+  );
 }

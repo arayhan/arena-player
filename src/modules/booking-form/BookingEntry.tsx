@@ -84,10 +84,25 @@ export function BookingEntry({ date, time }: BookingEntryProps) {
           measured differently on the same screen. The padding takes the
           section tokens for the same reason — one rhythm, not two. */}
       <div className="mx-auto w-full max-w-[var(--container-max)] px-[var(--space-section-x)] py-[clamp(44px,7vw,96px)]">
+        {/* AN EXPIRED LINK NO LONGER ENDS AT A NOTICE — changed 2026-08-15,
+            when the form grew a schedule picker. Until then this route could not
+            change the schedule, so a stale link had nowhere to go but a dead end
+            with a way back to `/`. Now the one thing an expired link needs is
+            exactly what the form does: it opens on that link's date with NO hour
+            selected, and the visitor picks a live one without leaving the page.
+            `ExpiredNotice` still exists and still explains itself — it renders
+            above the form rather than instead of it.
+
+            `unusable` keeps the notice alone. There is no date to open on: the
+            URL had nothing readable in it, so a picker would be opening on a
+            guess. */}
         {params.kind === "valid" ? (
           <BookingForm date={params.date} slot={params.slot} />
         ) : params.kind === "expired" ? (
-          <ExpiredNotice date={params.date} slot={params.slot} />
+          <div className="flex flex-col gap-6">
+            <ExpiredNotice date={params.date} slot={params.slot} />
+            <BookingForm date={params.date} slot={null} />
+          </div>
         ) : (
           <UnusableNotice />
         )}

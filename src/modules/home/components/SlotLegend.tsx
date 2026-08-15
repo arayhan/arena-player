@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 
-import type { DisplayStatus } from "../order.utils";
+import type { DisplayStatus } from "@/utils/slot-display";
 
 /**
  * The key to the plate's four fields — DESIGN.md's Order section, "The legend".
