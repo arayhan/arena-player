@@ -18,9 +18,11 @@ Neon Postgres (bookings, reached only from route handlers) + R2 (proofs, private
 
 **`POST /api/bookings` is provisional** pending the deferred backend discussion. The presigned-URL option on that agenda has the browser PUT the proof straight to R2 and then POST only the resulting object key — which removes multipart from this diagram entirely. Do not treat the multipart shape as settled.
 
-Booking flow: select slot → open `wa.me` (placeholder number) — **WhatsApp only, the site does not also navigate**. The `/booking?date=…&time=…` link comes back through WhatsApp: typed by the admin until the bot phase ships, sent by the bot after. Then submit form with proof → slot becomes PENDING → admin confirms manually.
+Booking flow, **changed 2026-08-15**: select slot → **`/booking?date=…&time=…`, a same-origin route the site navigates to itself** → submit form with proof → slot becomes PENDING → **then** WhatsApp, to confirm with the admin → admin confirms manually.
 
-Two consequences that shape the code: selecting a slot **holds nothing** — only a successful POST does. And `/booking` is **only ever reached by a pasted link**, so malformed or stale query params are the normal case, not an edge case (all four states are spec'd in [PRD.md](PRD.md)).
+**WhatsApp moved to the far side of the database write; it was not removed.** It used to be the single hand-off from `/`, with the `/booking` link coming back through the chat — typed by the admin until the bot phase shipped. That put a human transcription step inside the conversion path and made the form reachable only by a pasted link. The one-destination rule that justified it (`wa.me` deep-links into the app on mobile, so pairing it with a same-tab navigation is what in-app webviews and popup blockers handle inconsistently) was a property of `wa.me` and does not transfer to a same-origin route — there is no app takeover to race. It still binds wherever the `wa.me` link is rendered.
+
+Two consequences that shape the code: selecting a slot **holds nothing** — only a successful POST does. And `/booking` still accepts a **pasted link** as a second entry, so malformed or stale query params remain fully specified and built (all four states are spec'd in [PRD.md](PRD.md)) — they are simply no longer the only case. Links pasted before 2026-08-15 carry 2-hour slot strings and correctly read as `unusable`.
 
 ## API contract
 
@@ -39,12 +41,12 @@ Written during Phase 1a task 5, before any UI consumes it. The demo routes in `s
 ```jsonc
 // 200
 [
-  { "slot": "06.00 - 08.00", "status": "available" },
-  { "slot": "08.00 - 10.00", "status": "pending" },
-  { "slot": "10.00 - 12.00", "status": "booked" }
-  // …9 entries total, always all 9, always in canonical order
+  { "slot": "06.00 - 07.00", "status": "available" },
+  { "slot": "07.00 - 08.00", "status": "pending" },
+  { "slot": "08.00 - 09.00", "status": "booked" }
+  // …18 entries total, always all 18, always in canonical order
 ]
-// 400 — malformed date, or outside the 14-day window
+// 400 — malformed date, or outside the 92-day booking window
 { "error": "invalid_date" }
 ```
 
@@ -77,7 +79,7 @@ Chosen over a URL flag because it needs no special path through `api-client.ts`,
 
 That is a server-side simplification, not the label the user sees. The client knows the current time and the canonical starts in `src/domain/slots.ts`, so it derives "elapsed" itself and presents those hours as past rather than taken — collapsed into one `Sudah lewat (N)` row, never nine "Terisi" labels that make the day read as sold out. No `past` status is needed and this route stays FIRM. See [PRODUCT.md](PRODUCT.md) and the order-section brief in `.impeccable/surfaces/`.
 
-**`GET /api/payment-accounts` — ADDED 2026-08-15.** The transfer destinations `/booking` shows once a visitor has arrived through the WhatsApp link.
+**`GET /api/payment-accounts` — ADDED 2026-08-15.** The transfer destinations `/booking` shows. Reached from `/` since the same day; a pasted WhatsApp link is the second entry, not the only one.
 
 ```jsonc
 // 200 — an array, possibly EMPTY
@@ -98,7 +100,7 @@ Request — `multipart/form-data`. Field names are the contract: the form, the d
 
 | Field      | Type   | Required    | Rule                                                                                                                                                                                                                                                       |
 | ---------- | ------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `date`     | string | yes         | `YYYY-MM-DD`, inside the 14-day window                                                                                                                                                                                                                     |
+| `date`     | string | yes         | `YYYY-MM-DD`, inside the 92-day booking window                                                                                                                                                                                                             |
 | `slots`    | string | yes, 1+     | **Repeated once per hour** — `body.append("slots", …)` per slot, read with `getAll`. Each an exact member of `TIME_SLOTS` — `"18.00 - 20.00"`, not `"18.00-20.00"`. No duplicates                                                                          |
 | `teamName` | string | yes         | 2–60 chars after trim                                                                                                                                                                                                                                      |
 | `phone`    | string | **no**      | Indonesian mobile, `08xx` or `62xx` as typed, **or empty**. The input is hidden as of 2026-08-15 so the form sends `""`; a value that IS sent is still validated. **Server normalises to `628xxxxxxxxx` before insert.** See the reconciliation note below |
@@ -167,7 +169,7 @@ Rationale: Neon's HTTP-based serverless driver fits Next.js route handlers (no c
 
 **`GET /api/availability?date=`**
 
-1. Validate `date` is `YYYY-MM-DD` and inside the 14-day window → 400 otherwise, never 500.
+1. Validate `date` is `YYYY-MM-DD` and inside the 92-day booking window → 400 otherwise, never 500.
 2. Lazy expiry first, same request, scoped to that date: flip pending rows older than 24h to `expired`.
 3. Select active rows for the date, map onto the 9 canonical `TIME_SLOTS` (mapping table above).
 4. Respond `[{ slot, status }]` with `Cache-Control: public, s-maxage=30`.

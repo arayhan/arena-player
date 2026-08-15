@@ -4,10 +4,16 @@ import { isTimeSlot, type TimeSlot } from "@/domain/slots";
 /**
  * The four states `/booking` can be entered in.
  *
- * NOTHING ON `/` LINKS HERE. Entry is always a link pasted into WhatsApp by the
- * admin, or sent by the bot later — so malformed and stale params are the
- * NORMAL case, not the edge case. A blank form or a crash is the one response
- * this route may never give.
+ * `/` LINKS HERE AS OF 2026-08-15, AND THAT DID NOT MAKE ANY OF THIS
+ * OPTIONAL. The order section's hand-off band now navigates to
+ * `/booking?date=…&time=…` with both params built from state it already
+ * validated, so the main path arrives `valid`. The second entry is unchanged:
+ * a link pasted into WhatsApp by the admin, or sent by the bot later. That one
+ * still arrives malformed or stale routinely — a link sitting in a chat has no
+ * deploy and no rollback, and every link pasted before 2026-08-15 carries a
+ * 2-hour slot string that is no longer a member of TIME_SLOTS and correctly
+ * reads `unusable`. A blank form or a crash is still the one response this
+ * route may never give.
  *
  * THE QUERY PARAM IS `time`, THE POST FIELD IS `slot`. That is deliberate and
  * documented in architecture.md so nobody harmonises them: `time` is the word a

@@ -67,11 +67,14 @@ function formatDisplayDate(date: string): string {
 /**
  * `/booking`'s entry router — Phase 3 task 1.
  *
- * NOTHING ON `/` LINKS HERE. Entry is always a link pasted into WhatsApp by
- * the admin (or sent by the bot later), so a malformed or stale link is the
- * NORMAL case this component exists to handle, not an edge case bolted on
- * afterwards. A blank form or a crash is the one response it may never give —
- * see `booking-form.params.ts` for the three-way split this switches on.
+ * TWO ENTRIES SINCE 2026-08-15. The order section's hand-off band on `/` now
+ * links straight here with `date` and `time` already correct, which is the main
+ * path and arrives `valid`. The second is the one this component was built for
+ * and still exists for: a link pasted into WhatsApp by the admin (or sent by
+ * the bot later), where a malformed or stale link is routine rather than an
+ * edge case — a link sitting in a chat has no deploy and no rollback. A blank
+ * form or a crash is the one response it may never give — see
+ * `booking-form.params.ts` for the three-way split this switches on.
  */
 export function BookingEntry({ date, time }: BookingEntryProps) {
   const params = readBookingParams(date, time);

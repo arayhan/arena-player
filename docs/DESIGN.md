@@ -80,6 +80,11 @@ typography:
     fontWeight: 800
     lineHeight: 0.95
     letterSpacing: "-0.02em"
+  subtitle:
+    fontFamily: Plus Jakarta Sans
+    fontSize: "clamp(1.125rem, 0.97rem + 0.66vw, 1.5rem)"
+    fontWeight: 400
+    lineHeight: 1.45
   body:
     fontFamily: Plus Jakarta Sans
     fontSize: 16px
@@ -97,7 +102,6 @@ typography:
     lineHeight: 1.5
 rounded:
   control: 0px
-  panel: 22px
   full: 9999px
 spacing:
   1: 4px
@@ -117,7 +121,7 @@ components:
     backgroundColor: transparent
     textColor: "{colors.blue-50}"
     padding: 18px 16px
-    height: 80px
+    height: 81px
   header-scrolled:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
@@ -158,10 +162,11 @@ components:
     textColor: "{colors.navy-900}"
     rounded: "{rounded.control}"
     padding: 24px
-  map-placeholder:
-    backgroundColor: "{colors.blue-50}"
-    textColor: "{colors.navy-400}"
-    rounded: "{rounded.panel}"
+  map-plate-nameplate:
+    backgroundColor: "{colors.navy-900}"
+    textColor: "{colors.blue-50}"
+    rounded: "{rounded.control}"
+    padding: 8px 16px
   slot-available:
     backgroundColor: "{colors.white}"
     textColor: "{colors.navy-900}"
@@ -284,7 +289,7 @@ Two tokens carry it, and every leaning element reads from them rather than resta
 | Token    | Value    | What uses it                                                                                         |
 | -------- | -------- | ---------------------------------------------------------------------------------------------------- |
 | `--skew` | `-8deg`  | Section numerals, rule numerals, the hero eyebrow rule, the button wipe, the hero's background field |
-| `--diag` | `168deg` | Gradient axis — the map placeholder                                                                  |
+| `--diag` | `168deg` | Gradient axis — **unconsumed** since the map placeholder was replaced by the real embed              |
 
 `-8deg` rather than the mark's own 20°: at 20° an uppercase display numeral overhangs its own column by more than 40px and collides with the heading beside it at every width below 900px. The axis is the mark's _direction_, sampled and reduced until it survives 375px. **A second skew value anywhere in the system is a defect**, not a variation.
 
@@ -355,7 +360,7 @@ Read once from `docs/references/benchmark-bataskotapoint.png`, a full-page deskt
 | Heading treatment  | Six sections, six **identical** centred uppercase two-tone headings | Leaning outlined numeral beside the heading, plus light/navy alternation        |
 | Order section      | Buried ~5 scrolls down, after hero, video, specs and gallery        | Within 1–2 scrolls at 375px. **A hard rule, and this is its evidence**          |
 | Prices             | Shown in the order summary rail                                     | Rendered nowhere on `/`, ever                                                   |
-| Third-party embeds | A raw YouTube player, chrome and all, mid-page                      | None; an undesigned rectangle inside a designed page is a defect                |
+| Third-party embeds | A raw YouTube player, chrome and all, mid-page                      | One, framed — see the Embed Rule below; an _undesigned_ rectangle is the defect |
 | Design target      | Desktop-first at 1920                                               | 375px-first, mid-range Android in an in-app browser                             |
 
 **Two things it gets right, kept deliberately rather than inverted:**
@@ -368,7 +373,16 @@ Read once from `docs/references/benchmark-bataskotapoint.png`, a full-page deskt
 - **The product is buried.** Five scrolls of marketing precede the thing the visitor came for. Arena Player's two-scroll rule is the single largest difference in the visitor's experience.
 - **Every section looks like every other section.** Six centred two-tone uppercase headings in a column give the page no sense of progress or place.
 - **The rules are three near-identical dark cards** with keywords highlighted inline. Dense, low-contrast, unscannable — and Arena Player's Ketentuan is ten verbatim rules, which is more content in the same trap. The answer is the [numbered rule row](#ketentuan-rule-row).
-- **The map is a dead grey rectangle** in the capture — an unloaded embed shipped as the final state. Location has to survive its own loading state here.
+- **The map is a dead grey rectangle** in the capture — an unloaded embed shipped as the final state. Location has to survive its own loading state here, which is why the frame around the embed is drawn by this system and paints whether or not Google answers.
+
+> **The Embed Rule.** The page carries **exactly one** third-party embed — the Google map in Location, added 2026-08-15 when the client supplied it. The ban it replaces was never on embeds as such; it was on _undesigned rectangles_, and the benchmark's raw YouTube player is what that looks like. An embed earns its place here only by meeting all four conditions:
+>
+> 1. **It is framed by this system, not by its vendor.** A square 2px `navy-900` edge, no radius, no shadow — the same object the order plate and the Ketentuan plate are. The edge it bleeds off screen is not drawn, because a plate running off the page must not draw the side it runs off.
+> 2. **It carries a nameplate in the page's own vocabulary.** A `navy-900` strip above the frame's viewport, `blue-50` uppercase micro-label at the `xs` step — the same pair and the same treatment as the metadata field labels beside it, so the embed reads as part of the section's object rather than as a widget parked in it.
+> 3. **Nothing is painted over the vendor's surface.** No scrim, no floating caption, no colour filter. Attribution and controls belong to the vendor and must stay visible and operable; a map's own colours are wayfinding information, and a `grayscale()` treatment buys palette obedience by destroying it.
+> 4. **The page's own failure states still hold.** It lazy-loads, it is named for assistive technology, and it costs the layout nothing while it is empty.
+>
+> **A second embed is a defect, not a precedent.** One is a supplied fact the page could not otherwise state; two is a page assembled out of other people's rectangles.
 
 Density is low by intent. The primary visitor is a team captain on a 375px Android inside the Instagram in-app browser, mid-conversation in another chat, deciding fast for eight to twelve people. Speed of comprehension outranks completeness of information everywhere the two conflict.
 
@@ -394,7 +408,7 @@ Everything animated routes through `src/lib/motion.ts` — a direct `gsap.to()` 
 
 **The page-wide scroll reveal is built, and it is opt-in by attribute.** **Seventeen elements carry it**: the three section heading blocks, the order plate, the ten Ketentuan rows, the location block, and the closing heading and lede. Any element carrying `data-reveal` fades and rises 48px over 700ms when its top reaches 88% of the viewport, **fires once and is then unobserved**. `ScrollReveal.tsx` is a single client island rendering no visible DOM: it reads `[data-reveal]` from the document and drives them through `src/lib/motion.ts`, so every section stays a **server component** and ships no JavaScript for the effect. A section added later opts in by writing one attribute.
 
-**Where the marker goes is a composition decision, not a sweep.** A heading and its lede move as ONE object; revealing them separately reads as two decisions where the composition is one. The section ordinal is excluded — it is `aria-hidden` decoration, and animating a watermark draws the eye to the thing that is not the point. The order plate reveals whole, because the date row, the grid and the hand-off band are a single sign. **The Ketentuan rows are the exception and reveal individually**: ten rows crossing the fold one at a time is the page's longest scroll doing something with the distance, and each row carrying its own trigger makes the cascade a property of scrolling rather than a timed stagger that can run ahead of the reader.
+**Where the marker goes is a composition decision, not a sweep.** A heading and its lede move as ONE object; revealing them separately reads as two decisions where the composition is one. The section ordinal is excluded — it is `aria-hidden` decoration, and animating a watermark draws the eye to the thing that is not the point. The order plate reveals whole, because the date row, the offer panel, the grid and the hand-off band are a single sign. **The Ketentuan rows are the exception and reveal individually**: ten rows crossing the fold one at a time is the page's longest scroll doing something with the distance, and each row carrying its own trigger makes the cascade a property of scrolling rather than a timed stagger that can run ahead of the reader.
 
 **Nothing starts hidden in the markup.** `gsap.from` sets the start state only after GSAP has loaded, so a failed fetch, a reduced-motion preference or disabled JavaScript all leave a complete, readable page.
 
@@ -404,23 +418,34 @@ Everything animated routes through `src/lib/motion.ts` — a direct `gsap.to()` 
 
 **A CSS animation is not exempt from the `motion.ts` rule; it is outside what that rule is for.** The ban on a direct `gsap.to()` exists because GSAP ships no `prefers-reduced-motion` handling, so a tween authored outside the wrapper escapes the guarantee. CSS has that handling natively, and `globals.css` already carries the block. What CSS does _not_ have is a viewport check — hence the observer above, which touches one attribute and drives no animation itself.
 
-**The One-Marquee Rule.** There is exactly one, at the foot of the hero, and it carries facts (`LOMBOK`, `9 SLOT / HARI`, `06.00 — 24.00`, `WITA`, `BOOKING VIA WHATSAPP`, `TANPA AKUN`, `14 HARI KE DEPAN`) rather than slogans. It is `aria-hidden`, because a screen reader reading an infinite loop of duplicated text is a trap, which means **every fact in it must also appear somewhere reachable** — all seven do. It carries no price and no claim the page cannot compute.
+**The One-Marquee Rule.** There is exactly one, at the foot of the hero, and as of 2026-08-15 it carries the client's four selling points — `ARENA PLAYER`, `GRATIS FOTOGRAFER`, `HARGA SUPER MURAH`, `FASILITAS LENGKAP`. It is `aria-hidden`, because a screen reader reading an infinite loop of duplicated text is a trap, which means **nothing in it may be the only place something is said**.
+
+> **This replaced a facts-only rule, deliberately.** The band ran seven facts — `LOMBOK`, `9 SLOT / HARI`, `06.00 — 24.00`, `WITA`, `BOOKING VIA WHATSAPP`, `TANPA AKUN`, `14 HARI KE DEPAN` — under the line "facts rather than slogans… so every fact in it appears somewhere reachable", and the user replaced the list with the client's own marketing voice. **Two of the four are currently claims a visitor cannot check on `/`**: nothing on the landing page mentions facilities, and hard rule 2 keeps every price off it, so `HARGA SUPER MURAH` is only checkable after arriving at `/booking`. `ARENA PLAYER` is the header wordmark and `GRATIS FOTOGRAFER` is the hero's own line. Recorded rather than quietly broken — and **hard rule 2 itself is untouched**: "murah" is an adjective, not a number, and `/` still renders no figure of any kind.
 
 ### Hero copy
 
-| Slot          | Copy                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| Eyebrow       | **Mini Soccer · WITA · 06.00–24.00**                                                             |
-| Headline      | **Pilih Jam. Kirim. Main.** — uppercase, one line per sentence, `KIRIM.` in the accent           |
-| Subheadline   | Jadwal lapangan mini soccer di Lombok, tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp. |
-| Primary CTA   | **Pesan Lapangan →** `#order` (fixed by the PRD, not a copy decision)                            |
-| Secondary CTA | **Lihat Lokasi** → `#lokasi`                                                                     |
+| Slot          | Copy                                                                                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Eyebrow       | **Mini Soccer · WITA · 06.00–24.00**                                                                                                                      |
+| Headline      | **Pilih Jam. Kirim. Main.** — uppercase, one line per sentence, `KIRIM.` in the accent                                                                    |
+| Subheadline   | Booking lapangan mini soccer di Arena Player lebih cepat dan mudah. Cek ketersediaan jadwal, amankan jadwalmu sekarang juga! — set in the `subtitle` role |
+| Offer plate   | **Gratis fotografer** — a camera glyph and two words, `sm`, sentence case, semibold                                                                       |
+| Primary CTA   | **Pesan Lapangan →** `#order` (fixed by the PRD, not a copy decision)                                                                                     |
+| Secondary CTA | **Lihat Lokasi** → `#lokasi`                                                                                                                              |
 
-**The region is in the sub-lede because the header now carries the name.** The business name was confirmed by the client on 2026-08-13 and is rendered in the header; before that it existed on this page only as the logo's `alt` text. The sub-lede therefore spends its first clause on the place rather than repeating the brand. **Only "Lombok"** — the field's town is not among the supplied facts.
+**The sub-lede was rewritten on 2026-08-15 and it changed what the line is for.** It used to lead on the region — `Jadwal lapangan mini soccer di Lombok, tampil langsung. Pilih jam kosong, lanjut lewat WhatsApp.` — and describe the mechanism. The replacement leads on the **benefit** and ends on an instruction, which is what a subtitle under a three-beat imperative headline should do; the headline already says what the mechanism is.
+
+**Dropping "di Lombok" is affordable only because other sections still say it, and that was measured rather than assumed.** Counted on the built page on 2026-08-15: "Lombok" renders **11 times**, in the Location block's stacked display lines and the closing lede; `WITA` renders **3 times**, starting with the hero eyebrow directly above this line. Those are now the page's only geographic signals and none of them may be cut without putting the region back here. **Only "Lombok"**: the field's town is not among the supplied facts.
+
+**It is set in the `subtitle` role, not in body.** Until this pass it carried no size token and rendered a flat 16px under a 128px headline. See [Why `subtitle` is its own role](#why-subtitle-is-its-own-role).
 
 **`KIRIM.` is the accented line, not `PILIH JAM.` or `MAIN.`** It is the middle beat, so the emphasis sits inside the block rather than at an edge; it is the only single-word line; and it is the step the visitor is being asked to take.
 
 **The eyebrow says WITA, and the timezone is not negotiable.** The field is in Lombok and the entire date layer pins `Asia/Makassar` (WITA, UTC+8). A page that prints Jakarta time next to a WITA availability grid is off by an hour on the one number the visitor is deciding with. `WITA` is what renders — the human-readable abbreviation, not the IANA identifier.
+
+**The offer plate is a smaller enamel field riveted onto the big one.** Square (`--radius-control` is 0, and the date pill is the only fully round shape on the page), body face at `sm`, sentence case — **never** the small tracked uppercase that is the eyebrow's costume, because the system allows exactly one eyebrow and the hero's has already spent it. It draws a **full `blue-400` border** on a `navy-700` fill: that fill computes **1.31:1** against the navy plate and was very nearly invisible as a field on its own, while `blue-400` measures **6.72:1** against the plate, clear of the 3:1 non-text bar. A left tab is banned; the border goes all the way round. No status triple — amber and red were computed against white plates only and must not sit on navy. Measured on this fill: `blue-50` text at **11.94:1**.
+
+**Its line shortened to two words on 2026-08-15.** It read `Gratis fotografer di 1 jam pertama, 16.00–24.00`; the conditions moved to the order section, where a visitor is choosing hours and the window is actionable rather than a term to be read before anyone has a reason to care. **The shape answered for it**: `max-w-[38ch]` is gone because a 38-character ceiling can never bind on a 17-character string — a constraint that cannot fire is an untested claim about the layout — and the glyph moved from `items-start` plus a 2px nudge to `items-center`, because that pair existed to hang the camera off the first of several lines and on one line it tilted a 20px glyph 2px below centre. Measured after: the plate is **179.4 × 48.4px** at every width from 320 to 1440, and the glyph's centre sits **0.01px** off the plate's.
 
 **What the hero deliberately does not do:** it names no price, promises no availability, and does not say "malam ini" — a hero cannot know what time of day it is being read without client JS.
 
@@ -457,7 +482,7 @@ Inherited navy and blue over near-white neutrals, with amber and red reserved en
 - **Signal Blue** (`blue-600`): every interactive affordance on a light surface — links, focus rings, available-slot borders, selected states, the progress bar, the marquee band. **5.17:1** on white.
 - **Signal Blue Pressed** (`blue-700`): the active state of a blue affordance.
 - **Signal Wash** (`blue-50`): hover fill on white plates, and the page ground. See the trap under [The Semantic Layer](#the-semantic-layer).
-- **Signal Tint** (`blue-100`): gradient terminal only — the map placeholder. Never a text colour and never a state.
+- **Signal Tint** (`blue-100`): gradient terminal only, and its one gradient went with the map placeholder — it is now unused. Never a text colour and never a state.
 
 ### On a navy band
 
@@ -490,32 +515,32 @@ Status colours are **triples**, never single hues. Each is a surface, a border, 
 
 The frontmatter carries **primitives only**, because a DESIGN.md token may not reference another token in the same group. The implementation adds a semantic layer between primitives and components, and that layer is the one a re-theme edits:
 
-| Semantic                                        | Primitive                     | Purpose                                                           |
-| ----------------------------------------------- | ----------------------------- | ----------------------------------------------------------------- |
-| `--color-page`                                  | `blue-50`                     | **The page ground.** The light blue everything sits on            |
-| `--color-bg`                                    | `white`                       | The plates content sits on — cards, panels, slot cells            |
-| `--color-bg-subtle`                             | `grey-50`                     | Disabled fills                                                    |
-| `--color-band`                                  | `navy-900`                    | **The full-bleed navy band surface**                              |
-| `--color-fg`                                    | `navy-900`                    | Body and heading text on light                                    |
-| `--color-fg-muted`                              | `navy-400`                    | Secondary text on light                                           |
-| `--color-fg-on-band`                            | `blue-50`                     | Body and heading text on a navy band                              |
-| `--color-fg-muted-on-band`                      | `navy-200`                    | Secondary text on a navy band                                     |
-| `--color-interactive`                           | `blue-600`                    | Links, focus, available slots — on light                          |
-| `--color-interactive-on-band`                   | `blue-400`                    | The same, on a navy band                                          |
-| `--color-interactive-pressed`                   | `blue-700`                    | Active state                                                      |
-| `--color-border`                                | `grey-200`                    | Hairlines on light                                                |
-| `--color-border-on-band`                        | `navy-700`                    | Hairlines inside a navy band, and the hero's background field     |
-| `--color-focus`                                 | `blue-600`                    | Focus ring on light                                               |
-| `--color-focus-on-band`                         | `blue-400`                    | Focus ring on a navy band                                         |
-| `--color-fg-inverse`                            | `white`                       | Text on a filled dark surface                                     |
-| `--color-wash`                                  | `blue-50`                     | The hover tint — **the same value as `--color-page`, see below**  |
-| `--color-accent-strong`                         | `navy-900`                    | Heaviest actionable surface — primary button, secondary border    |
-| `--color-accent-strong-hover`                   | `blue-600`                    | Its hover — the wipe travels along `--skew`                       |
-| `--color-gradient-end`                          | `blue-100`                    | Terminal stop of the map placeholder's gradient                   |
-| `--color-disabled-bg`                           | `grey-200`                    | Disabled fill                                                     |
-| `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple                                                |
-| `--color-danger-surface` / `-line` / `-strong`  | `red-100` / `-300` / `-800`   | The booked triple, and the error boundary                         |
-| `--color-success-fg`                            | `navy-900`                    | Success carries on weight and copy, never on the interactive blue |
+| Semantic                                        | Primitive                     | Purpose                                                                  |
+| ----------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------ |
+| `--color-page`                                  | `blue-50`                     | **The page ground.** The light blue everything sits on                   |
+| `--color-bg`                                    | `white`                       | The plates content sits on — cards, panels, slot cells                   |
+| `--color-bg-subtle`                             | `grey-50`                     | Disabled fills                                                           |
+| `--color-band`                                  | `navy-900`                    | **The full-bleed navy band surface**                                     |
+| `--color-fg`                                    | `navy-900`                    | Body and heading text on light                                           |
+| `--color-fg-muted`                              | `navy-400`                    | Secondary text on light                                                  |
+| `--color-fg-on-band`                            | `blue-50`                     | Body and heading text on a navy band                                     |
+| `--color-fg-muted-on-band`                      | `navy-200`                    | Secondary text on a navy band                                            |
+| `--color-interactive`                           | `blue-600`                    | Links, focus, available slots — on light                                 |
+| `--color-interactive-on-band`                   | `blue-400`                    | The same, on a navy band                                                 |
+| `--color-interactive-pressed`                   | `blue-700`                    | Active state                                                             |
+| `--color-border`                                | `grey-200`                    | Hairlines on light                                                       |
+| `--color-border-on-band`                        | `navy-700`                    | Hairlines inside a navy band, and the hero's background field            |
+| `--color-focus`                                 | `blue-600`                    | Focus ring on light                                                      |
+| `--color-focus-on-band`                         | `blue-400`                    | Focus ring on a navy band                                                |
+| `--color-fg-inverse`                            | `white`                       | Text on a filled dark surface                                            |
+| `--color-wash`                                  | `blue-50`                     | The hover tint — **the same value as `--color-page`, see below**         |
+| `--color-accent-strong`                         | `navy-900`                    | Heaviest actionable surface — primary button, secondary border           |
+| `--color-accent-strong-hover`                   | `blue-600`                    | Its hover — the wipe travels along `--skew`                              |
+| `--color-gradient-end`                          | `blue-100`                    | Was the map placeholder's terminal stop; **unconsumed**, retirement owed |
+| `--color-disabled-bg`                           | `grey-200`                    | Disabled fill                                                            |
+| `--color-warning-surface` / `-line` / `-strong` | `amber-100` / `-300` / `-800` | The pending triple                                                       |
+| `--color-danger-surface` / `-line` / `-strong`  | `red-100` / `-300` / `-800`   | The booked triple, and the error boundary                                |
+| `--color-success-fg`                            | `navy-900`                    | Success carries on weight and copy, never on the interactive blue        |
 
 **`--color-wash` and `--color-page` are the same blue, and that is a trap this document set.** A hover that tints to `blue-50` reads as "lifts toward blue" on paper and renders as **exactly the band behind it** when the element sits on the page ground. In the current build the slot grid and the date row live inside a **white panel**, so the wash is visible there. The rule remains: **anything hovering directly on the page ground needs a second signal** — a border change, or a shadow.
 
@@ -548,6 +573,7 @@ The frontmatter carries **primitives only**, because a DESIGN.md token may not r
 - **Rule numeral** (Panchang 800, 24px fixed, 1, outlined at 1px, skewed): the Ketentuan rule rows, and nothing else. Fixed rather than fluid because 24px IS the Outline-Needs-A-Floor Rule's floor — a clamp would dip under it at some viewport.
 - **Label** (Panchang 500, 15px fixed, 1, `0.06em`, uppercase): button labels, and nothing else. Four call sites share it. **Dropped from 800 to 500 on 2026-08-13** — the display face is already wide, and at 800 with uppercase and 0.06em tracking three emphases stacked on a 15px label until it read as a filled block rather than as type.
 - **Eyebrow** (Panchang 500, 12px fixed, 1, `0.22em`, uppercase): the hero eyebrow, and nothing else.
+- **Subtitle** (Plus Jakarta Sans 400, 18→24px fluid, 1.45, sentence case): the line directly under a display headline. **The hero sub-lede, and nothing else.** See [Why `subtitle` is its own role](#why-subtitle-is-its-own-role).
 - **Body** (Plus Jakarta Sans 400, **16px fixed**, 1.6): all prose. Cap measure at 60–68ch. **See the defect note below — this used to be documented as a 16→18px fluid clamp and the build has never rendered one.**
 - **Sm** (Plus Jakarta Sans 400, 14px fixed, 1.5): state labels, helper text, field labels.
 - **Xs** (Plus Jakarta Sans 400, 12px fixed, 1.5): captions and metadata.
@@ -584,6 +610,33 @@ The hero has now been resized twice. It shipped with three escalating sizes (104
 The location block's stacked lines had been reaching for `--text-display` since the day they were written, and that token clamps to 152px. The binding string is **"LOMBOK" at 6.8182em**, which asks for 1036.3px of ink; the block's own column is 288px at 320px and — this is the part that made `#lokasi` the worst section on the page — only **304.7px at 980px**, where the two-column composition splits an already-indented row in half. The section overflowed at every width from 320 to 1440 and was **worse at 768 (158px) than at 375 (31px)**, because the content column is handed to the numeral track at exactly the width where the display clamp climbs fastest.
 
 So the ceiling is set by the narrowest column this block ever gets, not by the widest viewport. **Not merged with `closing`**: the two roles are bound by different words in different boxes, and the last time this system let one number stand for two measurements it shipped a heading 46px wider than its box.
+
+### Why `subtitle` is its own role
+
+`clamp(1.125rem, 0.97rem + 0.66vw, 1.5rem)` — **18px → 24px**, body face, leading 1.45, sentence case. **One call site: the hero sub-lede in `Hero.tsx`, and nothing else.**
+
+**It exists because the hero sub-lede had no size token at all.** It inherited `body`, and `--text-body` is undefined (the open defect above), so the line rendered a flat **16px at every width** — the same size as the Ketentuan prose five screens down, directly under a 128px headline. Giving it a role is the change that was approved; **defining `--text-body` is not**, and this token deliberately does not do that. The defect is unchanged and still owed.
+
+**Both ends are derived, not picked.** The subtitle sits exactly halfway between `body` and `h3` at each end of the ramp: body is 16px fixed and `h3` runs 20→32px, so this runs (16+20)/2 = **18px** → (16+32)/2 = **24px**. That keeps it unmistakably larger than prose while never reaching an `h3` — which matters because `h3` is the display face, and a body-face paragraph setting at the same size as a Panchang sub-heading stops being separable by size and has to be told apart by shape alone.
+
+**The middle term is anchored to two widths this project already measures at.** `0.97rem + 0.66vw` crosses 18px at **376px**, so the 375px design width takes the floor exactly; and it crosses 24px at **1285px**, where `--container-max` has already stopped the box widening. The type stops growing where its measure stops growing — the same argument the hero headline's 128px cap makes.
+
+Measured on the built page:
+
+| Viewport | Rendered size | Line height | Lines at 42ch |
+| -------- | ------------- | ----------- | ------------- |
+| 320px    | 18px          | 26.1px      | 5             |
+| 375px    | 18px          | 26.1px      | 4             |
+| 414px    | 18.25px       | 26.47px     | 4             |
+| 768px    | 20.59px       | 29.85px     | 3             |
+| 1280px   | 23.97px       | 34.75px     | 3             |
+| 1440px   | 24px (cap)    | 34.8px      | 3             |
+
+**Leading is 1.45, not the 1.6 body carries.** Body leading is set for a 60–68ch reading measure; at 24px inside a 42ch column it opens a gutter that reads as three separate sentences rather than one subtitle. Tightening is what gives the line presence at a size the headline already dominates.
+
+**It stays muted and stays capped at 42ch.** `--color-fg-muted-on-band` is the on-band secondary ink; promoting the subtitle to the headline's own `blue-50` would flatten the only hierarchy the plate has. The measure cap is narrower than body's 60–68ch because a subtitle growing to 24px inside a 64ch column would out-measure the headline it sits under — measured at 1440px the line sets **737.8px** wide inside a 1184px box, so the cap is what is binding, not the container.
+
+**A second usage would be a defect.** Prose under a section `h2` already has a role: `Section` renders its `lede` at body size. A subtitle under every heading would be the kicker-below-heading twin of the banned kicker-above-heading pattern.
 
 ### The Narrow-Width Floors
 
@@ -645,7 +698,9 @@ Spacing runs a **4px base**. Components use 4/8/12/16/24 for interior padding.
 
 **The Horizontal-Containment Rule.** The date row scrolls horizontally with `overscroll-behavior-x: contain`, so a sideways swipe never bounces the page underneath it. The same applies to the marquee. **Horizontal page overflow is zero at 320/375/414/768/980/1180/1280/1440**, verified by measuring `documentElement.scrollWidth - clientWidth` rather than by looking; every section that clips a bleeding element does so with its own `overflow-hidden`.
 
-**The header is fixed, so every anchor jump owes it its own height.** `html { scroll-padding-top: 80px }` is declared once on the scroll container rather than as a `scroll-mt` on each section — per-section is exactly how three of four anchors end up correct and the fourth does not.
+**The header is fixed, so every anchor jump owes it its own height.** `html { scroll-padding-top: 81px }` is declared once on the scroll container rather than as a `scroll-mt` on each section — per-section is exactly how three of four anchors end up correct and the fourth does not.
+
+**81px, and the last term is the one that used to be missing.** 18px top padding + a 44px `size="sm"` CTA + 18px bottom padding + a **1px `border-b`** = 81. The border is present in both header states — transparent at rest, `grey-200` past 40px — so it occupies a row either way, and the value stood at 80px for as long as the arithmetic left it out. There are exactly four in-page anchors (`#order` from the header CTA, the hero CTA and the closing CTA; `#lokasi` from the hero) and both destinations go through `Section`, which adds `scroll-mt-4` on top. Verified in the browser rather than derived: header height **81px**, and after a hash jump `#order` lands at **97.4px** and `#lokasi` at **96.8px** with the header's bottom edge at **81px** — 16px of clearance, which is the `scroll-mt-4` doing exactly what it is for. Under the old 80px the border was eating one pixel of that clearance.
 
 Layout is answerable to a hard budget, not to taste: LCP under 2.5s, Lighthouse mobile Performance at or above 85, verified per section as it merges. The numbers live in [architecture.md](architecture.md) and are never restated elsewhere.
 
@@ -662,7 +717,7 @@ Layout is answerable to a hard budget, not to taste: LCP under 2.5s, Lighthouse 
 - **shadow-lg** (`0 24px 70px -30px rgb(1 26 67 / 0.25)`): **the order panel only.** A second usage is a defect.
 - **glow-interactive** (`0 10px 30px -12px rgb(37 99 235 / 0.4)`): **hovered available slot cells only.**
 
-**Why a third shadow.** The order panel is a single object holding the entire product — date row, slot grid, hand-off bar — sitting on the light ground beside a column of copy. `shadow-md` is edge definition; it does not read as an object at 660px wide. `shadow-lg` is a wide, very soft, heavily negative-spread navy shadow, which is depth rather than a border.
+**Why a third shadow.** The order panel is a single object holding the entire product — date row, offer panel, slot grid, hand-off bar — sitting on the light ground beside a column of copy. `shadow-md` is edge definition; it does not read as an object at 660px wide. `shadow-lg` is a wide, very soft, heavily negative-spread navy shadow, which is depth rather than a border.
 
 **Why a blue shadow, when the Tinted-Shadow Rule says navy.** `glow-interactive` is the second signal on an available cell's hover, and it is the accent colour because it is the _same event_ as the blue border it sits under, not a lighting effect. The Tinted-Shadow Rule is written against **neutral black**, which reads as dirt on a blue-white page.
 
@@ -676,11 +731,11 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 **Square, with one shape reserved.** Controls and surfaces take a **0px** radius (`rounded.control`). The date pill is the only fully round shape (`9999px`).
 
-**This reversed on 2026-08-13, and an inventory is what settled it.** The client asked for rounder geometry at the 2026-08-11 checkpoint and the system went 2px/4px → 10px/14px → 12px/22px. Then the velocity redesign squared every surface that reads those tokens — slot cells, the order plate, the Ketentuan rows — and left the button behind. Enumerating every computed `border-radius` on the built page found only **four non-zero values**: the button at 12px, the date pill at 9999px, the map placeholder at 22px, and the map pin's teardrop. Two of the four were oversights rather than decisions. `rounded.control` is now `0px`, which reaches its single consumer and answers the same question for Phase 3's form inputs.
+**This reversed on 2026-08-13, and an inventory is what settled it.** The client asked for rounder geometry at the 2026-08-11 checkpoint and the system went 2px/4px → 10px/14px → 12px/22px. Then the velocity redesign squared every surface that reads those tokens — slot cells, the order plate, the Ketentuan rows — and left the button behind. Enumerating every computed `border-radius` on the built page found only **four non-zero values**: the button at 12px, the date pill at 9999px, the map placeholder at 22px, and the map pin's teardrop. Two of the four were oversights rather than decisions. `rounded.control` is now `0px`, which reaches its single consumer and answers the same question for Phase 3's form inputs. **Three of those four are now gone** — the button squared, and the placeholder took its 22px panel and its pin with it when the real map landed.
 
 **The One-Round-Shape Rule.** Nothing else in the system is **fully** round. Its roundness is functional signalling, not decoration: a row of pills reads as horizontally scrollable without needing an arrow, a gradient fade, or a hint label. The moment a second element takes the pill radius, the date row stops meaning "this scrolls".
 
-> **Open — `rounded.panel` has one consumer left.** The map placeholder keeps 22px while every other plate has lost its radius. It is not fixed here because that placeholder carries the address-and-coordinates content marker and gets rebuilt when the client supplies real coordinates.
+**`rounded.panel` is retired, on the condition this document set for it.** It was 22px with one consumer, the map placeholder, and the open item here said it would be settled when the client supplied real coordinates — because the placeholder was going to be rebuilt at that moment anyway. The coordinates arrived on 2026-08-15, the map plate is square, and the token went from one consumer to none. **Deleted rather than left declared**: a token nothing reads is a shape the next component adopts by accident, which is how a system grows a second radius while everyone believes it has two.
 
 **No third radius.** A `12px` button beside an `8px` button reads as a mistake rather than as a hierarchy.
 
@@ -692,7 +747,7 @@ Borders are 1px hairlines at rest and 2px only to signal focus or error — weig
 
 **Logo, business name, one CTA. No nav links** — the page has four sections and a menu for four anchors is furniture.
 
-- **At rest:** transparent, no border, 18px vertical padding, 80px tall. The mark is inverted to white and the wordmark takes `--color-fg-on-band`, because the header sits on the navy hero plate and a navy mark on navy is invisible.
+- **At rest:** transparent, a **transparent** 1px bottom border rather than none — it holds the row so the header does not resize by a pixel when it materialises — 18px vertical padding, **81px** tall including that border. The mark is inverted to white and the wordmark takes `--color-fg-on-band`, because the header sits on the navy hero plate and a navy mark on navy is invisible.
 - **Scrolled past 40px:** `white` at 82% with a 14px backdrop blur and a 1px `grey-200` bottom edge, over 300ms. Mark and wordmark return to ink.
 - **CTA:** `blue-600` fill on the band, `navy-900` fill once scrolled.
 
@@ -735,7 +790,7 @@ Full-width `blue-600` band on the plate's bottom edge, `blue-50` text in the dis
 
 **The band is flat.** It carried `skewY(-1.2deg)` with a cancelling counter-skew on its track until the user ruled the lean out on 2026-08-13. Both halves went together — a counter-skew exists only to undo an outer skew, so removing one and keeping the other leaves the type rotated against a level band.
 
-Seven facts, doubled back to back so translating by exactly one copy's measured width loops seamlessly.
+Four lines, doubled back to back so translating by exactly one copy's measured width loops seamlessly. The count is not baked in: the tween measures what is rendered.
 
 ### Section head
 
@@ -756,17 +811,30 @@ The closing heading carries no numeral: it is a call to action, not a step, and 
 
 Two columns above 980px — copy and legend left, the panel right. One column below, **panel first**, because the two-scroll rule is about reaching the grid and not about reaching the paragraph that introduces it.
 
-**The panel** is white, square, **3px `navy-900`**, `shadow-lg`, holding the date row, the slot grid and the hand-off bar.
+**The panel** is white, square, **3px `navy-900`**, `shadow-lg`, holding the date row and its calendar, the offer panel, the slot grid and the hand-off bar.
 
 > **The edge moved twice.** It was written here as 1px `grey-200`, built as 3px `blue-600` in the redesign, and went **navy on 2026-08-15** on the user's call — at the same time as `/booking`'s plate, so the two surfaces never drift. **`blue-600` means interactive** in this system: links, focus, available slot borders, selected states. A plate edge is structure and nothing about it is clickable, so the accent was spending itself on the one part of the panel a visitor cannot act on. With the edge navy, the **available slot cells are the only blue on the plate** — which is the whole point of having an accent.
 
 **The legend** is three rows — Tersedia, Menunggu konfirmasi, Terisi — each a 40×22px chip in the state's surface and border with an `sm` label. It carries the three **live** states only; `elapsed` is explained by its own collapsed group's label, and a fourth row would imply elapsed slots are something a visitor might act on.
 
-**The hand-off bar** appears inside the panel when a slot is selected: `navy-900` fill, white text, showing the selected slot on the left and "Lanjut ke WhatsApp →" on the right. It is the moment the page's whole purpose becomes a single button, and the only navy surface inside a light section.
+**The offer panel** sits between the date row and the scarcity line: a `blue-50` field, edge to edge, closed by the same 2px `navy-900` rule every panel on this plate is closed by, holding a 20px camera glyph and the line **"Gratis fotografer di 1 jam pertama, 16.00–24.00"** at `sm`.
+
+> **It came down from the hero on 2026-08-15 and every colour on it was re-derived, not copied.** The hero's version of this plate is painted for a NAVY ground and every ink on it is an `-on-band` token. `blue-400` — the hero offer's border and glyph — measures **2.54:1** on white, below the 3:1 non-text bar and nowhere near AA, so it may not appear on this plate at all. `--color-interactive` (`blue-600`) is the light-surface equivalent and measures **4.75:1** on this `blue-50` field. Measured on the same field: `navy-900` at **15.69:1** for "Gratis fotografer", `navy-400` at **6.38:1** for the conditions after it.
+
+- **It is a panel, not a plate inside a plate.** The hero drew a full border because a `navy-700` fill on a navy plate computes 1.31:1 and could not hold a field on its own. Here the plate already divides itself into panels, so the 2px `navy-900` rule below is the boundary — it measures **17.07:1** against the plate — and the `blue-50` fill only has to differ. Its **1.09:1** against white is deliberately not load-bearing and is not claimed as a signal.
+- **Same rules as the hero's:** square, no radius, not an eyebrow, no side-tab accent, and **no status triple** — amber and red mean slot states in this system, and an offer is not a state.
+- **The split inside the line is weight and ink, never `<strong>` and never opacity.** "Gratis fotografer" takes `navy-900` semibold and the conditions take `navy-400`; both clear AA on the field independently, which is the rule the date pill's own P0 established.
+- **No entrance of its own.** The plate reveals whole through `data-reveal`, and a panel fading in separately would argue it is a different object from the sign it is painted on.
+- Measured: 48.39px tall on one line from 768px up, 70.78px on two lines at 320 and 375px, at every viewport with zero horizontal overflow.
+
+**The hand-off bar** appears inside the panel when a slot is selected: `navy-900` fill, white text at **17.07:1**, showing the selected slot on the left and "Lanjut isi data →" on the right. It is the moment the page's whole purpose becomes a single button, and the only navy surface inside a light section.
+
+> **It goes to `/booking?date=…&time=…` since 2026-08-15, not to WhatsApp.** It read "Lanjut ke WhatsApp →" and opened a `wa.me` deep link. WhatsApp did not leave the journey — it moved to the far side of the database write, where a person confirms a booking that already exists. **The label had to stop naming WhatsApp** for the same reason it once had to name it: a visitor should never be surprised by where a button takes them, and this one no longer takes them off the site.
 
 - It rises 12px and fades in over 350ms. **The selection fill it follows still lands at 0ms.**
 - It is `aria-live="polite"`, so a screen-reader user learns the hand-off exists without having to find it.
 - When hidden it is `pointer-events: none` and its link is not focusable, so a keyboard user never tabs into an invisible control.
+- **It stacks on a phone and runs as one line from 560px of plate**, and the arithmetic was redone when the label shortened. "Lanjut isi data →" is **115.98px** against the retired label's **161.92px**, and the widest of the eighteen slot strings ("08.00 - 09.00") is **165.53px** in the display face — 293.51px of content with the 12px gap. The plate offers 250px of content at a 320px viewport and 305px at 375px, so the shorter label now _would_ fit at 375px. **The breakpoint deliberately did not move**: eleven pixels of slack against a display face that arrives after first paint buys a one-line band that ruptures mid-load on the primary device.
 
 ### Slot Cell
 
@@ -828,6 +896,22 @@ The state label sits **under** the time inside every cell at every width — it 
 
 The row scrolls horizontally with its scrollbar hidden and `overscroll-behavior-x: contain`. **The scrollbar is hidden, not absent** — the pill shape is what says "this scrolls".
 
+**The row carries fourteen pills, not the whole window.** The booking window went from 14 days to 92 on 2026-08-15; ninety-two pills in one hidden-scrollbar strip is a control whose far end nobody reaches, on the device where horizontal space is scarcest. Fourteen covers the same-day and next-day demand PRODUCT.md calls the most shaping confirmed fact. **A date chosen in the calendar is appended to the row** so the pills can never show fourteen unselected dates above a grid rendering a fifteenth.
+
+**The pill prints its year only when the window has crossed one.** `11 Agu` is the common case; a 92-day window opened in December reaches into the next year, where two bookable dates both read `1 Jan` and a bare label cannot tell them apart.
+
+### Date calendar
+
+Behind a **"Pilih tanggal lain"** disclosure under the pill row — the elapsed group's toggle twin, same caret, same muted `sm` label, same hover wash, because this plate has one way of saying "there is more behind this".
+
+- **Square cells, not pills.** The One-Round-Shape Rule is unspent here: the calendar does not scroll sideways and is not a strip, so it takes the plate's own geometry and the two controls stay distinguishable at a glance.
+- **44px tall cells, one seventh of the plate wide.** Measured: 38 × 44px at a 320px viewport, 45.86 × 44px at 375px, 95.5 × 44px at 768px. The 44px tap floor is met on the vertical axis at every width and on both axes from 375px up; 320px is the one width where the horizontal axis falls under it.
+- **Selected** takes `blue-600` fill and border with white text. **Today** takes a `navy-900` ring and no fill — a filled today beside a filled selection would be two cells claiming one meaning.
+- **Out-of-window days stay as cells and are `aria-hidden`.** They keep the month a real grid — a date is located by its column — while the Visible-Unavailable Rule does not reach them: that rule is about slots, where "taken" is information. Yesterday is not information, it is the shape of the month. Every date a visitor can act on is a button.
+- **Month headings are unabbreviated and always carry the year** — `Agustus 2026` — and are `sticky` inside the scroller, so the month being scrolled through is always named.
+- **The scroller is capped at `min(58svh, 420px)`.** Four month grids unrolled inline measure 1218px, which would shove the slot grid off the screen exactly when a visitor went looking for a date. Capped, the calendar scrolls inside itself and the grid stays where it was.
+- **It is unmounted when closed, not held at `height: 0`.** A collapsed panel still holding 92 buttons is 92 invisible tab stops. Opening animates the height over 280ms; closing is instant, which is what the elapsed group already does.
+
 ### Ketentuan rule row
 
 Ten full-width rows on the navy band, divided by 1px `navy-700` hairlines.
@@ -840,15 +924,23 @@ Ten full-width rows on the navy band, divided by 1px `navy-700` hairlines.
 
 ### Location section
 
-Three stacked uppercase display lines in the `location` role — `ARENA` / `PLAYER` / `LOMBOK` — with the **middle** line outlined at 1.5px in `navy-400`, a metadata list, and the map placeholder beside them above 980px. Columns are `minmax(0, 1.25fr) minmax(0, 0.75fr)`.
+Three stacked uppercase display lines in the `location` role — `ARENA` / `PLAYER` / `LOMBOK` — with the **middle** line outlined at 1.5px in `navy-400`, a metadata list, and the map plate beside them above 980px.
 
-**`minmax(0, …)` rather than a bare `fr`**, deliberately: a bare `1.25fr` expands to `minmax(auto, 1.25fr)` and the auto minimum sits on the track, which is the exact mechanism behind this section's original overflow.
+**The columns are `minmax(0, 1fr)` and a fixed `50vw` map**, replacing the `1.25fr / 0.75fr` split the placeholder used. The map's size was chosen by the user on 2026-08-15: **50vw wide by 100svh tall** beside the text above 980px, stacking below it with the map **60svh above** the text, because 50vw on a 375px phone is 187px and no map is usable at that width. `svh` rather than `vh` throughout, since the primary visitor arrives inside an in-app browser and `vh` lies there.
+
+**A fixed `50vw` column only works because the composition takes the full page width**, and the arithmetic is the argument. Dropped into the old grid, a 50vw map leaves the text column **119px at 980px** and 198px at 1280px, against the **320.7px** `LOMBOK` needs at the value `--text-location` resolves to there. It fails that way because the row is already reduced twice before the split: by the container's `--space-section-x` padding, and by the section numeral's track. So the map **bleeds right to the viewport edge** and the text **reclaims the numeral indent** to the left — the same judgement the order plate's full-width opt-in records, that the indent is taste and the width is a measured requirement. The text column is then `50vw − padding − gap` up to `--container-max` and a flat **544px** above it: 402.8px at 980, 496px at 1280, 544px at 1440 and beyond, against a `LOMBOK` of 320.7px at 980 rising to its 381.8px cap. The tightest point on the curve is 980px with **82px** to spare.
+
+**`minmax(0, …)` rather than a bare `fr`**, deliberately: a bare `1fr` expands to `minmax(auto, 1fr)` and the auto minimum sits on the track, which is the exact mechanism behind this section's original overflow.
 
 **The copy is confirmed.** DESIGN.md specifies the treatment and not the words, so `ARENA / PLAYER / LOMBOK` was chosen by an agent on 2026-08-12 and carried an in-file flag saying no one had approved it. The client confirmed both the business name and the region on 2026-08-13. **The scale is still bound to "LOMBOK" specifically**, so any future copy change means re-deriving `--text-location` against the new longest word.
 
-**The map placeholder is a designed state, not an empty box.** 4:3, a `--diag` gradient from `blue-50` through white to `blue-100`, a 44px `grey-200` grid at 50% opacity, and a `blue-600` pin. It carries its own note explaining that coordinates are pending. This exists because the benchmark shipped a dead grey rectangle as its final state, and because the address and coordinates are unsupplied — the section has to look finished while the content is missing.
+**The map is the client's own Google embed, and it is a plate rather than a rectangle.** It replaced the designed placeholder on 2026-08-15, when the client supplied the embed and with it the coordinates the placeholder existed to apologise for. It meets the four conditions of the [Embed Rule](#the-benchmark-read--what-inverted-and-surpass-mean-concretely): square 2px `navy-900` edge with the bleeding side undrawn, a `navy-900` nameplate strip above the map carrying `KOORDINAT` and the figures read off the embed's own parameters, `blue-50` on `navy-900` at **15.69:1**, and nothing painted over Google's own surface.
 
-The metadata list is `Alamat`, `Jam operasional` and `WhatsApp`. **Operating hours read `06.00–24.00 WITA`.**
+**The reveal is a clip-path sweep**, left to right, fired once when the section enters and then never again — a straight `inset()`, not a skewed one, because the axis table names five leaning elements and a sixth would be a defect. It runs on the frame and never on the `<iframe>`, and the clip is **removed** on completion rather than left at its end value, so a visitor dragging the map afterwards does so through nothing at all.
+
+**Below 980px the map is inert until it is tapped**, chosen by the user on 2026-08-15. A Google map pans on a one-finger drag, so a 60svh embed between the heading and the address stole the scroll of anyone whose thumb landed on it. A `navy-900` label at the `xs` step reads `Ketuk untuk menggeser peta`; one tap frees the map for the rest of the session. The gate is **pointer-only by construction** — a button stacked over the frame intercepts touch, while focus order is DOM order and owes nothing to stacking, so the iframe stays in the tab sequence and the gate can trap nobody. Above 980px it does not exist: a cursor never had the problem. **Its absence is the safe state**: the overlay is rendered only once the client is running, so no-JS, a failed hydration or a 404'd chunk all leave a map that pans rather than one that is permanently dead.
+
+The metadata list is `Alamat`, `Jam operasional` and `WhatsApp`. **Operating hours read `06.00–24.00 WITA`.** **The section now carries no content placeholder at all** — the coordinates arrived with the embed and the street address followed the same day, so all three fields are set as facts in `--color-fg` rather than one of them in the muted ink a "menyusul" note takes.
 
 ### Closing CTA
 
@@ -973,7 +1065,7 @@ Square, 1px `grey-200` border, white fill, 24px internal padding, `shadow-sm` at
 - **Don't** outline a word a visitor reads on a navy band. Outline is a light-ground device; on navy it is reserved for `aria-hidden` structure.
 - **Don't** set outlined text below 24px, or ship `color: transparent` without both fallbacks. The failure mode is an invisible word, not an ugly one.
 - **Don't** ask for a font weight the project does not load. Panchang has 500, 700 and 800; a 900 renders as 800 and every document quoting 900 is then wrong.
-- **Don't** render a price on `/`. That half of the rule is permanent. `/booking` is the exception the client settled on 2026-08-11 — a real rupiah amount appears there, once the visitor has arrived through the WhatsApp link.
+- **Don't** render a price on `/`. That half of the rule is permanent. `/booking` is the exception the client settled on 2026-08-11 — a real rupiah amount appears there. **The rule names a surface, not a referrer**: it was written as "once the visitor has arrived through the WhatsApp link", and that wording expired on 2026-08-15 when `/` began linking to `/booking` directly.
 - **Don't** invent a placeholder price on `/booking` either. The rate card has not been supplied. Every other placeholder in this project is inert if it ships by accident; a price is the one a visitor would act on.
 - **Don't** print `Asia/Jakarta`, `WIB`, or any Jakarta-derived time anywhere. The field runs on WITA.
 - **Don't** reword, retitle, re-capitalise or shorten the Ketentuan. Ten rules, verbatim, and `check:docs` compares them character for character.
@@ -1032,7 +1124,7 @@ Square, 1px `grey-200` border, white fill, 24px internal padding, `shadow-sm` at
 - **Client re-approval.** The client approved the light-only direction on 2026-08-11. They have not seen this one, and the typeface has changed twice since. **No amount of work here closes this.**
 - **`--text-body` is undefined**, so body text renders 16px flat instead of scaling to 18px. Defining it is a visual change nobody has approved.
 - **The hero eyebrow wraps to two lines** at 375px and 414px.
-- **`rounded.panel` survives on the map placeholder** and nowhere else.
+- **Three tokens are unconsumed since the map placeholder was replaced** — `--diag`, `--color-gradient-end` and, until it was deleted, `rounded.panel`. The first two are declared and read by nothing; retiring them is owed.
 - **`:focus-visible` is 2px/2px** where this document specifies 3px/3px.
 - **Lighthouse mobile Performance median is 71** against the ≥85 gate.
 - **No scroll-reveal on the location and closing sections.** Both are server components with zero JS; whether they should have one is unasked.

@@ -17,15 +17,19 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 ## 2. Outcome and proof
 
-**Primary action:** select a slot → WhatsApp opens with the booking template. That is the section's only job; it is the single exit.
+**Primary action:** select a slot → `/booking?date=…&time=…` opens with both already chosen. That is the section's only job; it is the single exit.
 
-**Success:** the organiser leaves for WhatsApp with the right date and time, in under 30 seconds, without having read every row.
+**Success:** the organiser reaches the form with the right date and time, in under 30 seconds, without having read every row.
+
+> **CHANGED 2026-08-15 — the exit moved.** It was `wa.me`, opened with a prefilled template, and `/booking` came back through the chat as a link the admin typed. WhatsApp is now the step *after* submitting: the admin confirms a booking that already exists rather than transcribing one that does not. The brief's shape is unchanged — one action, one exit, no reservation implied — only the destination.
 
 **Product-specific truth a template could not claim:** the availability shown is backed by a database constraint, not by someone's memory. Selection holds nothing — only a successful POST does — so the section must never imply a reservation it has not made.
 
 ## 3. Selected direction
 
-**Date row — today preselected, far dates behind a control.** `Hari ini` and `Besok` as prominent pills; days 3–14 behind a `Pilih tanggal` control. Two taps covers the overwhelming majority of bookings, and the scarcest horizontal space at 375px stops being spent on the least-used dates.
+**Date row — today preselected, far dates behind a control.** The first two weeks as pills; the rest of the window behind a **`Pilih tanggal lain`** disclosure. Two taps covers the overwhelming majority of bookings, and the scarcest horizontal space at 375px stops being spent on the least-used dates.
+
+> **BUILT 2026-08-15, AND THE SPLIT MOVED WHERE THE WINDOW DID.** The brief cut at day 2 against a 14-day window; the window is now 92 days, so the cut is at day 14 — the fortnight PRODUCT.md's same-day/next-day finding actually covers — and the disclosure carries 78 days rather than 12. **§7's open decision on the `Pilih tanggal` surface is CLOSED: an inline month calendar, on the plate.** Not a native `<select>` (92 options in a system dropdown is the same unreachable list in a worse control, and it cannot show a weekday column) and not a bottom sheet (a floating overlay is the one thing an enamel sign has no vocabulary for, and it costs a scroll lock, a focus trap and a dismiss gesture the plate does not otherwise need). A month grid is the shape the question already has in the visitor's head — "the Saturday after next" is a position, not an offset — and it is the only layout where the far end of the window costs the same number of taps as the near end. It is capped at `min(58svh, 420px)` and scrolls inside itself, so opening it never displaces the grid.
 
 **Elapsed hours — collapsed, not hidden, not mislabelled.** Past slots for today fold into a single expandable `Sudah lewat (N)` row at the top of the list. The list opens on what is actually bookable; the day never reads as full; nothing is erased.
 
@@ -37,7 +41,7 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 ## 4. Scope and boundaries
 
-**In scope:** the date row, the scarcity line, the slot list including the collapsed elapsed group, all slot states, the loading/error/empty states, and the WhatsApp handoff that exits the section.
+**In scope:** the date row and its calendar, the offer panel, the scarcity line, the slot list including the collapsed elapsed group, all slot states, the loading/error/empty states, and the `/booking` handoff that exits the section.
 
 **Untouched:** the token system in `docs/DESIGN.md`; the one-column slot layout and its 20-character justification; the Visible-Unavailable Rule; the wa.me message template in the PRD; hero, Ketentuan, Location, footer.
 
@@ -62,14 +66,14 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 **Scarcity counter rule.** Appears only when **1–3** slots remain. Above that it is suppressed — "sisa 8 slot" is not scarcity, it advertises an empty venue, which works directly against the client's goal. Counts genuinely available slots only; elapsed slots are never counted.
 
-**Ranges:** 9 slots/day fixed. Elapsed today ranges 0–9. Date window today + 13, Asia/Jakarta.
+**Ranges:** 18 slots/day fixed since 2026-08-15 (was 9). Elapsed today ranges 0–18. Date window today + 91 (92 days), Asia/Makassar — the brief said today + 13 and Asia/Jakarta, and both were corrected before this section was built.
 
 ## 6. Interaction and layout
 
 - **Hierarchy:** scarcity line → date row → bookable slots → collapsed elapsed group → CTA. The elapsed group is a summary, not a section; it must not dominate.
 - **Topology:** single column throughout, 375px-first. The date row is the only horizontally scrolling element and keeps `overscroll-behavior-x: contain`.
 - **Affordances:** `Sudah lewat (N)` must read as expandable before it is tapped. `Pilih tanggal` must read as opening something, not as a third date.
-- **Feedback:** selecting a slot changes it and only it; the CTA becomes enabled and names WhatsApp explicitly in Indonesian — the user should never be surprised by leaving the site.
+- **Feedback:** selecting a slot changes it and only it; the CTA becomes enabled and names the next step explicitly in Indonesian — `Lanjut isi data →`. It named WhatsApp until 2026-08-15 and stopped when the destination did: the rule was never "say WhatsApp", it was that the user should never be surprised by where a button takes them.
 - **Reversibility:** a selected slot can be deselected, not merely replaced.
 - **Accessibility:** selection state must be exposed to assistive tech. Elapsed and unavailable rows stay in the tab order via `aria-disabled`, never native `disabled` — the date pill's current use of native `disabled` in `docs/DESIGN.html` contradicts the Visible-Unavailable Rule and must not be copied.
 
@@ -81,7 +85,7 @@ Surface mode is **Persuade** — `/` is a landing page and this section is its c
 
 **A builder must not invent:**
 
-- The `Pilih tanggal` surface. Native select, bottom sheet, or inline expansion is an open interaction decision — ask.
+- ~~The `Pilih tanggal` surface.~~ **CLOSED 2026-08-15** — inline month calendar, reasoning in §3. A builder must not reopen it without a reason the §3 note does not already answer.
 - Any Indonesian copy beyond what is specified here.
 - The scarcity threshold. It is 1–3, stated above, for a reason.
 

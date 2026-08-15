@@ -67,6 +67,40 @@
   ); /* 40px -> 100px, 0.8 leading, skewed --skew, outlined */
   --text-h2: clamp(1.75rem, 1rem + 3.4vw, 3.5rem); /* 28px -> 56px, section headings */
   --text-h3: clamp(1.25rem, 0.99rem + 1.13vw, 2rem); /* unchanged by the redesign */
+
+  /* NEW 2026-08-15. The SUBTITLE — the line directly under a display headline,
+   * set in the BODY face. Exactly ONE call site: the hero's sub-lede in
+   * `Hero.tsx`, and nothing else. A second usage under a section `h2` would be
+   * the kicker-below-heading twin of the banned kicker-above-heading pattern:
+   * `Section` already gives every heading a lede at body size, and that is the
+   * role for prose under a heading.
+   *
+   * WHY IT EXISTS AT ALL, AND WHY IT IS NOT A FIX FOR THE `--text-body` DEFECT.
+   * The hero sub-lede carried NO size token — it inherited `body`, and
+   * `--text-body` is undefined (its only reference in this repo is the `body`
+   * rule further down this file), so an invalid `var()` made that declaration
+   * invalid at computed-value time and the line has always rendered a flat
+   * 16px. DESIGN.md records that as an open defect. Defining `--text-body`
+   * would grow prose on every surface in the project, which is a visual change
+   * nobody has approved — so the subtitle gets its OWN role instead. The defect
+   * is untouched and still owed.
+   *
+   * BOTH ENDS ARE DERIVED RATHER THAN PICKED: the subtitle sits exactly halfway
+   * between body and `h3` at each end of the ramp. Body is 16px fixed and `h3`
+   * runs 20px -> 32px, so this runs (16+20)/2 = 18px -> (16+32)/2 = 24px. That
+   * keeps it unmistakably larger than prose while never reaching an `h3`, which
+   * matters because `h3` is the display face: a body-face paragraph setting at
+   * the same size as a Panchang sub-heading stops being distinguishable by size
+   * and has to be told apart by shape alone.
+   *
+   * THE MIDDLE TERM IS ANCHORED TO TWO WIDTHS THIS PROJECT ALREADY MEASURES AT.
+   * `0.97rem + 0.66vw` crosses 18px at **376px**, so the 375px design width
+   * takes the floor exactly; and it crosses 24px at **1285px**, which is where
+   * `--container-max` (1280px) has already stopped the box from widening. The
+   * type stops growing where its measure stops growing — the same argument
+   * DESIGN.md makes for the hero headline's 128px cap. */
+  --text-subtitle: clamp(1.125rem, 0.97rem + 0.66vw, 1.5rem); /* 18px -> 24px */
+
   /* sm, xs and eyebrow are FIXED. Shrinking a caption below 12px on a phone is
    * an accessibility failure; growing it on desktop stops it reading as
    * secondary. (This said "below 14px" until 2026-08-12 — a floor --text-xs
@@ -194,16 +228,26 @@
    * The pill stays the ONLY fully-round shape — that is what makes a row of
    * date pills read as horizontally scrollable without an arrow or a fade.
    *
-   * `--radius-panel` IS THE OUTSTANDING ONE. Its only remaining consumer is
-   * the map placeholder, which keeps 22px while every other plate has lost
-   * its radius; it is recorded as owed in PROGRESS.md rather than fixed here,
-   * because that placeholder carries the address-and-coordinates content
-   * marker and gets rebuilt when the client supplies real coordinates. (Named
-   * in prose rather than written as the marker itself: `check:docs` reads the
-   * literal string as a declaration, and a comment about a placeholder is not
-   * a placeholder — it failed exactly that way once.) */
+   * `--radius-panel` IS GONE, RETIRED 2026-08-15 ON THE CONDITION THIS BLOCK
+   * ALREADY NAMED. It was 22px and it was down to one consumer, the map
+   * placeholder, which kept its radius while every other plate lost one; the
+   * note here said it would be settled when the client supplied real
+   * coordinates, because the placeholder was going to be rebuilt at that
+   * moment anyway. The coordinates arrived with the client's Google Maps embed
+   * and the placeholder is now a square, hard-edged plate, so the token had
+   * ZERO consumers and is deleted rather than left declared. A token nothing
+   * reads is a shape the next component might adopt by accident, which is
+   * exactly how a system grows a second radius.
+   *
+   * THE TWO SURVIVORS ARE BOTH DELIBERATE. `--radius-control` is kept AT ZERO
+   * rather than deleted from the button: a single place to answer "what shape
+   * is a control here" is worth more than one saved line, and Phase 3's form
+   * inputs ask the same question. The pill's roundness is functional
+   * signalling, not decoration, and stays the only one.
+   *
+   * Anything that wants a rounded panel now has to argue for a third radius
+   * in DESIGN.md first, which is the point. */
   --radius-control: 0px; /* was 12px, was 10px */
-  --radius-panel: 22px; /* the map placeholder only — see above */
   --radius-pill: 9999px; /* unchanged */
 
   /* --- Depth. Navy-tinted, except the one accent-tinted exception below. */
@@ -345,18 +389,36 @@
 
 /* THE HEADER IS FIXED, SO EVERY ANCHOR JUMP OWES IT ITS OWN HEIGHT.
  *
- * `SiteHeader` is 80px tall — 18px padding top and bottom around a 44px CTA —
- * and it is `position: fixed`, so it is out of flow and an untreated `#lokasi`
- * jump lands with the section's heading underneath it. Declared once here on
- * the scroll container rather than as a `scroll-mt` on each section, because
- * per-section is exactly how three of four anchors end up correct and the
- * fourth does not. Sections keep their own small `scroll-mt` on top of this
- * for breathing room.
+ * `SiteHeader` is **81px** tall and it is `position: fixed`, so it is out of
+ * flow and an untreated `#lokasi` jump lands with the section's heading
+ * underneath it. The arithmetic, which this comment used to get wrong by
+ * leaving out the last term:
+ *
+ *     18px  py-[18px], top
+ *   + 44px  the `size="sm"` CTA (Button's HEIGHT map: `h-11`)
+ *   + 18px  py-[18px], bottom
+ *   +  1px  border-b — present in BOTH header states, transparent at rest and
+ *           `--color-border` past 40px, so it occupies a row either way
+ *   ------
+ *     81px
+ *
+ * The old value said 80px and the old comment said "18px padding top and
+ * bottom around a 44px CTA", which sums to 80 only because the border was
+ * never counted. One pixel is not a visible miss on its own; a comment whose
+ * own arithmetic does not reach its own number is, because the next reader
+ * re-derives 80 and concludes the border is absent.
+ *
+ * Declared once here on the scroll container rather than as a `scroll-mt` on
+ * each section, because per-section is exactly how three of four anchors end
+ * up correct and the fourth does not. There are exactly four in-page anchors —
+ * `#order` from the header CTA, the hero CTA and the closing CTA, and `#lokasi`
+ * from the hero — and both destinations go through `Section`, which adds its
+ * own `scroll-mt-4` on top of this for breathing room.
  *
  * This also covers the anchors the hero's CTAs use, which are the two that
  * actually get clicked. */
 html {
-  scroll-padding-top: 80px;
+  scroll-padding-top: 81px;
   /* SMOOTH SCROLL FOR IN-PAGE NAVIGATION, added 2026-08-14. Every real
    * destination on this page is an anchor — the header CTA and both hero CTAs
    * jump to `#order` or `#lokasi` — so an instant teleport is the one thing
@@ -368,6 +430,30 @@ html {
    * motion; this is undone for free, because the reduced-motion block at the
    * foot of this file already forces `scroll-behavior: auto !important`. */
   scroll-behavior: smooth;
+
+  /* `clip`, NOT `hidden`, AND THE DIFFERENCE IS THE REASON THIS IS SAFE TO ADD.
+   * `overflow-x: hidden` makes the element a SCROLL CONTAINER, which would put
+   * `position: sticky` on a different scrollport and break `scroll-behavior`
+   * and `scroll-padding-top` above — the smooth anchor scroll and the 81px
+   * header offset are both on this element. `clip` paints nothing outside the
+   * box and creates no scrollport, so everything above keeps working.
+   *
+   * WHY IT IS NEEDED, MEASURED RATHER THAN PRECAUTIONARY. The Location map
+   * bleeds to the viewport edge with a width derived from `100vw`, and `100vw`
+   * INCLUDES a classic desktop scrollbar while the layout width does not. The
+   * padding half of that arithmetic cancels exactly — the container computes
+   * its own padding from the same `100vw` — but above `--container-max` the
+   * gutter term overstates by half the scrollbar's width, about 8px, which
+   * would show as a horizontal scrollbar on Windows and nowhere else. Headless
+   * Chrome draws no classic scrollbar and reported 0 overflow at 320 through
+   * 2560, so this closes a gap the browser used for verification structurally
+   * cannot show.
+   *
+   * It is a floor for the whole page, not a licence: a section that overflows
+   * is still a defect, and `#lokasi` measures 0 at every width WITHOUT this
+   * line. Clipping is what keeps one platform's scrollbar from turning a
+   * correct layout into a visible bug. */
+  overflow-x: clip;
 }
 
 /* THE ONE PLACE THE TYPE SCALE IS OVERRIDDEN, AND IT IS 39px WIDE.

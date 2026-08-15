@@ -330,13 +330,46 @@ export function Hero() {
           <span className="block leading-[0.9]">Main.</span>
         </h1>
 
+        {/* THE SUBTITLE, AND IT IS A ROLE NOW RATHER THAN A PARAGRAPH.
+              Copy replaced 2026-08-15 at the user's direction, verbatim.
+
+              IT CARRIED NO SIZE TOKEN AT ALL UNTIL THIS PASS, which is why it
+              read as body copy: it inherited `body`, and `--text-body` is
+              undefined, so the `body` rule's `font-size` was invalid at
+              computed-value time and this line has always rendered a flat 16px
+              at every width. DESIGN.md records that as an open defect and says
+              defining the token would grow prose site-wide — a change nobody has
+              approved. So the subtitle takes `--text-subtitle`, its own role,
+              and the defect is left exactly where it was.
+
+              `--text-subtitle` IS THIS TOKEN'S ONLY CALL SITE. Its derivation
+              lives on the token in globals.css: halfway between body and `h3` at
+              both ends of the ramp, floor binding at 375px and cap at the width
+              where the container stops widening.
+
+              LEADING 1.45, NOT THE INHERITED 1.6. Body leading is set for a
+              60-68ch reading measure; at 24px inside a 42ch column it opens a
+              gutter between lines that reads as three separate sentences rather
+              than one subtitle. Tightening is what gives the line PRESENCE at a
+              size the headline is already dominating.
+
+              NOT UPPERCASE, AND THAT IS A RULE RATHER THAN A CHOICE. DESIGN.md's
+              Uppercase-Is-Display-Only Rule limits uppercase to `display`,
+              `numeral`, `h2` and `eyebrow`; body, `sm` and `xs` never are, and
+              uppercase Indonesian is measurably slower to read.
+
+              STILL MUTED, STILL 42ch. `--color-fg-muted-on-band` is navy-200,
+              the on-band secondary ink — promoting it to the headline's own
+              blue-50 would flatten the one hierarchy this plate has. The measure
+              cap stays because a subtitle that grew to 24px inside a 64ch column
+              would out-measure the headline it sits under. */}
         <p
           data-rise
           lang="id"
-          className="mt-7 max-w-[42ch] text-[color:var(--color-fg-muted-on-band)]"
+          className="mt-7 max-w-[42ch] text-[length:var(--text-subtitle)] leading-[1.45] text-[color:var(--color-fg-muted-on-band)]"
         >
-          Jadwal lapangan mini soccer di Lombok, tampil langsung. Pilih jam kosong, lanjut lewat
-          WhatsApp.
+          Booking lapangan mini soccer di Arena Player lebih cepat dan mudah. Cek ketersediaan
+          jadwal, amankan jadwalmu sekarang juga!
         </p>
 
         {/* THE OFFER PLATE — a smaller enamel field riveted onto the big one.
@@ -363,11 +396,34 @@ export function Hero() {
             rather than a left tab: the side-tab accent is banned twice in this
             project and was added and removed once already.
 
-            Measured on this fill: blue-50 text 11.94:1, blue-400 hours 5.11:1. */}
+            Measured on this fill: blue-50 text 11.94:1. The second figure this
+            line used to carry belonged to the blue-400 hours, which are no
+            longer set here — a recorded ratio for ink that has left the file is
+            a number nothing can falsify, which is exactly how this project
+            shipped two overstated ratios in a day.
+
+            THE LINE SHORTENED TO TWO WORDS ON 2026-08-15, and the shape had to
+            answer for it. `di 1 jam pertama, 16.00-24.00` moved to the order
+            section, where a visitor is choosing hours and the window is
+            actionable rather than decorative; here it was a condition being read
+            before anyone had a reason to care.
+
+            `max-w-[38ch]` IS GONE BECAUSE IT WAS DEAD, NOT BECAUSE IT WAS WRONG.
+            The remaining string is 17 characters, so a 38-character ceiling can
+            never bind at any width — a constraint that cannot fire is a claim
+            about the layout that nothing tests. `w-fit` alone now decides the
+            plate's width, which is what it always actually did.
+
+            `items-center`, AND THE `mt-[2px]` GLYPH NUDGE IS GONE WITH IT.
+            `items-start` plus a 2px offset existed to hang the camera off the
+            FIRST of several text lines — with one line it pushed a 20px glyph
+            2px below the centre of a 21px line box, which is a visible tilt on
+            an element small enough that the eye reads it as one object. One line
+            centres. */}
         <p
           ref={offerRef}
           lang="id"
-          className="mt-9 flex w-fit max-w-[38ch] items-start gap-3 border border-[var(--color-interactive-on-band)] bg-[var(--color-border-on-band)] px-4 py-3 text-[length:var(--text-sm)] text-[color:var(--color-fg-on-band)]"
+          className="mt-9 flex w-fit items-center gap-3 border border-[var(--color-interactive-on-band)] bg-[var(--color-border-on-band)] px-4 py-3 text-[length:var(--text-sm)] font-semibold text-[color:var(--color-fg-on-band)]"
         >
           {/* Feather's own camera, drawn inline rather than imported. The
               landing page has no `react-icons` import and PROGRESS.md records
@@ -383,17 +439,18 @@ export function Hero() {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="mt-[2px] h-5 w-5 shrink-0 text-[color:var(--color-interactive-on-band)]"
+            className="h-5 w-5 shrink-0 text-[color:var(--color-interactive-on-band)]"
           >
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
-          <span>
-            <strong className="font-semibold">Gratis fotografer</strong> di 1 jam pertama,{" "}
-            <span className="font-semibold text-[color:var(--color-interactive-on-band)]">
-              16.00–24.00
-            </span>
-          </span>
+          {/* NO `<strong>` ANY MORE. It marked "Gratis fotografer" as important
+              RELATIVE to the conditions beside it; with the conditions gone it
+              would be emphasis against nothing, and a screen reader would
+              announce importance on the whole of a two-word plate. The weight it
+              carried moved to the `<p>`, where it is now the plate's own setting
+              rather than a distinction inside it. */}
+          Gratis fotografer
         </p>
 
         {/* mt-4, not the mt-9 this row used to carry. The offer and the CTA are

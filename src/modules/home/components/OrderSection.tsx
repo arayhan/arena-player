@@ -1,16 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 
 import { bookingWindow, todayAtField } from "@/domain/dates";
 import type { TimeSlot } from "@/domain/slots";
 import { useMotion } from "@/lib/motion";
 
-import { WHATSAPP_NUMBER } from "../home.constants";
 import { useAvailability } from "../home.queries";
 import { countAvailable, longestFreeRun, partitionSlots } from "@/utils/slot-display";
 
-import { whatsappLink } from "../order.utils";
 import { DatePills } from "./DatePills";
 import { SlotCell } from "./SlotCell";
 import { SlotLegend } from "./SlotLegend";
@@ -19,10 +18,10 @@ import { SlotLegend } from "./SlotLegend";
  * THE ORDER SECTION — the product, rebuilt 2026-08-13 as "Pelat Enamel".
  *
  * THESIS: this is the enamel schedule plate bolted to the field gate. One flat
- * white field with a hard blue edge, divided into nine panels by 2px navy
- * rules, the hours set large enough to read from the road. What it refuses is
- * the arrangement this category always ships, and which this file used to be:
- * a 22px-radius card floating on a soft navy shadow, holding smaller rounded
+ * white field with a hard edge, divided into panels by 2px navy rules, the
+ * hours set large enough to read from the road. What it refuses is the
+ * arrangement this category always ships, and which this file used to be: a
+ * 22px-radius card floating on a soft navy shadow, holding smaller rounded
  * cards in gutters.
  *
  * THE ARRANGEMENT IS THE ARGUMENT. Restyling nine cards would have left them
@@ -45,13 +44,27 @@ import { SlotLegend } from "./SlotLegend";
  *    heading indent. The plate now takes the full content width
  *    (`contentFullWidth` on Section) and the legend moves inside it, which is
  *    what makes a column count reachable at all.
- * 2. PANCHANG SHIPS NO `tnum`, so the nine slot strings are genuinely unequal —
- *    159.94px to 180.86px at 16px. See SlotCell.tsx for the probe.
- * 3. THE HOUR IS THE BINDING STRING NOW, not the state label. "Menunggu
- *    Konfirmasi" is 143.33px and has not moved (Plus Jakarta Sans did not
- *    change), but the hour went to `--text-h3` at plate scale, where the widest
- *    of the nine measures 226.06px at 20px and 248.67px at 22px. The
- *    breakpoints below are derived from THAT, and then verified in a browser.
+ * 2. PANCHANG SHIPS NO `tnum`, so the slot strings are genuinely unequal — at
+ *    a 375px viewport, where the hour renders at 20.08px, the eighteen run from
+ *    183.95px ("11.00 - 12.00") to 221.64px ("08.00 - 09.00"). See SlotCell.tsx
+ *    for the probe.
+ * 3. THE HOUR IS THE BINDING STRING, not the state label. "Menunggu Konfirmasi"
+ *    is 143.33px and has not moved through any of this (Plus Jakarta Sans did
+ *    not change), while the hour sits at `--text-h3` and grows with the
+ *    viewport.
+ *
+ * FACTS 2 AND 3 WERE RE-MEASURED ON 2026-08-15, when the slots became eighteen
+ * one-hour strings. The figures they replaced — 159.94px–180.86px at 16px, and
+ * a widest of 226.06px — were taken against the NINE two-hour strings and
+ * described a set this file no longer renders. The breakpoints below did not
+ * have to move, and that is the measurement rather than an assumption: a
+ * one-hour string is narrower than the two-hour string it replaced, so every
+ * column count the old figures bought is still bought. Verified across the
+ * whole range at 640 / 700 / 1120 / 1180 / 1280 / 1440px — the widest hour
+ * measured 254.77 / 262.28 / 314.63 / 322.13 / 334.61 / 353.39px against cells
+ * of 584.81 / 640 / 513.2 / 540.81 / 393.33 / 393.33px, and `scrollWidth >
+ * clientWidth` on the hour was false at every one. The tightest is 1440px,
+ * where a 353.39px string sits in a 393.33px cell.
  */
 export function OrderSection() {
   const [window] = useState(() => bookingWindow());
@@ -168,7 +181,13 @@ export function OrderSection() {
         if (!el) return;
         gsap.set(el, { height: showElapsed ? "auto" : 0, overflow: "hidden" });
         if (showElapsed) {
-          gsap.from(el, { height: 0, duration: 0.28, ease: "power3.out" });
+          // `clearProps` for the reason DatePills' calendar records at length:
+          // a height tween resolves `auto` to pixels and leaves the number
+          // inline, so the opened panel stops tracking its own content. Here
+          // that would strand a fixed height over a list that reflows every
+          // time the column count changes. Only the OPEN tween clears — the
+          // `height: 0` above is the closed state and must persist.
+          gsap.from(el, { height: 0, duration: 0.28, ease: "power3.out", clearProps: "height" });
           gsap.from(el.querySelectorAll("[data-motion='elapsed-row']"), {
             y: 8,
             opacity: 0,
@@ -279,14 +298,85 @@ export function OrderSection() {
         // is for. Changed together with /booking's plate so the two never drift.
         className="@container relative z-10 overflow-hidden border-[3px] border-[var(--color-band)] bg-[var(--color-bg)]"
       >
-        {/* HEAD, PANEL ONE: the date row. Divided from what follows by the same
-            2px navy rule the fields use, so the plate reads as one ruled object
-            from its top edge down rather than as a card with a toolbar. */}
-        <div className="border-b-2 border-[var(--color-band)] p-4">
+        {/* HEAD, PANEL ONE: the date row, and since 2026-08-15 the calendar
+            behind it. Divided from what follows by the same 2px navy rule the
+            fields use, so the plate reads as one ruled object from its top edge
+            down rather than as a card with a toolbar.
+
+            THE PADDING MOVED INSIDE `DatePills`. The panel used to be `p-4`
+            around a single scrolling row; the row now has a full-width
+            disclosure under it and a full-width calendar under that, and a
+            disclosure inset by 16px on both sides is a row that stops short of
+            the rule it belongs to. The component owns its own insets so each of
+            its three parts can take the one it needs. */}
+        <div className="border-b-2 border-[var(--color-band)]">
           <DatePills dates={window} selected={date} onSelect={setDate} />
         </div>
 
-        {/* HEAD, PANEL TWO: what is left, and what the colours mean. The
+        {/* HEAD, PANEL TWO — THE OFFER. It came down from the hero on
+            2026-08-15, and only the two-word headline stayed up there: the
+            conditions are about WHICH HOURS, so they belong where a visitor is
+            choosing hours, one panel above the grid that answers them. In the
+            hero they were a term being read before anyone had a reason to care.
+
+            EVERY COLOUR HAD TO BE RE-DERIVED, NOT COPIED. The hero's plate is
+            painted for a NAVY ground and every ink on it is an `-on-band`
+            token; this plate is WHITE. `blue-400`, the hero offer's border and
+            glyph, measures 2.54:1 on white — below the 3:1 non-text bar and
+            nowhere near AA — so it may not appear here at all. Its light-surface
+            equivalent is `--color-interactive` (`blue-600`), which computes
+            4.75:1 on this `blue-50` field. Measured on the same field:
+            `navy-900` at 15.69:1 for the offer, `navy-400` at 6.38:1 for the
+            conditions.
+
+            IT IS A PANEL, NOT A PLATE-INSIDE-A-PLATE. The hero's version drew a
+            full border because a `navy-700` fill on a navy plate computes
+            1.31:1 and could not hold a field on its own. Here the plate already
+            divides itself into panels with 2px navy rules, so the rule below is
+            the boundary and the `blue-50` fill only has to differ — which is why
+            its 1.09:1 against the white plate is not load-bearing and is not
+            claimed as a signal. The same rules still bind that bound the hero:
+            square, no radius, no side-tab accent, and NO STATUS TRIPLE — amber
+            and red mean slot states in this system and an offer is not a state.
+
+            NO ENTRANCE OF ITS OWN. The plate reveals whole through
+            `data-reveal`, and a band that faded in separately would be arguing
+            it is a different object from the sign it is painted on. */}
+        <div
+          lang="id"
+          className="flex items-center gap-3 border-b-2 border-[var(--color-band)] bg-[var(--color-wash)] px-4 py-3 text-[length:var(--text-sm)]"
+        >
+          {/* Feather's own camera, drawn inline rather than imported — the same
+              glyph, at the same 24px grid and 2px stroke, the hero plate keeps.
+              The landing page has no `react-icons` import and PROGRESS.md
+              records that as deliberate, "so the landing page's budget is
+              untouched". */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 shrink-0 text-[var(--color-interactive)]"
+          >
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          <p>
+            {/* Weight and ink, never `<strong>` and never opacity. The split is
+                typographic — the offer against its conditions — not a claim
+                about importance that a screen reader should announce, and the
+                DatePills lesson stands: a level separates by size, weight or a
+                real token, never by transparency. Both halves clear AA on this
+                field on their own. */}
+            <span className="font-bold text-[var(--color-fg)]">Gratis fotografer</span>{" "}
+            <span className="text-[var(--color-fg-muted)]">di 1 jam pertama, 16.00–24.00</span>
+          </p>
+        </div>
+
+        {/* HEAD, PANEL THREE: what is left, and what the colours mean. The
             scarcity line and the legend share a rule because they answer the
             same question at two levels of detail — how many, and of what kind. */}
         {!isPending && !isError ? (
@@ -395,18 +485,16 @@ export function OrderSection() {
                 which the alternative — a navy grid background showing through
                 `gap` — cannot do.
 
-                BREAKPOINTS RE-DERIVED, NOT INHERITED. Both numbers below are
-                measured against the HOUR at `--text-h3`, which is the binding
-                string now: the widest of the nine ("06.00 - 08.00") is 226.06px
-                at 20px and 248.67px at 22px in Panchang, against
-                "Menunggu Konfirmasi" at 143.33px which no longer binds anything.
-                A field needs that plus 32px of padding and its 2px rule, so
-                two columns need roughly 566px of plate and three need roughly
-                849px. 640px and 1120px are those figures with the slack the
-                fluid type consumes as the viewport grows — the plate widens in
-                steps the type does not match, so the queries are set where
-                BOTH sides have been measured rather than where the arithmetic
-                first allows.
+                BOTH BREAKPOINTS ARE MEASURED AGAINST THE HOUR at `--text-h3`,
+                which is the binding string — "Menunggu Konfirmasi" at 143.33px
+                has not bound anything since the hour went to plate scale. They
+                were derived when the day was nine two-hour strings and they
+                SURVIVED the move to eighteen one-hour strings unchanged, which
+                is a measurement and not an assumption: a one-hour string is
+                narrower than the two-hour string it replaced at every hour, so
+                every column count the old figures bought is still bought. The
+                header comment carries the re-measured widths across the whole
+                range; nothing overflows at any of them.
 
                 640 IS THE SAME NUMBER THE OLD CODE USED AND IT IS A COINCIDENCE,
                 not a value carried forward: that one was derived from a 145.5px
@@ -450,25 +538,72 @@ export function OrderSection() {
                 only the separate, genuinely-focusable placeholder that explains
                 why.
 
-                AN ANCHOR, NOT A BUTTON WITH A HANDLER. On mobile `wa.me`
-                deep-links into the WhatsApp app rather than opening a tab, so
-                pairing it with any same-tab navigation is the exact combination
-                in-app webviews and popup blockers handle inconsistently — and
-                the Instagram in-app browser is the primary traffic here. One
-                user action, one destination, nothing racing it. No
-                `target="_blank"`: on a phone the app takeover IS the
-                navigation, and a forced new tab leaves an empty one behind.
+                IT GOES TO `/booking` NOW, NOT TO WHATSAPP — CHANGED 2026-08-15.
+                WhatsApp has not left the journey; it moved to the far side of
+                the database write. The order is now slot → `/booking` → fill and
+                upload → submit → WhatsApp to confirm with the admin, so this
+                band's job is to carry the two things the visitor has already
+                chosen into the form rather than into a chat.
 
-                IT STACKS ON A PHONE AND RUNS AS ONE LINE FROM 560px, and that
-                is measured rather than defensive. "Lanjut ke WhatsApp →" is
-                161.92px and the slot beside it another ~157px in the display
-                face, which with a gap is ~331px against 250px of band content
-                width at a 320px viewport. Two lines fit; one line does not. */}
+                THE PARAGRAPH THAT USED TO SIT HERE ARGUED FOR AN ANCHOR OVER A
+                BUTTON BECAUSE OF `wa.me`, AND NONE OF THAT REASONING TRANSFERS.
+                It said: on mobile `wa.me` deep-links into the WhatsApp app
+                rather than opening a tab, so pairing it with any same-tab
+                navigation is the combination in-app webviews and popup blockers
+                handle inconsistently. That hazard is a property of a foreign
+                scheme handing control to another app. A same-origin route has
+                no app takeover, nothing for a popup blocker to weigh in on, and
+                no second destination to race — the "one destination" rule it
+                enforced is satisfied trivially rather than carefully.
+
+                IT IS STILL A LINK, FOR ORDINARY REASONS. `next/link` gives a
+                real `href`, so long-press, middle-click and open-in-new-tab all
+                work, it is navigable before hydration, and the App Router
+                prefetches the route — which matters more here than anywhere on
+                the page, because `/booking` carries zod, react-hook-form and
+                axios and is the one bundle `/` deliberately never loads. The
+                visitor who taps this has already declared intent; paying for
+                that route while they read the band is the cheapest moment there
+                is. No `target="_blank"`: the visitor is staying on the site, and
+                the back button is now a real way out of the form.
+
+                IT STACKS ON A PHONE AND RUNS AS ONE LINE FROM 560px OF PLATE,
+                and the arithmetic was redone rather than carried over — the old
+                figure was for a longer label. "Lanjut isi data →" is 115.98px
+                against the retired "Lanjut ke WhatsApp →" at 161.92px, and the
+                widest slot beside it ("08.00 - 09.00", the widest of the
+                eighteen in the display face) is 165.53px. With the 12px gap
+                that is 293.51px of content.
+
+                THE SHORTER LABEL NOW FITS ON ONE LINE AT 375px AND THE
+                BREAKPOINT STILL DOES NOT MOVE, which is a decision rather than
+                an oversight. Measured plate widths are 282px at a 320px
+                viewport (250px of content — 293.51px does not fit, correctly
+                stacked) and 337px at 375px (305px of content — it fits, with
+                11.49px to spare). Eleven pixels is not a margin: the slot is
+                set in Panchang, and before that face lands the fallback sets
+                the same string wider, so a breakpoint tuned to 11px of slack
+                buys a one-line band that ruptures into a ragged two-line one
+                mid-load, on the primary device. Stacked at 375px the slot keeps
+                its display scale on its own line and the action sits under it,
+                which is the arrangement that survives a font swap unchanged.
+
+                THE COPY NAMED WHATSAPP AND NO LONGER DOES, WHICH IS THE POINT.
+                The surface brief required the label to name the destination
+                "so the user should never be surprised by leaving the site" —
+                they are not leaving it any more, and a band still promising
+                WhatsApp would be the surprise. */}
             <div aria-live="polite" className="border-t-2 border-[var(--color-band)]">
               {selected ? (
-                <a
+                <Link
                   ref={handoffRef}
-                  href={whatsappLink(WHATSAPP_NUMBER, date, selected)}
+                  // `time`, not `slot` — the query param and the POST field are
+                  // deliberately different words and architecture.md says so:
+                  // `time` is what a human admin would guess when typing the
+                  // link by hand, `slot` is the wire name matching TIME_SLOTS
+                  // and the `time_slot` column. Encoded because a slot string
+                  // contains spaces.
+                  href={`/booking?date=${date}&time=${encodeURIComponent(selected)}`}
                   lang="id"
                   className="flex min-h-16 w-full flex-col items-start justify-center gap-1 bg-[var(--color-accent-strong)] px-4 py-3 text-[var(--color-fg-inverse)] transition-colors duration-200 @min-[560px]:flex-row @min-[560px]:items-center @min-[560px]:justify-between @min-[560px]:gap-3 hover:bg-[var(--color-interactive)]"
                 >
@@ -476,9 +611,9 @@ export function OrderSection() {
                     {selected}
                   </span>
                   <span className="text-[length:var(--text-label)] font-semibold">
-                    Lanjut ke WhatsApp →
+                    Lanjut isi data →
                   </span>
-                </a>
+                </Link>
               ) : (
                 // aria-disabled, never the native attribute: the control keeps
                 // its place in the tab order, so a keyboard visitor reaches it
