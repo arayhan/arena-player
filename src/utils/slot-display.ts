@@ -178,17 +178,18 @@ export function countAvailable(slots: readonly DisplaySlot[]): number {
   return slots.filter((s) => s.status === "available").length;
 }
 
-// Indonesian day and month abbreviations, HAND-WRITTEN RATHER THAN LOCALISED.
+// Indonesian month abbreviations, HAND-WRITTEN RATHER THAN LOCALISED.
 //
 // date-fns ships an `id` locale and using it would be the obvious move. It is
-// also several kilobytes to render nineteen short strings that will never
-// change, on a page with a 240KB ceiling that already spends 126.5KB on the
-// framework. The whole need is 7 day names and 12 month names.
+// also several kilobytes to render twelve short strings that will never change,
+// on a page with a 240KB ceiling that already spends 126.5KB on the framework.
 //
 // This is not a general i18n solution and must not grow into one. Every string
 // a visitor reads on this site is Indonesian by design — there is no second
 // locale to serve, so there is nothing for a locale system to switch between.
-const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"] as const;
+//
+// The DAY names left with `formatPill` on 2026-08-15, back to `order.utils.ts`
+// where the date pills that need them live. Only the months are shared.
 const MONTH_NAMES = [
   "Jan",
   "Feb",
@@ -204,30 +205,8 @@ const MONTH_NAMES = [
   "Des",
 ] as const;
 
-/**
- * The two lines of a date pill, for a `YYYY-MM-DD` string.
- *
- * PARSED AS PLAIN NUMBERS, NEVER THROUGH `new Date(string)`. `new Date("2026-08-11")`
- * parses as UTC midnight and then renders in the viewer's local zone, so a
- * visitor west of Greenwich sees the previous day on every pill. The string is
- * already the Jakarta calendar date the rest of the system agreed on; splitting
- * it keeps it that way.
- */
 /** `2026-08-11` -> `11 Agu 2026`. The form the WhatsApp message uses. */
 export function formatFullDate(date: string): string {
   const [year, month, dayOfMonth] = date.split("-").map(Number);
   return `${dayOfMonth} ${MONTH_NAMES[month - 1]} ${year}`;
-}
-
-export function formatPill(date: string): { day: string; label: string } {
-  const [year, month, dayOfMonth] = date.split("-").map(Number);
-
-  // Zeller-free: Date.UTC is only used to get the weekday index, and both the
-  // construction and the read are UTC, so no zone ever enters.
-  const weekday = new Date(Date.UTC(year, month - 1, dayOfMonth)).getUTCDay();
-
-  return {
-    day: DAY_NAMES[weekday],
-    label: `${dayOfMonth} ${MONTH_NAMES[month - 1]}`,
-  };
 }

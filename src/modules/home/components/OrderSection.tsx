@@ -8,11 +8,11 @@ import { useMotion } from "@/lib/motion";
 
 import { WHATSAPP_NUMBER } from "../home.constants";
 import { useAvailability } from "../home.queries";
-import { DatePills } from "@/components/DatePills";
-import { SlotCell } from "@/components/SlotCell";
 import { countAvailable, longestFreeRun, partitionSlots } from "@/utils/slot-display";
 
 import { whatsappLink } from "../order.utils";
+import { DatePills } from "./DatePills";
+import { SlotCell } from "./SlotCell";
 import { SlotLegend } from "./SlotLegend";
 
 /**

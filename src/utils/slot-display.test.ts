@@ -13,13 +13,7 @@ import { describe, expect, it } from "vitest";
 import { TIME_SLOTS } from "@/domain/slots";
 
 import type { AvailabilityRow, DisplaySlot } from "./slot-display";
-import {
-  countAvailable,
-  formatFullDate,
-  formatPill,
-  longestFreeRun,
-  partitionSlots,
-} from "./slot-display";
+import { countAvailable, formatFullDate, longestFreeRun, partitionSlots } from "./slot-display";
 
 const allAvailable: AvailabilityRow[] = TIME_SLOTS.map((slot) => ({
   slot,
@@ -225,37 +219,5 @@ describe("formatFullDate — the message's date", () => {
     expect(formatFullDate("2026-08-11")).toBe("11 Agu 2026");
     expect(formatFullDate("2026-01-01")).toBe("1 Jan 2026");
     expect(formatFullDate("2026-12-31")).toBe("31 Des 2026");
-  });
-});
-
-describe("formatPill — Indonesian, and zone-proof", () => {
-  it("names the weekday correctly", () => {
-    // 2026-08-11 is a Tuesday.
-    expect(formatPill("2026-08-11")).toEqual({ day: "Sel", label: "11 Agu" });
-  });
-
-  it("uses Indonesian month abbreviations, including the ones that differ", () => {
-    // Mei, Agu, Okt and Des are where a copied English list goes wrong.
-    expect(formatPill("2026-05-01").label).toBe("1 Mei");
-    expect(formatPill("2026-08-01").label).toBe("1 Agu");
-    expect(formatPill("2026-10-01").label).toBe("1 Okt");
-    expect(formatPill("2026-12-01").label).toBe("1 Des");
-  });
-
-  it("does not shift the date across a timezone boundary", () => {
-    // The suite pins TZ=UTC, but this is the defect the parse-by-split exists
-    // to prevent: new Date("2026-01-01") is UTC midnight, and rendering that
-    // anywhere west of Greenwich yields 31 Dec. The label must be the calendar
-    // date it was handed, always.
-    expect(formatPill("2026-01-01").label).toBe("1 Jan");
-    expect(formatPill("2026-12-31").label).toBe("31 Des");
-  });
-
-  it("covers every weekday across one week", () => {
-    // 2026-08-09 is a Sunday.
-    const days = ["2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12"].map(
-      (d) => formatPill(d).day,
-    );
-    expect(days).toEqual(["Min", "Sen", "Sel", "Rab"]);
   });
 });

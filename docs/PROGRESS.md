@@ -869,3 +869,25 @@ ONE A11Y FINDING FROM LINT: `aria-invalid` is not supported on `role="group"`. R
 A WEDGED DEV SERVER COST TWENTY MINUTES AND TAUGHT THE SAME LESSON AS THE STALE COMPILE EARLIER THIS WEEK: a crash at `SchedulePicker` line 115 and four `404`s on `/api/availability` were a Turbopack process serving a chunk from the middle of the refactor. Restarting it cleared both. When the browser disagrees with `tsc`, suspect the compile before the code.
 
 MEASURED AFTER, ON :3002 — two hours selected in one tick both land and the summary reads "Jam 10.00 - 12.00, 12.00 - 14.00"; the two-slot booking returns 201; no `#phone` and no `#proof` in the DOM; zero horizontal overflow at 375 on both routes; no console errors. `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 identical, `check:docs` 15 checks over 116 files, **127 tests passed** (was 115).
+
+[2026-08-15] [designer] THE SCHEDULE BECOMES TWO SELECT FIELDS — the grid-in-a-form lasted about an hour.
+
+WHAT WAS WRONG WITH THE VERSION BEFORE IT. Bringing the landing page's slot plate into the booking form worked and read as the homepage pasted into a document: a nine-cell plate and a horizontally scrolling pill row wedged between a summary line and a text input, inside a column of ordinary labelled fields. The user's word for it was "messy", and the ask was explicit — a select, not the homepage UI. **Tanggal** is now a single select over the 14 bookable days; **Jam** is a multi-select with a chip per chosen hour.
+
+react-select WAS NOT INSTALLED, AND THE ARITHMETIC IS WHY. v5 brings `@emotion` with it — roughly 35-45KB gzip on a route that already spends 126.5 on the framework, 63.2 on zod and 17.5 on axios against a 240KB ceiling — and it would style itself through emotion objects while every other surface here is a Tailwind v4 token. The interaction was the ask; the package was not. `booking-form.select.ts` is ~120 lines and is the whole of what the package would have been used for.
+
+CHIPS ARE SIBLINGS OF THE TRIGGER, NEVER NESTED INSIDE IT. A `<button>` inside a `<button>` is invalid HTML and the browser's recovery is to close the outer one early, breaking both. The control box is a plain `div`: chips first, then the trigger stretching across the rest, so a tap on empty space still opens the list. This is the same problem react-select solves with a div plus a hidden input.
+
+FOCUS NEVER LEAVES THE TRIGGER — the active option travels through `aria-activedescendant`. Moving real focus into the list makes every toggle fight the browser over where focus lands next. **Verified with the keyboard only**: two hours selected with ArrowDown and Enter, `aria-activedescendant` tracking, Escape closing the list and returning focus to the trigger.
+
+UNSELECTABLE HOURS STAY IN THE ARROW ORDER, and Enter on one does nothing. An hour missing from the keyboard order is an hour a visitor assumes nobody has taken. Measured on a real date: 9 options, 4 `aria-disabled`, 5 carrying a price.
+
+A DEFECT THE SCREENSHOT FOUND AND THE CODE DID NOT. At 390px the option row needed 368px inside 316px, so `Harga menyusul` was **clipped by 50px** — the field whose entire purpose is answering "what does it cost" losing exactly that answer on the primary device. Rows now stack to two lines below `sm`. Re-measured: worst overhang -132px, row `scrollWidth` equals `clientWidth`, page overflow 0.
+
+WHAT MOVED BACK. `SlotCell` and `DatePills` returned to `src/modules/home/components/` and `formatPill` to `order.utils.ts`. They were lifted into `src/components/` this morning **so two surfaces could share them**; only one does now, and a primitive with one consumer belongs to that consumer. `SlotCell`'s `priceLabel` prop went with them rather than being left as dead surface area. `src/utils/slot-display.ts` stays — `partitionSlots` genuinely has two consumers, the landing grid and the new option builder.
+
+THE LIST IS BUILT BY A PURE FUNCTION WITH TESTS. `buildTimeOptions(rows, date, now)` decides which hours appear, in what order, which are selectable and which carry a price; the component only renders. That layer can be wrong without looking wrong — an elapsed hour offered as bookable, or a taken hour quietly missing so the day looks emptier than it is — which is exactly what the six new cases pin.
+
+LANDING PAGE RE-MEASURED AFTER THE MOVE BACK, not assumed: 9 cells, uniform 94px, 14 date pills, plate edge `3px rgb(1, 26, 67)`, **0** cells containing a price string, zero horizontal overflow at 390 and 1280.
+
+`pnpm check`: typecheck clean, prettier clean, `check:domain` 8 identical, `check:docs` 15 checks over 120 files, **133 tests passed**. In-browser: `role="combobox"` with `aria-expanded` flipping, `role="listbox"` with `aria-multiselectable="true"`, chip removal leaving the rest intact, and a two-hour booking still returning 201.

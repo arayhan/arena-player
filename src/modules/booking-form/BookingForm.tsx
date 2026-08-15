@@ -4,11 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 
-import { isWithinBookingWindow, todayAtField } from "@/domain/dates";
+import { bookingWindow, isWithinBookingWindow, todayAtField } from "@/domain/dates";
 import { TIME_SLOTS, type TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
-import { partitionSlots } from "@/utils/slot-display";
 
+import { buildTimeOptions } from "./booking-form.options";
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
 import {
   useBookingAvailability,
@@ -17,7 +17,8 @@ import {
 } from "./booking-form.queries";
 import { bookingFormSchema, type BookingFormValues } from "./booking-form.schema";
 import type { BookingOutcome } from "./booking-form.service";
-import { SchedulePicker } from "./components/SchedulePicker";
+import { DateSelect } from "./components/DateSelect";
+import { TimeMultiSelect } from "./components/TimeMultiSelect";
 
 export interface BookingFormProps {
   /** The date the entry link carried, and the picker's starting date. */
@@ -186,13 +187,16 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // rejects, and one that can fall out of step for a render. Derived from the
   // same rows in one place, the two cannot disagree at all.
   const availability = useBookingAvailability(bookingDate);
-  const { elapsed, live } = useMemo(
-    () => partitionSlots(availability.data ?? [], bookingDate),
+  const timeOptions = useMemo(
+    () => buildTimeOptions(availability.data ?? [], bookingDate),
+    // The clock is deliberately NOT a dependency: an hour sliding into "sudah
+    // lewat" under the visitor's finger is worse than a row that is a minute
+    // stale, and the server refuses a past slot anyway.
     [availability.data, bookingDate],
   );
   const bookable = useMemo(
-    () => new Set(live.filter((s) => s.status === "available").map((s) => s.slot)),
-    [live],
+    () => new Set(timeOptions.filter((o) => o.selectable).map((o) => o.slot)),
+    [timeOptions],
   );
 
   // AN HOUR THAT WENT WHILE THE LINK SAT IN A WHATSAPP CHAT. The entry link
@@ -213,6 +217,33 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   const rowsReady = !availability.isPending && !availability.isError;
   const selectedSlots = rowsReady ? chosenSlots.filter((s) => bookable.has(s)) : chosenSlots;
   const droppedSlots = rowsReady ? chosenSlots.filter((s) => !bookable.has(s)) : [];
+
+  // The 14-day window and today's date, read once. `useState`'s initialiser
+  // rather than a module constant: both are clock-derived, and a module constant
+  // would freeze the window at the moment the chunk was first evaluated.
+  const [window] = useState(() => bookingWindow());
+  const [today] = useState(() => todayAtField());
+
+  // ONE HANDLER FOR THE CHIP'S × AND THE OPTION ROW, because removing an hour
+  // and un-picking it are the same event with two entry points — and two code
+  // paths for one state change is how they drift.
+  //
+  // READ THROUGH `getValues`, NEVER THE WATCHED SNAPSHOT. Two taps inside one
+  // frame both close over the SAME render's value, so the second computes from a
+  // selection that does not yet include the first and silently overwrites it.
+  // Measured: two programmatic clicks in one tick produced one selected hour,
+  // not two.
+  const toggleSlot = (toggled: TimeSlot) => {
+    const current = (getValues("slots") ?? []).filter((s) => bookable.has(s));
+    const next = current.includes(toggled)
+      ? current.filter((s) => s !== toggled)
+      : [...current, toggled];
+    // Sorted by the canonical order rather than by tap order, so the summary
+    // reads as a schedule instead of a history of taps.
+    next.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+    setValue("slots", next, { shouldDirty: true });
+    if (next.length > 0) clearErrors("slots");
+  };
 
   // Collapses the mutation's own state machine onto BookingOutcome so the
   // render below only ever switches on `.kind`. `mutation.data` already IS a
@@ -399,81 +430,135 @@ export function BookingForm({ date, slot }: BookingFormProps) {
         Lengkapi Pemesanan
       </h1>
 
-      {/* THE SCHEDULE PANEL. It was a LOCKED summary until 2026-08-15 — the date
-          and hour arrived in the URL and "Ubah jadwal" sent the visitor back to
-          `/#order`, a full page away from a form they had already started, with
-          whatever they had typed lost on the way. The plate comes to them
-          instead, and it is the landing page's own plate: same cells, same
-          states, same date row.
+      {/* THE SCHEDULE PANEL — TWO FIELDS, NOT A TRANSPLANTED PLATE.
 
-          THE SUMMARY LINE STAYS ABOVE IT. A picker alone answers "what can I
-          pick"; it does not answer "what did I pick" at a glance once the grid
-          has scrolled past. */}
-      <section aria-label="Jadwal" className="border-b-2 border-[var(--color-band)]">
-        <div className="px-4 pt-4 md:px-6">
-          <p
-            lang="id"
-            className="text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-[var(--color-fg-muted)] uppercase"
-          >
-            Jadwal terpilih
-          </p>
-          <p className="mt-2 text-[length:var(--text-h3)] font-semibold text-[var(--color-fg)]">
-            {formatSummaryDate(bookingDate)}
-          </p>
-          <p lang="id" className="mt-1 text-[color:var(--color-fg-muted)]">
-            {selectedSlots.length > 0 ? `Jam ${selectedSlots.join(", ")}` : "Belum ada jam dipilih"}
-          </p>
+          It was a LOCKED summary until 2026-08-15: the date and hour arrived in
+          the URL and "Ubah jadwal" sent the visitor back to `/#order`, a full
+          page away from a form they had already started, losing whatever they
+          had typed. The first fix brought the landing page's slot grid in here,
+          which worked and read as the homepage pasted into a form — a nine-cell
+          plate and a scrolling pill row wedged between a summary and a text
+          input. Two labelled selects read as what this actually is.
+
+          THE SUMMARY LINE STAYS ABOVE THEM. The fields answer "what can I pick";
+          only the summary answers "what did I pick" once they have collapsed. */}
+      <section aria-label="Jadwal" className={PANEL_CLASS}>
+        <p
+          lang="id"
+          className="text-[length:var(--text-xs)] font-semibold tracking-[0.08em] text-[var(--color-fg-muted)] uppercase"
+        >
+          Jadwal terpilih
+        </p>
+        <p className="mt-2 text-[length:var(--text-h3)] font-semibold text-[var(--color-fg)]">
+          {formatSummaryDate(bookingDate)}
+        </p>
+        <p lang="id" className="mt-1 text-[color:var(--color-fg-muted)]">
+          {selectedSlots.length > 0 ? `Jam ${selectedSlots.join(", ")}` : "Belum ada jam dipilih"}
+        </p>
+
+        <div className="mt-5 flex flex-col gap-5">
+          <div>
+            <label htmlFor="bookingDate" className={LABEL_CLASS}>
+              Tanggal
+            </label>
+            <div className="mt-1">
+              <DateSelect
+                id="bookingDate"
+                dates={window}
+                value={bookingDate}
+                formatOption={(date) =>
+                  date === today ? `Hari ini · ${formatSummaryDate(date)}` : formatSummaryDate(date)
+                }
+                onChange={(next) => {
+                  setBookingDate(next);
+                  // ONE BOOKING IS ONE DATE. Hours picked on the old date cannot
+                  // ride along to the new one — they would be submitted against a
+                  // date the visitor never saw them on.
+                  setValue("slots", [], { shouldDirty: true });
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="slots" className={LABEL_CLASS}>
+              Jam
+            </label>
+            <div className="mt-1">
+              <TimeMultiSelect
+                id="slots"
+                options={timeOptions}
+                selected={selectedSlots}
+                disabled={!rowsReady}
+                invalid={Boolean(errors.slots)}
+                describedBy={describedBy(
+                  errors.slots && "slots-error",
+                  droppedSlots.length > 0 && "slots-dropped",
+                  "slots-hint",
+                )}
+                placeholder={
+                  availability.isPending
+                    ? "Memuat jadwal…"
+                    : availability.isError
+                      ? "Jadwal gagal dimuat"
+                      : "Pilih jam"
+                }
+                onToggle={toggleSlot}
+                onRemove={toggleSlot}
+              />
+            </div>
+
+            {availability.isError ? (
+              <p
+                lang="id"
+                className="mt-2 flex flex-wrap items-center gap-3 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
+              >
+                Koneksi bermasalah, jadwal belum bisa dimuat.
+                <button
+                  type="button"
+                  onClick={() => void availability.refetch()}
+                  className="h-9 border-2 border-[var(--color-danger-strong)] px-3 font-semibold transition-colors hover:bg-[var(--color-danger-surface)]"
+                >
+                  Coba lagi
+                </button>
+              </p>
+            ) : null}
+
+            {/* AN HOUR THAT WENT WHILE THE LINK SAT IN A CHAT. The entry link
+                carries an hour the admin chose earlier and the visitor may open
+                it a day later. Saying nothing would leave a value in the payload
+                that no control on screen can remove. */}
+            {droppedSlots.length > 0 ? (
+              <p
+                id="slots-dropped"
+                role="status"
+                lang="id"
+                className="mt-2 border-2 border-[var(--color-warning-line)] bg-[var(--color-warning-surface)] px-3 py-2 text-[length:var(--text-sm)] text-[var(--color-warning-strong)]"
+              >
+                Jam {droppedSlots.join(", ")} sudah tidak tersedia, jadi dilepas dari pilihanmu.
+              </p>
+            ) : null}
+
+            {errors.slots ? (
+              <p
+                id="slots-error"
+                role="alert"
+                lang="id"
+                className="mt-2 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
+              >
+                {errors.slots.message}
+              </p>
+            ) : (
+              <p
+                id="slots-hint"
+                lang="id"
+                className="mt-2 text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
+              >
+                Bisa pilih lebih dari satu jam.
+              </p>
+            )}
+          </div>
         </div>
-
-        <SchedulePicker
-          date={bookingDate}
-          elapsed={elapsed}
-          live={live}
-          isPending={availability.isPending}
-          isError={availability.isError}
-          onRetry={() => void availability.refetch()}
-          dropped={droppedSlots}
-          onDateChange={(next) => {
-            setBookingDate(next);
-            // ONE BOOKING IS ONE DATE. Hours picked on the old date cannot ride
-            // along to the new one — they would be submitted against a date the
-            // visitor never saw them on. Clearing is the honest move, and the
-            // picker's own line says how many are selected so the change is
-            // visible rather than silent.
-            setValue("slots", [], { shouldDirty: true });
-          }}
-          selected={selectedSlots}
-          onToggle={(toggled) => {
-            // READ THROUGH `getValues`, NEVER THE WATCHED SNAPSHOT. Two taps
-            // inside one frame both close over the SAME render's value, so the
-            // second computes from a selection that does not yet include the
-            // first and silently overwrites it. Measured: two programmatic
-            // clicks in one tick produced one selected hour, not two. `getValues`
-            // reads the live form state, so each toggle sees the one before it.
-            const current = (getValues("slots") ?? []).filter((s) => bookable.has(s));
-            const next = current.includes(toggled)
-              ? current.filter((s) => s !== toggled)
-              : [...current, toggled];
-            // Sorted by the canonical order rather than by tap order, so the
-            // summary above reads as a schedule instead of a history of taps.
-            next.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
-            setValue("slots", next, { shouldDirty: true });
-            if (next.length > 0) clearErrors("slots");
-          }}
-          invalid={Boolean(errors.slots)}
-          errorId={errors.slots ? "slots-error" : undefined}
-        />
-
-        {errors.slots ? (
-          <p
-            id="slots-error"
-            role="alert"
-            lang="id"
-            className="px-4 pb-4 text-[length:var(--text-sm)] text-[var(--color-danger-strong)] md:px-6"
-          >
-            {errors.slots.message}
-          </p>
-        ) : null}
       </section>
 
       {/* Payment info card. */}
