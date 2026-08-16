@@ -5,33 +5,7 @@ import { useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { useMotion } from "@/lib/motion";
 
-import { WHATSAPP_NUMBER } from "../home.constants";
-
-/**
- * The client's own Google Maps embed URL, supplied verbatim on 2026-08-15.
- *
- * KEPT WHOLE AND UNPARSED. The `pb=` payload is Google's own packed
- * camera/place encoding — zoom, bearing, tilt, viewport size and the place id
- * `0x2dcc53005adc6011:0x48fd9a87865f0a08` ("Arena Player Soccer"). Rebuilding
- * it from parts, or "tidying" it, changes what the visitor sees; it is data,
- * not a template.
- *
- * It belongs in `home.constants.ts` beside the WhatsApp number — same kind of
- * value, same reason to live in one place. It is here only because this pass
- * was scoped to a single file, and that move is recorded as owed rather than
- * done silently.
- */
-const MAP_EMBED_SRC =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3943.324280937278!2d116.4750677!3d-8.755528299999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dcc53005adc6011%3A0x48fd9a87865f0a08!2sArena%20Player%20Soccer!5e0!3m2!1sen!2sid!4v1786803816454!5m2!1sen!2sid";
-
-/**
- * Latitude, longitude — READ OFF THE EMBED ABOVE, never typed from elsewhere.
- * Google packs them as `!3d<lat>` and `!2d<lng>`: `-8.755528299999998` and
- * `116.4750677`, rounded to six decimals (~11cm, past any precision a visitor
- * can use). Displayed as the plate's nameplate, so the one fact the client just
- * supplied is legible without opening the map.
- */
-const MAP_COORDINATES = "-8.755528, 116.475068";
+import { FIELD_ADDRESS, MAP_COORDINATES, MAP_EMBED_SRC, WHATSAPP_NUMBER } from "../home.constants";
 
 /**
  * "Is the client actually running?", asked the way React 19 wants it asked.
@@ -562,9 +536,12 @@ export function LocationBlock() {
             NO OUTER BOTTOM EDGE, so the object ends on the same hairline weight
             it divides with and does not close into a frame. */}
         <dl lang="id" className="mt-10 border-t-2 border-[var(--color-fg)]">
-          {/* THE CLIENT'S OWN ADDRESS, supplied 2026-08-15 — verbatim, and it
+          {/* THE CLIENT'S OWN ADDRESS — the string itself lives in
+              `home.constants.ts` beside the embed and the WhatsApp number, so
+              the three facts the client supplied are edited in one place. It
               closes the last placeholder in this section. It read "Alamat
-              menyusul — menunggu data dari pihak lapangan" until today, because
+              menyusul — menunggu data dari pihak lapangan" until 2026-08-15,
+              because
               PRODUCT.md lists the address among the facts that must never be
               fabricated: a street name nobody verified sends a visitor to the
               wrong village.
@@ -573,9 +550,7 @@ export function LocationBlock() {
               beside it, rather than in the muted ink a placeholder note takes.
               The map embed above is the client's own too, so the pin and the
               words finally agree. */}
-          <Field label="Alamat">
-            Selebung Ketangga, Kec. Keruak, Kab. Lombok Timur, Nusa Tenggara Barat
-          </Field>
+          <Field label="Alamat">{FIELD_ADDRESS}</Field>
 
           {/* WITA, not WIB — the field is in Lombok and the date layer pins
               Asia/Makassar. An established fact, not a placeholder. */}
