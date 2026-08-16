@@ -51,16 +51,3 @@ export function isFullyPriced(selected: readonly TimeSlot[], rates: readonly Slo
   const priced = new Set(rates.map((rate) => rate.slot));
   return selected.length > 0 && selected.every((slot) => priced.has(slot));
 }
-
-/**
- * The down payment the payment copy promises: **"Transfer DP 50% dari harga
- * sewa."**
- *
- * ROUNDED UP TO THE NEAREST RUPIAH. Half of an odd total is a fraction of a
- * rupiah, which does not exist as a transferable amount; rounding up means the
- * visitor never transfers less than half and the admin never has to ask for one
- * more rupiah.
- */
-export function downPayment(total: number): number {
-  return Math.ceil(total / 2);
-}

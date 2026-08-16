@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 
 import { TIME_SLOTS } from "@/domain/slots";
 
-import { downPayment, formatRupiah, isFullyPriced, sumRates } from "./booking-form.money";
+import { formatRupiah, isFullyPriced, sumRates } from "./booking-form.money";
 
 const rates = [
   { slot: TIME_SLOTS[0], price: 400_000 },
@@ -62,17 +62,5 @@ describe("isFullyPriced — the gate on showing a total at all", () => {
 
   it("is true when every selected hour is priced", () => {
     expect(isFullyPriced([TIME_SLOTS[6], TIME_SLOTS[7]], rates)).toBe(true);
-  });
-});
-
-describe("downPayment — the 50% the payment copy promises", () => {
-  it("halves an even total", () => {
-    expect(downPayment(1_600_000)).toBe(800_000);
-  });
-
-  it("rounds up rather than asking for a fraction of a rupiah", () => {
-    // Half of an odd total is not a transferable amount, and rounding DOWN
-    // would leave the admin chasing one rupiah.
-    expect(downPayment(1_000_001)).toBe(500_001);
   });
 });

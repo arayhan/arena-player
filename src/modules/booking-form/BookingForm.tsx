@@ -12,7 +12,7 @@ import { bookingSubmissionWhatsappLink } from "@/utils/whatsapp";
 
 import { buildTimeOptions } from "./booking-form.options";
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
-import { formatRupiah, downPayment, isFullyPriced, sumRates } from "./booking-form.money";
+import { formatRupiah, isFullyPriced, sumRates } from "./booking-form.money";
 import {
   useBookingAvailability,
   useCreateBooking,
@@ -666,11 +666,12 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
               </p>
             ) : null}
 
-            {/* THE TOTAL, AND THE HALF THAT IS ACTUALLY DUE. The payment copy has
-                promised "Transfer DP 50% dari harga sewa" since Phase 3 opened;
-                until the client supplied the rate card on 2026-08-15 the page
-                could not keep that promise, and two hours at 800rb reads very
-                differently from one row saying 800.000.
+            {/* THE TOTAL. It carried a `DP 50%` row beside it until 2026-08-16,
+                when the sentence promising a half-deposit was removed from the
+                payment panel — a figure whose only explanation had just been
+                deleted is a number a visitor cannot act on, so it went with it.
+                Two hours at 800rb still reads very differently from one row
+                saying 800.000, which is why the sum itself stays.
 
                 IT ONLY RENDERS WHEN EVERY SELECTED HOUR IS PRICED. A partial sum
                 is a wrong number a visitor transfers against — see
@@ -683,14 +684,6 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
                   </dt>
                   <dd className="font-semibold tabular-nums">
                     {formatRupiah(sumRates(selectedSlots, rates.data ?? []))}
-                  </dd>
-                </div>
-                <div className="mt-1 flex items-baseline justify-between gap-3">
-                  <dt lang="id" className="text-[var(--color-fg-muted)]">
-                    DP 50%
-                  </dt>
-                  <dd className="font-semibold tabular-nums text-[var(--color-interactive)]">
-                    {formatRupiah(downPayment(sumRates(selectedSlots, rates.data ?? [])))}
                   </dd>
                 </div>
               </dl>
@@ -734,19 +727,20 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
             placeholder this project can never ship. */}
         <PaymentAccounts />
 
-        {/* TODO(content): rate card. NO PLACEHOLDER NUMBER MAY BE INVENTED
-            HERE. `/booking` is the one page a real rupiah figure is allowed
-            to render (CLAUDE.md hard rule 2, narrowed 2026-08-11), but the
-            client has only answered WHERE a price goes, not WHAT it is —
-            flat rate, or varying by hour, day, or weekend. Every other
-            placeholder in this project is inert if it ships by accident; an
-            invented price is the one a visitor would act on, and it would be
-            the developer's number attached to the client's business. Until
-            the rate card arrives, the sentence below is the destination, not
-            a stopgap to "clean up" with a guessed figure. */}
-        <p lang="id" className="mt-3 text-[length:var(--text-sm)] text-[var(--color-fg)]">
-          Transfer DP 50% dari harga sewa. Nominal dikonfirmasi admin via WhatsApp.
-        </p>
+        {/* THE DP SENTENCE IS GONE — removed 2026-08-16 at the user's
+            instruction. It read "Transfer DP 50% dari harga sewa. Nominal
+            dikonfirmasi admin via WhatsApp." and had stood since Phase 3 opened
+            as the honest stand-in for a rate card that had not arrived.
+
+            TODO(content): rate card. The reasoning it carried still binds and is
+            recorded here so removing the sentence does not remove the rule:
+            `/booking` is the one page a real rupiah figure may render (CLAUDE.md
+            hard rule 2), and no placeholder number may be invented in the
+            meantime — an invented price is the one placeholder a visitor would
+            act on, and it would be the developer's number attached to the
+            client's business. The per-hour rate is still outstanding: the
+            figures the client gave priced two-hour blocks and slots are hourly
+            now, so `src/server/rates.ts` deliberately returns none. */}
       </section>
 
       {showForm ? (
