@@ -274,18 +274,18 @@ export function DatePills({
               in rather than with the window. */}
           <div
             lang="id"
-            className="max-h-[min(58svh,420px)] overflow-y-auto border-t-2 border-[var(--color-band)] [overscroll-behavior-y:contain] @min-[980px]:max-h-none @min-[980px]:overflow-visible"
+            className="max-h-[min(58svh,420px)] overflow-y-auto border-t-2 border-[var(--color-band)] [overscroll-behavior-y:contain] @min-[980px]:grid @min-[980px]:max-h-none @min-[980px]:grid-cols-2 @min-[980px]:gap-6 @min-[980px]:overflow-visible @min-[980px]:p-4"
           >
             {months.map((month) => (
               <section
                 key={month.key}
                 aria-label={month.label}
-                className="px-2 pb-3 @min-[360px]:px-4"
+                className="px-2 pb-3 @min-[360px]:px-4 @min-[980px]:px-0 @min-[980px]:pb-0"
               >
                 {/* `sticky`, so the month a visitor is scrolling through is
                     always named. Inside a capped scroller a heading that has
                     left the top is a heading that has stopped doing its job. */}
-                <h4 className="type-display sticky top-0 z-10 bg-[var(--color-bg)] py-2 text-[length:var(--text-sm)] font-bold tracking-[0.04em] text-[var(--color-fg)] uppercase">
+                <h4 className="type-display sticky top-0 z-10 bg-[var(--color-bg)] py-2 text-[length:var(--text-sm)] font-bold tracking-[0.04em] text-[var(--color-fg)] uppercase @min-[980px]:static @min-[980px]:py-0 @min-[980px]:pb-2">
                   {month.label}
                 </h4>
 
