@@ -155,15 +155,29 @@ function UnusableNotice() {
  */
 function ExpiredNotice({ date, slots }: { date: string; slots: readonly TimeSlot[] }) {
   return (
-    <div className={PANEL_CLASS}>
+    /* THE DANGER SURFACE, NOT THE PLATE'S — changed 2026-08-16. This notice used
+       to wear `PANEL_CLASS`, the same navy-edged white plate as the payment
+       panel and the form itself, which meant an expired link looked exactly like
+       a page working normally. It is the one state on this route that is a
+       problem rather than a step, and it now says so before it is read.
+
+       `role="alert"` so it is announced rather than found: a visitor who
+       followed a stale link arrives with the answer already scrolled past. */
+    <div
+      role="alert"
+      className="border-[3px] border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)] p-6 md:p-8"
+    >
       {/* Sized off --text-h2 — see the comment on UnusableNotice's <h1>
           above for the reasoning. */}
-      <h1 lang="id" className="max-w-[24ch] text-[length:var(--text-h2)]">
-        Tautan Booking Ini Sudah Kedaluwarsa
+      <h1
+        lang="id"
+        className="max-w-[24ch] text-[length:var(--text-h2)] text-[var(--color-danger-strong)]"
+      >
+        Jadwal Ini Sudah Lewat
       </h1>
-      <p lang="id" className="mt-4 max-w-[60ch] text-[color:var(--color-fg-muted)]">
-        Tautan ini sebelumnya untuk tanggal {formatDisplayDate(date)} jam {slots.join(", ")}, tapi
-        jadwalnya sudah lewat. Pilih jam lain yang masih kosong lewat WhatsApp.
+      <p lang="id" className="mt-4 max-w-[60ch] text-[color:var(--color-danger-strong)]">
+        Tautan ini untuk tanggal {formatDisplayDate(date)} jam {slots.join(", ")}, dan jamnya sudah
+        lewat. Pilih tanggal dan jam lain di bawah — form di bawah sudah terbuka di tanggal itu.
       </p>
       <Link href="/#order" lang="id" className={cn(CTA_CLASS)}>
         Lihat Jadwal Kosong

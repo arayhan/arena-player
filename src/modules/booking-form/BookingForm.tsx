@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 
-import { bookingWindow, isWithinBookingWindow, todayAtField } from "@/domain/dates";
+import { bookingWindow, isPastSlot, isWithinBookingWindow, todayAtField } from "@/domain/dates";
 import { TIME_SLOTS, type TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
 
@@ -158,6 +158,11 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
     isWithinBookingWindow(date) ? date : todayAtField(),
   );
 
+  // HOURS THAT HAVE ALREADY STARTED, from either of the two ways it happens:
+  // the entry link sat in a chat past one of its hours, or the form sat open
+  // past one. Both say the same thing to the visitor, so both feed one list.
+  const [passedSlots, setPassedSlots] = useState<TimeSlot[]>(() => [...expired]);
+
   // Server-side field errors that have no input on screen to attach to. See
   // the submission effect below for why they cannot be dropped.
   const [unmappedFields, setUnmappedFields] = useState<string[]>([]);
@@ -261,6 +266,9 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
     next.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
     setValue("slots", next, { shouldDirty: true });
     if (next.length > 0) clearErrors("slots");
+    // The warning describes the LAST press, not the selection. Touching the
+    // field is the visitor answering it, so it goes.
+    setPassedSlots([]);
   };
 
   // THE URL FOLLOWS THE FORM — added 2026-08-16, so the two directions finally
@@ -315,6 +323,27 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
     if (mutation.isPending) return;
 
     clearErrors();
+    // THE CLOCK IS RE-READ AT SUBMIT, NOT ONLY AT RENDER. A form can sit open
+    // for twenty minutes — picking hours, typing a name — and an hour that was
+    // bookable when the page loaded can start while it does. The server would
+    // refuse it, but a generic 400 after a filled-in form is a worse answer than
+    // naming the hour, dropping it, and letting them press again.
+    //
+    // `isPastSlot` is the same function the picker and the availability split
+    // use, so "passed" means one thing across the product.
+    const stillLive = selectedSlots.filter((slot) => !isPastSlot(bookingDate, slot, new Date()));
+    const justPassed = selectedSlots.filter((slot) => isPastSlot(bookingDate, slot, new Date()));
+
+    if (justPassed.length > 0) {
+      setPassedSlots(justPassed);
+      setValue("slots", stillLive, { shouldDirty: true });
+      if (stillLive.length === 0) {
+        setError("slots", { type: "manual", message: "Pilih jam yang belum lewat" });
+      }
+      document.getElementById("slots")?.focus();
+      return;
+    }
+
     const { bookingFormSchema } = await loadSchema();
     // `selectedSlots`, not `values.slots` — the derived list is the one every
     // other consumer shows, and posting the raw form value would send an hour
@@ -573,6 +602,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
                 invalid={Boolean(errors.slots)}
                 describedBy={describedBy(
                   errors.slots && "slots-error",
+                  passedSlots.length > 0 && "slots-passed",
                   droppedSlots.length > 0 && "slots-dropped",
                   "slots-hint",
                 )}
@@ -616,6 +646,23 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
                 className="mt-2 border-2 border-[var(--color-warning-line)] bg-[var(--color-warning-surface)] px-3 py-2 text-[length:var(--text-sm)] text-[var(--color-warning-strong)]"
               >
                 Jam {droppedSlots.join(", ")} sudah tidak tersedia, jadi dilepas dari pilihanmu.
+              </p>
+            ) : null}
+
+            {/* AN HOUR THAT HAS ALREADY STARTED. Different fact from the one
+                above and it gets its own line: "taken" is somebody else's
+                booking, "lewat" is the clock, and a visitor can act on only one
+                of them. `role="alert"` rather than `status` because this one
+                appears in response to a press — it has to interrupt. */}
+            {passedSlots.length > 0 ? (
+              <p
+                id="slots-passed"
+                role="alert"
+                lang="id"
+                className="mt-2 border-2 border-[var(--color-danger-strong)] bg-[var(--color-danger-surface)] px-3 py-2 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
+              >
+                Jam {passedSlots.join(", ")} sudah lewat dan dilepas dari pilihanmu. Pilih jam yang
+                masih tersedia.
               </p>
             ) : null}
 
