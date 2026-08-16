@@ -10,20 +10,20 @@ import { formatFullDate } from "@/utils/slot-display";
  * form boundary.
  */
 /**
- * ⚠️ THIS IS A DEVELOPMENT NUMBER AND IT MUST GO BACK BEFORE HANDOVER. ⚠️
+ * THE CLIENT'S OWN NUMBER, RESTORED 2026-08-16. A development number
+ * (`62895410347567`) sat here earlier the same day so bookings made while
+ * building reached the developer instead of the field; that swap has been
+ * reverted here and in `whatsapp.test.ts`.
  *
- * Set to +62 895-4103-47567 on 2026-08-16 at the user's request, so bookings
- * made while building reach the developer instead of the field. **The client's
- * own number is `6289682620666`** and belongs here the moment this is shown to
- * them for real.
- *
- * WHY THIS IS THE MOST DANGEROUS LINE IN THE FILE. Nothing fails if it ships.
- * The `wa.me` link opens, WhatsApp launches, the message is prefilled perfectly
- * — and every booking a visitor makes goes to a phone that is not the field's.
- * There is no error, no log line, and no test that can tell the two numbers
- * apart on correctness alone. The only guard is somebody reading this comment.
+ * WHY THIS IS THE MOST DANGEROUS LINE IN THE FILE, and why the next swap must
+ * be undone the same way. Nothing fails if a wrong number ships. The `wa.me`
+ * link opens, WhatsApp launches, the message is prefilled perfectly — and every
+ * booking a visitor makes goes to a phone that is not the field's. There is no
+ * error, no log line, and no test that can tell two valid numbers apart on
+ * correctness alone. The assertion in the test file is pinned to this exact
+ * string on purpose, so a future revert that misses one place fails loudly.
  */
-export const WHATSAPP_NUMBER = "62895410347567";
+export const WHATSAPP_NUMBER = "6289682620666";
 
 /**
  * The `wa.me` deep link for a chosen single slot on the landing page.
