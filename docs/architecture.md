@@ -28,7 +28,7 @@ Two consequences that shape the code: selecting a slot **holds nothing** — onl
 
 Written during Phase 1a task 5, before any UI consumes it. The demo routes in `src/app/api/` implement exactly these shapes — agents must read this section rather than inventing response bodies.
 
-> **MSW WAS RETIRED ON 2026-08-15, ahead of Phase 4, and this is what replaced it.** Four route handlers under `src/app/api/` serve the demo: `availability` (seeded per date, from `src/server/demo-availability.ts`), `rates` and `payment-accounts` (the client's own content), and `bookings` (validates, answers 201, **stores nothing**). `src/mocks/` is deleted, `public/mockServiceWorker.js` is gone, the msw dependency is out of package.json, and the ESLint ban on importing the package stays so nobody rebuilds the hazard.
+> **MSW WAS RETIRED ON 2026-08-15, ahead of Phase 4, and this is what replaced it.** Four route handlers under `src/app/api/`: `availability` reads the client's real Supabase database as of 2026-08-17 (`src/server/availability.ts` — `src/server/demo-availability.ts`'s seeded generator is deleted, not kept as a fallback), `rates` and `payment-accounts` still serve the client's own content as static files, and `bookings` still validates, answers 201, and **stores nothing** — `bookings.phone` is `NOT NULL` with no value to send while the phone field stays hidden, see docs/database.md. `src/mocks/` is deleted, `public/mockServiceWorker.js` is gone, the msw dependency is out of package.json, and the ESLint ban on importing the package stays so nobody rebuilds the hazard.
 >
 > **What forced it: the client asked for a link they could open.** A service worker is compiled out of production builds by hard rule, so a deployed URL had no API at all — the very gate that made MSW safe made it useless for a demo. Retiring it early also removes the failure this note used to warn about, permanently: a stray `mockServiceWorker.js` intercepting real requests and serving invented availability, with nothing in the console and nothing in the network tab that looks wrong.
 >
@@ -547,30 +547,30 @@ All of the above except `docs/`, `CLAUDE.md`, and `.claude/` gets created during
 
 Every version below was resolved against the registry on 2026-08-08 and is pinned exactly in `package.json`. An earlier draft pinned figures from memory; a wrong pin fails `pnpm install` on day one with a confusing error, and false precision reads as "someone checked this" when nobody did.
 
-| Package                                | Version                                                                                                                     |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `next`                                 | 16.3.0                                                                                                                      |
-| `react` / `react-dom`                  | 19.2.8                                                                                                                      |
-| `gsap`                                 | 3.15.0 — Standard "no charge" licence, verified at install                                                                  |
-| `@gsap/react`                          | 2.1.2                                                                                                                       |
-| `axios`                                | 1.19.0 — `/booking` only                                                                                                    |
-| `zod`                                  | 4.4.3 — `/booking`, `src/app/api/`, and `src/server/` only                                                                  |
-| `clsx`                                 | 2.1.1 — measured at 0.2KB                                                                                                   |
-| `tailwind-merge`                       | 3.6.0 — measured at 8.0KB. The v3 line targets Tailwind v4; a separate `tailwind-merge-2` dist-tag still serves the v3 line |
-| `react-hook-form`                      | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below                                                  |
-| `zustand`                              | 5.0.14                                                                                                                      |
-| `@tanstack/react-query`                | 5.101.4                                                                                                                     |
-| `date-fns`                             | 4.4.0 — **also a peer requirement of the admin repo**, see the shared-code contract                                         |
-| `@date-fns/tz`                         | 1.5.0 — same peer requirement                                                                                               |
-| `react-icons`                          | 5.7.0 — barrel package; measured at 2.2KB for six icons, tree-shaking confirmed                                             |
-| `tailwindcss` / `@tailwindcss/postcss` | 4.3.3                                                                                                                       |
-| `typescript` (dev)                     | 5.9.3                                                                                                                       |
-| `eslint` (dev)                         | 9.39.5                                                                                                                      |
-| `vitest` (dev)                         | 4.1.10                                                                                                                      |
-| `@neondatabase/serverless`             | **not installed** — Phase 4                                                                                                 |
-| `@aws-sdk/client-s3`                   | **not installed** — Phase 4                                                                                                 |
-| `server-only`                          | 0.0.1                                                                                                                       |
-| pnpm (`packageManager`)                | 11.17.0                                                                                                                     |
+| Package                                | Version                                                                                                                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `next`                                 | 16.3.0                                                                                                                             |
+| `react` / `react-dom`                  | 19.2.8                                                                                                                             |
+| `gsap`                                 | 3.15.0 — Standard "no charge" licence, verified at install                                                                         |
+| `@gsap/react`                          | 2.1.2                                                                                                                              |
+| `axios`                                | 1.19.0 — `/booking` only                                                                                                           |
+| `zod`                                  | 4.4.3 — `/booking`, `src/app/api/`, and `src/server/` only                                                                         |
+| `clsx`                                 | 2.1.1 — measured at 0.2KB                                                                                                          |
+| `tailwind-merge`                       | 3.6.0 — measured at 8.0KB. The v3 line targets Tailwind v4; a separate `tailwind-merge-2` dist-tag still serves the v3 line        |
+| `react-hook-form`                      | 7.84.0 — `/booking` only. **Not 7.85.0**, see the release-age policy below                                                         |
+| `zustand`                              | 5.0.14                                                                                                                             |
+| `@tanstack/react-query`                | 5.101.4                                                                                                                            |
+| `date-fns`                             | 4.4.0 — **also a peer requirement of the admin repo**, see the shared-code contract                                                |
+| `@date-fns/tz`                         | 1.5.0 — same peer requirement                                                                                                      |
+| `react-icons`                          | 5.7.0 — barrel package; measured at 2.2KB for six icons, tree-shaking confirmed                                                    |
+| `tailwindcss` / `@tailwindcss/postcss` | 4.3.3                                                                                                                              |
+| `typescript` (dev)                     | 5.9.3                                                                                                                              |
+| `eslint` (dev)                         | 9.39.5                                                                                                                             |
+| `vitest` (dev)                         | 4.1.10                                                                                                                             |
+| `postgres`                             | 3.4.9 — installed 2026-08-17, `src/server/db.ts` only. The Neon plan below is superseded; see docs/database.md's 2026-08-17 notice |
+| `@aws-sdk/client-s3`                   | **not installed** — R2 vs Supabase Storage still open, see docs/database.md                                                        |
+| `server-only`                          | 0.0.1                                                                                                                              |
+| pnpm (`packageManager`)                | 11.17.0                                                                                                                            |
 
 ### Three resolution traps this hit, so the next person does not
 

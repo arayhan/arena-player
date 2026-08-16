@@ -367,7 +367,7 @@ Phase 1a:
 - [x] API contract for both routes written into architecture.md, with `POST /api/bookings` flagged provisional
 - [x] `src/domain/slots.ts` + `src/domain/dates.ts` exist with colocated tests that actually assert — not an empty harness
 - [x] `pnpm check:domain` exists and has been **proven to fail** on a planted one-character change, then reverted
-- [x] Handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired. (The MSW layer became real routes on 2026-08-15; the generator moved to `src/server/demo-availability.ts` unchanged)
+- [x] Handlers return realistic availability data **derived from `TIME_SLOTS`, not hardcoded**; `QueryClientProvider` and the axios instance are wired. (The MSW layer became real routes on 2026-08-15; the generator lived at `src/server/demo-availability.ts` until 2026-08-17, when `GET /api/availability` started reading the client's real Supabase database and the generator was deleted — see `src/server/availability.ts`)
 - [x] Budget table carries **measured** figures from a real `pnpm build`, `pnpm check:budget` fails on breach, and `src/lib/motion.ts` exists so no component can animate without a reduced-motion check
 - [x] `/plan-eng-review`, `/plan-devex-review`, `/devex-review` all passed
 
