@@ -81,17 +81,21 @@ export function usePaymentAccounts() {
 }
 
 /**
- * The rate card.
+ * The rate card for one booking date.
  *
- * Cached as hard as the accounts, and for the same reason: a price changes when
- * the client decides it does, not while somebody is filling in a form. The
- * default `staleTime` of zero would refetch on every mount and spend a round
- * trip on the mobile connection this site is designed for.
+ * KEYED BY `date` SINCE 2026-08-17, matching `availabilityKey` above — the
+ * real rate card prices weekday and weekend hours differently, so a date
+ * change is a real cache miss now rather than a formality. Still cached as
+ * hard as the accounts otherwise: a price for a given date does not change
+ * while somebody is filling in the form, and the default `staleTime` of zero
+ * would refetch on every mount and spend a round trip on the mobile
+ * connection this site is designed for.
  */
-export function useRates() {
+export function useRates(date: string) {
   return useQuery({
-    queryKey: ["rates"] as const,
-    queryFn: ({ signal }) => fetchRates(signal),
+    queryKey: ["rates", date] as const,
+    queryFn: ({ signal }) => fetchRates(date, signal),
+    enabled: isWithinBookingWindow(date),
     staleTime: 60 * 60 * 1000,
     retry: 1,
   });

@@ -1,27 +1,25 @@
 import "server-only";
 
+import sql from "./db";
+
 /**
- * THE CLIENT'S TWO ACCOUNTS — supplied 2026-08-15, verbatim.
+ * THE CLIENT'S ACCOUNTS — read from the `bank_accounts` table since
+ * 2026-08-17, replacing a hard-coded array of the same two accounts supplied
+ * 2026-08-15. The values did not change; the source did. `arena-player-admin`
+ * now owns adding, removing or reordering an account through its settings UI,
+ * and this route reflects that immediately rather than needing a code change
+ * and a redeploy on this repo's side for a bank detail to update.
  *
- * This closes the placeholder category that mattered most of the seven in
- * CLAUDE.md hard rule 3. Until today this
- * list was empty by design and the form said so in words, because **an invented
- * account number is the one placeholder a visitor would act on**: every other
- * missing item is inert if it leaks, while a made-up number takes somebody's
- * money to a stranger. These are the real ones, and nothing here may be
- * "tidied" — not the spacing, not the dashes, not the capitalisation of the
- * holder's name.
+ * `WHERE is_active` — a row the admin has toggled off is a real account the
+ * client is not currently using, not a placeholder; the column exists
+ * specifically so this file never has to distinguish "no accounts supplied"
+ * from "an account was withdrawn" by deleting the row, which would lose the
+ * admin's own record of it.
  *
- * THE BRI NUMBER KEEPS ITS DASHES because that is how the client writes it and
- * how a visitor will check it against their banking app. The COPY button strips
- * them (see `booking-form.account.ts`): `473601017915532` is what a banking app
- * accepts, and a paste that fails would be blamed on the app rather than on the
- * punctuation this UI added.
- *
- * STILL SERVED FROM A ROUTE rather than imported into the form. Phase 4 swaps
- * the body of this file for a database read — a `payment_accounts` table the
- * admin app edits, or environment configuration; that decision is open and
- * recorded in database.md — and nothing on the client side changes when it does.
+ * NOTHING HERE MAY EVER FALL BACK TO AN INVENTED VALUE. An empty result is
+ * the honest "no account configured right now" and the form says so in
+ * words — see `PaymentAccounts.tsx`. A fabricated account is the one
+ * placeholder that moves somebody's money to a stranger.
  */
 export interface PaymentAccount {
   bank: string;
@@ -29,15 +27,17 @@ export interface PaymentAccount {
   accountHolder: string;
 }
 
-export const PAYMENT_ACCOUNTS: readonly PaymentAccount[] = [
-  {
-    bank: "BCA",
-    accountNumber: "7255105108",
-    accountHolder: "MARIANA ULFAH",
-  },
-  {
-    bank: "BRI",
-    accountNumber: "4736-01-017915-53-2",
-    accountHolder: "MARIANA ULFAH",
-  },
-];
+export async function paymentAccounts(): Promise<PaymentAccount[]> {
+  const rows = await sql<{ bank: string; account_number: string; account_holder: string }[]>`
+    select bank, account_number, account_holder
+    from bank_accounts
+    where is_active
+    order by sort_order
+  `;
+
+  return rows.map((row) => ({
+    bank: row.bank,
+    accountNumber: row.account_number,
+    accountHolder: row.account_holder,
+  }));
+}

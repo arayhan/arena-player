@@ -209,7 +209,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
   // rejects, and one that can fall out of step for a render. Derived from the
   // same rows in one place, the two cannot disagree at all.
   const availability = useBookingAvailability(bookingDate);
-  const rates = useRates();
+  const rates = useRates(bookingDate);
   const timeOptions = useMemo(
     () => buildTimeOptions(availability.data ?? [], bookingDate, rates.data ?? []),
     // The clock is deliberately NOT a dependency: an hour sliding into "sudah
@@ -732,15 +732,13 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
             dikonfirmasi admin via WhatsApp." and had stood since Phase 3 opened
             as the honest stand-in for a rate card that had not arrived.
 
-            TODO(content): rate card. The reasoning it carried still binds and is
-            recorded here so removing the sentence does not remove the rule:
-            `/booking` is the one page a real rupiah figure may render (CLAUDE.md
-            hard rule 2), and no placeholder number may be invented in the
-            meantime — an invented price is the one placeholder a visitor would
-            act on, and it would be the developer's number attached to the
-            client's business. The per-hour rate is still outstanding: the
-            figures the client gave priced two-hour blocks and slots are hourly
-            now, so `src/server/rates.ts` deliberately returns none. */}
+            THE RATE CARD ARRIVED 2026-08-17 — see `src/server/rates.ts`. The
+            reasoning that used to live here behind a content placeholder
+            marker is resolved rather than deleted outright: `/booking` is
+            still the one page a real rupiah figure may render (CLAUDE.md hard
+            rule 2), and no placeholder number may ever be invented — that
+            rule outlives the placeholder it was written to guard, which is
+            why it stays stated even now that the real figures are live. */}
       </section>
 
       {showForm ? (
