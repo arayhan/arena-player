@@ -15,7 +15,8 @@ describe("readBookingParams", () => {
     expect(readBookingParams("2026-08-11", "20.00 - 21.00", NOW)).toEqual({
       kind: "valid",
       date: "2026-08-11",
-      slot: "20.00 - 21.00",
+      slots: ["20.00 - 21.00"],
+      expired: [],
     });
   });
 
@@ -64,10 +65,10 @@ describe("readBookingParams", () => {
     expect(readBookingParams("2026-12-01", "20.00 - 21.00", NOW).kind).toBe("expired");
   });
 
-  it("keeps the date and slot on an expired link so the page can name them", () => {
-    // "Link ini sudah lewat" is more useful when it can say which slot.
+  it("keeps the date and slots on an expired link so the page can name them", () => {
+    // "Jadwal ini sudah lewat" is more useful when it can say which hours.
     const result = readBookingParams("2026-08-11", "06.00 - 07.00", NOW);
-    expect(result).toEqual({ kind: "expired", date: "2026-08-11", slot: "06.00 - 07.00" });
+    expect(result).toEqual({ kind: "expired", date: "2026-08-11", slots: ["06.00 - 07.00"] });
   });
 
   it("DOES NOT check availability — that would be a check-then-insert race", () => {
@@ -81,5 +82,56 @@ describe("readBookingParams", () => {
     // Boundary in the direction that silently loses a booking if wrong.
     // 2026-11-10 is the 92nd day counting 2026-08-11 as day one.
     expect(readBookingParams("2026-11-10", "23.00 - 24.00", NOW).kind).toBe("valid");
+  });
+
+  it("reads a repeated `time` as several hours, in the order given", () => {
+    // The URL carries one `time` per booked hour since 2026-08-16.
+    expect(readBookingParams("2026-08-11", ["20.00 - 21.00", "21.00 - 22.00"], NOW)).toEqual({
+      kind: "valid",
+      date: "2026-08-11",
+      slots: ["20.00 - 21.00", "21.00 - 22.00"],
+      expired: [],
+    });
+  });
+
+  it("drops a duplicate hour rather than booking it twice", () => {
+    const result = readBookingParams("2026-08-11", ["20.00 - 21.00", "20.00 - 21.00"], NOW);
+    expect(result).toEqual({
+      kind: "valid",
+      date: "2026-08-11",
+      slots: ["20.00 - 21.00"],
+      expired: [],
+    });
+  });
+
+  it("keeps the live hours and names the passed ones when a link is half stale", () => {
+    // 18:00 WITA: 06.00 has gone, 20.00 has not. Shortening the booking in
+    // silence is the one outcome worse than saying which hour was lost.
+    expect(readBookingParams("2026-08-11", ["06.00 - 07.00", "20.00 - 21.00"], NOW)).toEqual({
+      kind: "valid",
+      date: "2026-08-11",
+      slots: ["20.00 - 21.00"],
+      expired: ["06.00 - 07.00"],
+    });
+  });
+
+  it("expires the link only when EVERY hour on it has passed", () => {
+    const result = readBookingParams("2026-08-11", ["06.00 - 07.00", "07.00 - 08.00"], NOW);
+    expect(result).toEqual({
+      kind: "expired",
+      date: "2026-08-11",
+      slots: ["06.00 - 07.00", "07.00 - 08.00"],
+    });
+  });
+
+  it("ignores an unreadable hour among readable ones rather than repairing it", () => {
+    // "20.00-21.00" is a DIFFERENT slot to uniq_active_slot, which compares
+    // text. Repairing it here is how the same hour gets booked twice.
+    expect(readBookingParams("2026-08-11", ["20.00-21.00", "20.00 - 21.00"], NOW)).toEqual({
+      kind: "valid",
+      date: "2026-08-11",
+      slots: ["20.00 - 21.00"],
+      expired: [],
+    });
   });
 });

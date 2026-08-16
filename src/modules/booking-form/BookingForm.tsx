@@ -29,12 +29,18 @@ export interface BookingFormProps {
   /** The date the entry link carried, and the picker's starting date. */
   date: string;
   /**
-   * The slot the entry link carried, preselected in the picker. **Null for an
-   * expired link**, which now opens the picker with nothing chosen rather than
-   * ending at a notice: an expired link is exactly when a visitor needs to pick
-   * a different time.
+   * The hours the entry link carried that are still bookable, preselected in
+   * the picker. **Empty for a fully expired link**, which opens the picker with
+   * nothing chosen rather than ending at a notice: an expired link is exactly
+   * when a visitor needs to pick a different time.
    */
-  slot: TimeSlot | null;
+  slots: readonly TimeSlot[];
+  /**
+   * Hours the link asked for that have already started. Named on screen rather
+   * than dropped in silence — a booking quietly shortened from three hours to
+   * two is worse than one that says which hour it lost.
+   */
+  expired: readonly TimeSlot[];
 }
 
 /**
@@ -139,7 +145,7 @@ function describedBy(...ids: Array<string | false | undefined>): string | undefi
  * submit handler instead — react-hook-form only tracks values and drives
  * `setError`.
  */
-export function BookingForm({ date, slot }: BookingFormProps) {
+export function BookingForm({ date, slots, expired }: BookingFormProps) {
   // THE DATE IS STATE NOW, NOT JUST A PROP. The picker can move it, and the
   // link's date is only where it starts. One booking is one date, so this is
   // also what the mutation posts.
@@ -177,9 +183,9 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     formState: { errors },
   } = useForm<BookingFormValues>({
     defaultValues: {
-      // The link's slot is a STARTING selection, not a lock. An expired link
-      // arrives with none and the picker opens empty.
-      slots: slot ? [slot] : [],
+      // The link's hours are a STARTING selection, not a lock. A fully expired
+      // link arrives with none and the picker opens empty.
+      slots: [...slots],
       teamName: "",
       phone: "",
       notes: "",
@@ -256,6 +262,27 @@ export function BookingForm({ date, slot }: BookingFormProps) {
     setValue("slots", next, { shouldDirty: true });
     if (next.length > 0) clearErrors("slots");
   };
+
+  // THE URL FOLLOWS THE FORM — added 2026-08-16, so the two directions finally
+  // agree. `?date=&time=` was read once at entry and never written back: a
+  // visitor who picked a different date and reloaded, or shared the link, sent
+  // somebody to the hours the ADMIN had chosen rather than the ones they had.
+  //
+  // ONE `time` PER HOUR, because a booking may cover several and repeating the
+  // key is what `URLSearchParams` does natively. A link an admin typed by hand
+  // still carries exactly one and still opens correctly.
+  //
+  // `history.replaceState`, NOT `router.replace`. The router re-runs the server
+  // component and remounts this form on every toggle, which loses focus and
+  // whatever is half-typed in the name field. `replaceState` also keeps the back
+  // button meaning "the page before this one" instead of "your previous seven
+  // taps".
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("date", bookingDate);
+    for (const slot of selectedSlots) params.append("time", slot);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+  }, [bookingDate, selectedSlots]);
 
   // Collapses the mutation's own state machine onto BookingOutcome so the
   // render below only ever switches on `.kind`. `mutation.data` already IS a

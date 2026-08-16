@@ -14,7 +14,8 @@ export interface BookingEntryProps {
    * routes on the result.
    */
   date?: string;
-  time?: string;
+  /** One value, or one per booked hour — the URL repeats the key. */
+  time?: string | string[];
 }
 
 // Shared by both non-happy-path notices so the two buttons are pixel-for-pixel
@@ -100,11 +101,11 @@ export function BookingEntry({ date, time }: BookingEntryProps) {
             URL had nothing readable in it, so a picker would be opening on a
             guess. */}
         {params.kind === "valid" ? (
-          <BookingForm date={params.date} slot={params.slot} />
+          <BookingForm date={params.date} slots={params.slots} expired={params.expired} />
         ) : params.kind === "expired" ? (
           <div className="flex flex-col gap-6">
-            <ExpiredNotice date={params.date} slot={params.slot} />
-            <BookingForm date={params.date} slot={null} />
+            <ExpiredNotice date={params.date} slots={params.slots} />
+            <BookingForm date={params.date} slots={[]} expired={params.slots} />
           </div>
         ) : (
           <UnusableNotice />
@@ -152,7 +153,7 @@ function UnusableNotice() {
  * slot behind it, and telling them nothing reads as the same broken link as
  * `UnusableNotice`, which it is not.
  */
-function ExpiredNotice({ date, slot }: { date: string; slot: TimeSlot }) {
+function ExpiredNotice({ date, slots }: { date: string; slots: readonly TimeSlot[] }) {
   return (
     <div className={PANEL_CLASS}>
       {/* Sized off --text-h2 — see the comment on UnusableNotice's <h1>
@@ -161,8 +162,8 @@ function ExpiredNotice({ date, slot }: { date: string; slot: TimeSlot }) {
         Tautan Booking Ini Sudah Kedaluwarsa
       </h1>
       <p lang="id" className="mt-4 max-w-[60ch] text-[color:var(--color-fg-muted)]">
-        Tautan ini sebelumnya untuk tanggal {formatDisplayDate(date)} jam {slot}, tapi jadwalnya
-        sudah lewat. Pilih jam lain yang masih kosong lewat WhatsApp.
+        Tautan ini sebelumnya untuk tanggal {formatDisplayDate(date)} jam {slots.join(", ")}, tapi
+        jadwalnya sudah lewat. Pilih jam lain yang masih kosong lewat WhatsApp.
       </p>
       <Link href="/#order" lang="id" className={cn(CTA_CLASS)}>
         Lihat Jadwal Kosong

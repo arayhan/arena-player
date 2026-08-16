@@ -25,7 +25,10 @@ export const metadata: Metadata = {
 export default async function BookingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; time?: string }>;
+  // `time` MAY REPEAT. The URL carries one `time` per booked hour since
+  // 2026-08-16, and Next hands a repeated key back as an array — typing it as a
+  // lone string would silently keep only the last one.
+  searchParams: Promise<{ date?: string; time?: string | string[] }>;
 }) {
   const { date, time } = await searchParams;
   return <BookingEntry date={date} time={time} />;

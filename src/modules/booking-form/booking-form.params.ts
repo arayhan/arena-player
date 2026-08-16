@@ -23,11 +23,23 @@ import { isTimeSlot, type TimeSlot } from "@/domain/slots";
  * deploy and no rollback.
  */
 export type BookingParams =
-  | { kind: "valid"; date: string; slot: TimeSlot }
+  | {
+      kind: "valid";
+      date: string;
+      /** Every hour from the link that is still bookable, canonical order. */
+      slots: TimeSlot[];
+      /**
+       * Hours the link asked for that have already started. Empty on a fresh
+       * link; non-empty when a link has sat in a chat past some of its hours,
+       * which is the case the form has to say something about rather than
+       * silently shortening the booking.
+       */
+      expired: TimeSlot[];
+    }
   /** Absent, unparseable, or not a real slot. */
   | { kind: "unusable" }
-  /** Well-formed but past — the link has expired. Said plainly, not hidden. */
-  | { kind: "expired"; date: string; slot: TimeSlot };
+  /** Well-formed but every hour has passed. Said plainly, not hidden. */
+  | { kind: "expired"; date: string; slots: TimeSlot[] };
 
 /**
  * `now` is injected so this is testable at any hour. A function that reads the
@@ -36,25 +48,48 @@ export type BookingParams =
  */
 export function readBookingParams(
   date: string | null | undefined,
-  time: string | null | undefined,
+  /**
+   * One `time` or many. The URL repeats the key once per hour since
+   * 2026-08-16 — `?time=20.00 - 21.00&time=21.00 - 22.00` — because a booking
+   * may cover several and Next hands a repeated key back as an array. A link an
+   * admin typed by hand still carries exactly one and still works: it is the
+   * same parameter, read with `getAll` semantics instead of `get`.
+   */
+  time: string | string[] | null | undefined,
   now: Date = new Date(),
 ): BookingParams {
   if (!date || !time) return { kind: "unusable" };
   if (!isBookingDateString(date)) return { kind: "unusable" };
 
-  // Validated against TIME_SLOTS, never a regex. `uniq_active_slot` compares
-  // time_slot as TEXT, so "18.00-20.00" is a DIFFERENT slot to the database
-  // than "18.00 - 20.00" — a near-miss format that passed a regex would book
-  // the same hour twice with no error anywhere.
-  if (!isTimeSlot(time)) return { kind: "unusable" };
+  const requested = (Array.isArray(time) ? time : [time]).filter(
+    (value, index, all) => all.indexOf(value) === index,
+  );
 
-  if (!isWithinBookingWindow(date, now)) return { kind: "expired", date, slot: time };
-  if (isPastSlot(date, time, now)) return { kind: "expired", date, slot: time };
+  // Validated against TIME_SLOTS, never a regex, and never repaired. The
+  // `uniq_active_slot` index compares time_slot as TEXT, so "18.00-19.00" is a
+  // DIFFERENT slot to the database than "18.00 - 19.00" — a near miss that
+  // passed a pattern check would book the same hour twice with no error
+  // anywhere. Anything unreadable is dropped rather than guessed at.
+  const slots = requested.filter(isTimeSlot);
+  if (slots.length === 0) return { kind: "unusable" };
+
+  // A date outside the window expires the whole link regardless of the hours on
+  // it: there is nothing on that date to keep.
+  if (!isWithinBookingWindow(date, now)) return { kind: "expired", date, slots };
+
+  const live = slots.filter((slot) => !isPastSlot(date, slot, now));
+  const expired = slots.filter((slot) => isPastSlot(date, slot, now));
+
+  // EVERY hour gone is a different state from SOME gone. The first has nothing
+  // to open the form with and gets the notice; the second opens on the live
+  // hours and names what it dropped, because silently shortening somebody's
+  // booking is the one outcome worse than telling them.
+  if (live.length === 0) return { kind: "expired", date, slots };
 
   // NOTE THE STATE THAT IS DELIBERATELY MISSING: "slot no longer available".
   // This function does not ask. Checking availability here and refusing to
   // render the form would be a check-then-insert race — two visitors both pass
   // the check, both submit, and the database is the only thing that can
   // actually arbitrate. The 409 on submit is the authority; see hard rule 1.
-  return { kind: "valid", date, slot: time };
+  return { kind: "valid", date, slots: live, expired };
 }
