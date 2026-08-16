@@ -792,7 +792,8 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
           {SHOW_PHONE_FIELD ? (
             <div>
               <label htmlFor="phone" className={LABEL_CLASS}>
-                Nomor WhatsApp (opsional)
+                Nomor WhatsApp{" "}
+                <span className="font-normal text-[var(--color-fg-muted)]">(opsional)</span>
               </label>
               <input
                 id="phone"
@@ -823,7 +824,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
 
           <div>
             <label htmlFor="notes" className={LABEL_CLASS}>
-              Catatan (opsional)
+              Catatan <span className="font-normal text-[var(--color-fg-muted)]">(opsional)</span>
             </label>
             <textarea
               id="notes"
@@ -879,7 +880,8 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
           {SHOW_PROOF_FIELD ? (
             <div>
               <label htmlFor="proof" className={LABEL_CLASS}>
-                Bukti Transfer (opsional)
+                Bukti Transfer{" "}
+                <span className="font-normal text-[var(--color-fg-muted)]">(opsional)</span>
               </label>
               {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
                   `sr-only`, not `hidden` — it keeps its place in the tab order, so a
