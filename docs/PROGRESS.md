@@ -1025,3 +1025,15 @@ KETENTUAN IS NINE RULES NOW, NOT TEN. The client dropped "Booking, wajib DP sebe
 AND THE CHECK'S OWN COUNT MOVED DELIBERATELY. `check-docs.mjs` asserted ten rules. Reading the count from the file it is checking would have let a bad edit drop a rule from both copies and still "match", so the number stays hard-coded and moving it is an act somebody has to perform — the property worth keeping in a check whose subject is an agreement a visitor accepts by booking.
 
 `pnpm check`: typecheck clean, prettier clean, `check:domain` 8 identical, `check:docs` 15 checks over 129 files, **165 tests passed**. In-browser: zero lowercase "Gratis fotografer" in the DOM, two capitalised, nine Ketentuan rows whose first two are exactly the new strings, and the disclosure label computing `rgb(37, 99, 235)`.
+
+[2026-08-16] [designer] THE ANCHOR OFFSET IS THE HEADER'S HEIGHT, AND NOTHING ADDED TO IT.
+
+WHAT WAS WRONG, AND IT WAS NOT THE NUMBER. The landed offset was assembled from two places: `html { scroll-padding-top }` in globals.css and a `scroll-mt-4` on every `Section`. Nobody reads those together, so when a landing felt wrong the padding got raised — 81 to 112 — and the total went from 97 to **128px against an 81px header**, turning a small gap into an obvious one. The user's word for it was that the scroll goes "more bottom".
+
+`scroll-mt-4`'s OWN COMMENT WAS THE ARGUMENT FOR DELETING IT: it said the header overlap "is handled by the scroll padding on `html` rather than per-section", and then added 16px on top of that padding anyway. It is gone; the padding is 81px, which is the header exactly — 18 + 44 + 18 + 1, the border included, which is the term the old arithmetic used to drop.
+
+MEASURED, AT BOTH WIDTHS: after clicking the header CTA, `#order` lands at **81px** with the header's bottom edge at **81px** — flush. `#lokasi` from the hero lands at 81 too, its heading fully clear at 294px. At 390px the header is still 81 and `#order` still lands at 81.
+
+WHY EXACTLY THE HEADER AND NOT A LITTLE MORE. The bar is the page's own top edge; a destination stopping short of it leaves a strip of the previous section showing under a fixed element, which reads as a scroll that did not finish. Air below the heading is the section's own `--space-section-y`, which is fluid — a fixed 16px margin is not.
+
+DESIGN.md WAS DESCRIBING A BUILD THAT NO LONGER EXISTED. It still documented `scroll-padding-top: 81px` with sections landing at 97.4px — the state before yesterday's raise, which was never written down. Corrected, with the two-contributor trap recorded rather than just the new figure.

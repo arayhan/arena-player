@@ -413,24 +413,39 @@
  * up correct and the fourth does not. There are exactly four in-page anchors —
  * `#order` from the header CTA, the hero CTA and the closing CTA, and `#lokasi`
  * from the hero — and both destinations go through `Section`, which adds its
- * own `scroll-mt-4` on top of this for breathing room.
+ * `Section` used to add its own `scroll-mt-4` on top of this; it was removed on
+ * 2026-08-16 so the landed offset is this one number and not a sum across two
+ * files.
  *
  * This also covers the anchors the hero's CTAs use, which are the two that
  * actually get clicked. */
 html {
-  /* 112px, RAISED FROM 81 ON 2026-08-15 BECAUSE 81 WAS THE HEADER AND NOTHING
-   * ELSE. The header is `fixed` and measures ~80px at rest, so an anchor landing
-   * at 81 put the section's first line one pixel below it — technically clear,
-   * visually jammed against it, and read by the user as "the scroll didn't
-   * work". 112 is the header plus ~32px of air, which is what makes the
-   * destination look like a destination.
+  /* 81px — THE HEADER'S HEIGHT, AND NOTHING ADDED TO IT. A section lands with
+   * its top edge on the header's bottom edge.
+   *
+   * IT WAS 112 FOR A DAY, AND THE 112 WAS A MISREAD. The complaint was that an
+   * anchor "still isn't working", and the offset was raised by 31px to answer
+   * it — but the landing was never short of the header. It was 97px against an
+   * 81px header, because `Section` carried its OWN `scroll-mt-4` on top of this
+   * padding, and 16px of that gap belonged to a class nobody was reading beside
+   * this line. Raising the padding took the total to 128 and turned a small gap
+   * into an obvious one. `scroll-mt-4` is now gone from `Section` and this
+   * number is the header again, so the total is a number you can read off one
+   * line instead of two files.
+   *
+   * WHY EXACTLY THE HEADER AND NOT A LITTLE MORE. The bar is the page's own top
+   * edge; a destination that stops short of it leaves a strip of the previous
+   * section showing under a fixed element, which reads as an incomplete scroll.
+   * A section's own `--space-section-y` padding supplies whatever air its
+   * heading needs, and it does so at every viewport, which a fixed pixel margin
+   * cannot.
    *
    * IT APPLIES TO THE ELEMENT THAT ACTUALLY SCROLLS. If anything under `html`
    * ever becomes a scrollport this property goes inert and the offset silently
    * stops existing — the warning further down this file is about exactly that,
    * and it is why this number is verified by measuring where a section lands
    * rather than by reading it back. */
-  scroll-padding-top: 112px;
+  scroll-padding-top: 81px;
   /* SMOOTH SCROLL FOR IN-PAGE NAVIGATION, added 2026-08-14. Every real
    * destination on this page is an anchor — the header CTA and both hero CTAs
    * jump to `#order` or `#lokasi` — so an instant teleport is the one thing

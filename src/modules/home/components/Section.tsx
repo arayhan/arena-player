@@ -108,7 +108,7 @@ export function Section({
         // old fixed 48/64/96/128 py-12/md:py-24 pair, and the border-t
         // keyline that used to separate steps, are both retired — see the
         // file header.
-        "scroll-mt-4 py-[var(--space-section-y)]",
+        "py-[var(--space-section-y)]",
         // FULL-BLEED, NO RADIUS, NO MARGIN, NO INSET CARD — DESIGN.md's Band
         // Rule, and it is written as a prohibition because the tempting version
         // is the wrong one: a navy section that is a rounded rectangle floating
@@ -116,12 +116,14 @@ export function Section({
         // The band goes edge to edge; the container INSIDE it still respects
         // the maximum, which is what keeps the type measure honest.
         //
-        // `scroll-mt-4` is deliberately kept rather than grown to clear the
-        // fixed header: the header is transparent at rest and materialises on
-        // scroll, so an anchor jump lands with the header opaque over the first
-        // ~62px of the band. That is a real overlap and it is handled by the
-        // scroll padding on `html` rather than per-section, so every anchor on
-        // the page gets the same treatment instead of three of four.
+        // NO `scroll-mt` HERE AT ALL — removed 2026-08-16, and its own comment
+        // was the argument for removing it. It said the header overlap "is
+        // handled by the scroll padding on `html` rather than per-section", and
+        // then added 16px on top of that padding anyway. The two stacked into a
+        // 97px landing that nobody could read off one line, which is how a
+        // later attempt to fix the feel raised the padding to 112 and made the
+        // total 128. `html { scroll-padding-top }` is the whole offset now, and
+        // it is the header's height exactly.
         band && "bg-[var(--color-band)] text-[var(--color-fg-on-band)]",
         className,
       )}
