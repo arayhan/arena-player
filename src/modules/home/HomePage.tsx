@@ -144,16 +144,16 @@ export function HomePage() {
             Ketentuan <Accent band>Arena</Accent>
           </>
         }
-        lede="Sepuluh aturan main, apa adanya dari pihak lapangan."
       >
         <KetentuanRows />
       </Section>
 
-      {/* THE LEDE NO LONGER CLAIMS "parkir luas". Nobody supplied that, and it
-          is a checkable fact about a place whose street address is still an
-          outstanding placeholder below — the same class of invention as a
-          made-up street name, only quieter because it sounds like copy rather
-          than data.
+      {/* THIS SECTION HAS NO LEDE — removed on request, and it is not coming
+          back as a claim. The one it carried before said "parkir luas", which
+          nobody supplied and which is a checkable fact about a place whose
+          street address is still an outstanding placeholder below: the same
+          class of invention as a made-up street name, only quieter because it
+          sounds like copy rather than data.
 
           NO `contentFullWidth` HERE, AND IT WAS CONSIDERED RATHER THAN SKIPPED.
           This section was the page's worst overflow — 158px at 768px, five
@@ -178,7 +178,6 @@ export function HomePage() {
             Datang & <Accent>Main</Accent>
           </>
         }
-        lede="Satu lapangan, satu nomor WhatsApp."
       >
         <LocationBlock />
       </Section>
@@ -207,12 +206,12 @@ export function HomePage() {
           lang="id"
           className="mx-auto w-full max-w-[var(--container-max)] px-[var(--space-section-x)] text-[length:var(--text-sm)] text-[color:var(--color-fg-muted-on-band)]"
         >
-          {/* THE LAST LINE ON THE PAGE IS WHERE THE REGION BELONGS, because it
-              is the one string a visitor reads no matter which section brought
-              them in. "Lombok" and nothing narrower: the field's town is not
-              among the facts the client has supplied, and inventing one here
-              would put a wrong place on every screen. */}
-          Arena Player · Lapangan mini soccer di Lombok
+          {/* THE NAME AND NOTHING ELSE. The region used to ride along here and
+              was removed on request; do not reinstate a descriptor, an address
+              or a town — the field's town is not among the facts the client has
+              supplied, and inventing one would put a wrong place on every
+              screen. */}
+          Arena Player
         </p>
       </footer>
     </main>
