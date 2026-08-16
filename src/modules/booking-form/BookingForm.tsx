@@ -8,6 +8,8 @@ import { bookingWindow, isWithinBookingWindow, todayAtField } from "@/domain/dat
 import { TIME_SLOTS, type TimeSlot } from "@/domain/slots";
 import { cn } from "@/lib/cn";
 
+import { bookingSubmissionWhatsappLink } from "@/utils/whatsapp";
+
 import { buildTimeOptions } from "./booking-form.options";
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
 import { formatRupiah, downPayment, isFullyPriced, sumRates } from "./booking-form.money";
@@ -153,6 +155,12 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // Server-side field errors that have no input on screen to attach to. See
   // the submission effect below for why they cannot be dropped.
   const [unmappedFields, setUnmappedFields] = useState<string[]>([]);
+  const [submittedBooking, setSubmittedBooking] = useState<{
+    date: string;
+    slots: TimeSlot[];
+    teamName: string;
+    notes?: string;
+  } | null>(null);
 
   const mutation = useCreateBooking(bookingDate);
   const refetchAvailability = useRefreshAvailability(bookingDate);
@@ -225,7 +233,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // The 14-day window and today's date, read once. `useState`'s initialiser
   // rather than a module constant: both are clock-derived, and a module constant
   // would freeze the window at the moment the chunk was first evaluated.
-  const [window] = useState(() => bookingWindow());
+  const [windowDates] = useState(() => bookingWindow());
   const [today] = useState(() => todayAtField());
 
   // ONE HANDLER FOR THE CHIP'S × AND THE OPTION ROW, because removing an hour
@@ -297,6 +305,12 @@ export function BookingForm({ date, slot }: BookingFormProps) {
       return;
     }
 
+    setSubmittedBooking({
+      date: bookingDate,
+      slots: parsed.data.slots,
+      teamName: parsed.data.teamName,
+      notes: parsed.data.notes,
+    });
     mutation.mutate(parsed.data);
   });
 
@@ -308,6 +322,20 @@ export function BookingForm({ date, slot }: BookingFormProps) {
   // at a form that looks like it did nothing.
   useEffect(() => {
     if (!outcome) return;
+
+    if (outcome.kind === "created") {
+      if (submittedBooking) {
+        const waUrl = bookingSubmissionWhatsappLink({
+          date: submittedBooking.date,
+          slots: submittedBooking.slots,
+          teamName: submittedBooking.teamName,
+          notes: submittedBooking.notes,
+        });
+        window.location.href = waUrl;
+      }
+      resultRef.current?.focus();
+      return;
+    }
 
     if (outcome.kind === "validation_failed") {
       let firstField: string | undefined;
@@ -337,7 +365,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
 
     setUnmappedFields([]);
     resultRef.current?.focus();
-  }, [outcome, setError]);
+  }, [outcome, setError, submittedBooking]);
 
   // ONE ACCEPTANCE PATH FOR BOTH ENTRY POINTS. The picker and the drop target
   // must validate identically or the dropzone becomes a way to smuggle a file
@@ -478,12 +506,15 @@ export function BookingForm({ date, slot }: BookingFormProps) {
         <div className="mt-5 flex flex-col gap-5">
           <div>
             <label htmlFor="bookingDate" className={LABEL_CLASS}>
-              Tanggal
+              Tanggal{" "}
+              <span className="text-[var(--color-danger-strong)]" aria-hidden="true">
+                *
+              </span>
             </label>
             <div className="mt-1">
               <DateSelect
                 id="bookingDate"
-                dates={window}
+                dates={windowDates}
                 value={bookingDate}
                 formatOption={(date) =>
                   date === today ? `Hari ini · ${formatSummaryDate(date)}` : formatSummaryDate(date)
@@ -501,7 +532,10 @@ export function BookingForm({ date, slot }: BookingFormProps) {
 
           <div>
             <label htmlFor="slots" className={LABEL_CLASS}>
-              Jam
+              Jam{" "}
+              <span className="text-[var(--color-danger-strong)]" aria-hidden="true">
+                *
+              </span>
             </label>
             <div className="mt-1">
               <TimeMultiSelect
@@ -657,7 +691,10 @@ export function BookingForm({ date, slot }: BookingFormProps) {
                 column stay exactly as they are — they are the API contract, they
                 are in database.md, and the admin repo reads them. */}
             <label htmlFor="teamName" className={LABEL_CLASS}>
-              Nama Tim / Pemesan
+              Nama Tim / Pemesan{" "}
+              <span className="text-[var(--color-danger-strong)]" aria-hidden="true">
+                *
+              </span>
             </label>
             <input
               id="teamName"
@@ -687,7 +724,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           {SHOW_PHONE_FIELD ? (
             <div>
               <label htmlFor="phone" className={LABEL_CLASS}>
-                Nomor WhatsApp
+                Nomor WhatsApp (opsional)
               </label>
               <input
                 id="phone"
@@ -718,7 +755,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
 
           <div>
             <label htmlFor="notes" className={LABEL_CLASS}>
-              Catatan
+              Catatan (opsional)
             </label>
             <textarea
               id="notes"
@@ -774,7 +811,7 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           {SHOW_PROOF_FIELD ? (
             <div>
               <label htmlFor="proof" className={LABEL_CLASS}>
-                Bukti Transfer
+                Bukti Transfer (opsional)
               </label>
               {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
                   `sr-only`, not `hidden` — it keeps its place in the tab order, so a
@@ -955,9 +992,24 @@ export function BookingForm({ date, slot }: BookingFormProps) {
           )}
         >
           {outcome?.kind === "created" ? (
-            <p className="font-semibold text-[var(--color-fg)]">
-              Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp.
-            </p>
+            <div className="flex flex-col items-start gap-4">
+              <p className="font-semibold text-[var(--color-fg)]">
+                Pemesanan berhasil. Menghubungkan ke WhatsApp admin…
+              </p>
+              {submittedBooking ? (
+                <a
+                  href={bookingSubmissionWhatsappLink({
+                    date: submittedBooking.date,
+                    slots: submittedBooking.slots,
+                    teamName: submittedBooking.teamName,
+                    notes: submittedBooking.notes,
+                  })}
+                  className={CTA_CLASS}
+                >
+                  Buka WhatsApp →
+                </a>
+              ) : null}
+            </div>
           ) : (
             <>
               <p className="font-semibold text-[var(--color-danger-strong)]">

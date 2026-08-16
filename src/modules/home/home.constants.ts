@@ -20,4 +20,4 @@
  * Verified against `normalisePhone` before being written here: `+6289682620666`
  * normalises to this string, so it satisfies the same rule the form enforces.
  */
-export const WHATSAPP_NUMBER = "6289682620666";
+export { WHATSAPP_NUMBER } from "@/utils/whatsapp";

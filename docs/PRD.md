@@ -226,8 +226,7 @@ Full token table, typography, and animation budget: [DESIGN.md](DESIGN.md).
   - **The rate card itself is still missing**, so the figure is `TODO(content)` — the seventh category. The client answered _where_ a price goes without answering _what_ it is: flat rate, or varying by hour, day, or weekend. **No placeholder number may be invented here.** Every other placeholder is inert if it ships by accident; an invented price is the one a visitor would act on, and it would be the developer's number attached to the client's business.
   - Until the rate card arrives the existing wording stands: "Transfer DP 50% dari harga sewa. Nominal dikonfirmasi admin via WhatsApp." That sentence is the fallback, not the destination.
 - Payment proof upload: **hidden 2026-08-15** — payment proof is handled in the same WhatsApp chat for now. The dropzone, its validation and the R2 contract all remain; when it returns it is image only (jpg/png/webp), max 2MB, uploaded to the private R2 bucket. **`phone not null` and `proof_key not null` now contradict the form** — [database.md](database.md) carries that as blocking Phase 4 work
-- Honeypot hidden field for spam protection
-- On submit: POST to the API. Success screen: "Pemesanan berhasil. Menunggu konfirmasi admin via WhatsApp." Failure for a taken slot: friendly message "Yah, slot ini baru saja diambil orang lain. Silakan pilih waktu lain." with a button back to `/#order`.
+- On submit: POST to the API. Success screen: "Pemesanan berhasil. Menghubungkan ke WhatsApp admin…" with automatic redirect and fallback "Buka WhatsApp →" button to confirm with admin via pre-filled message (date, multiselected slots, name, and notes). Failure for a taken slot: friendly message "Yah, jam ini baru saja diambil orang lain. Silakan pilih waktu lain." with an inline slot retry button.
 
 ## Data model (Neon Postgres)
 
