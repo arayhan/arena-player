@@ -1037,3 +1037,21 @@ MEASURED, AT BOTH WIDTHS: after clicking the header CTA, `#order` lands at **81p
 WHY EXACTLY THE HEADER AND NOT A LITTLE MORE. The bar is the page's own top edge; a destination stopping short of it leaves a strip of the previous section showing under a fixed element, which reads as a scroll that did not finish. Air below the heading is the section's own `--space-section-y`, which is fluid — a fixed 16px margin is not.
 
 DESIGN.md WAS DESCRIBING A BUILD THAT NO LONGER EXISTED. It still documented `scroll-padding-top: 81px` with sections landing at 97.4px — the state before yesterday's raise, which was never written down. Corrected, with the two-contributor trap recorded rather than just the new figure.
+
+[2026-08-16] [engineer+designer] THE BOOKING FORM AND ITS URL FINALLY AGREE, AND AN HOUR THAT HAS PASSED SAYS SO.
+
+THE QUERY PARAMS ARE A ROUND TRIP NOW, NOT AN ENTRY POINT. `?date=&time=` was read once and never written back: a visitor who picked a different date and then reloaded, or shared the link, sent somebody to the hours the ADMIN had chosen. The URL now carries **one `time` per booked hour** — `URLSearchParams` repeats keys natively, so nothing has to agree on a separator — and `readBookingParams` reads one or many. **A link an admin typed by hand still carries exactly one and still works**; it is the same parameter read with `getAll` semantics.
+
+`history.replaceState`, NOT `router.replace`. The router re-runs the server component and remounts the form on every toggle, which loses focus and whatever is half-typed. It also keeps the back button meaning "the page before this one" rather than "your previous seven taps".
+
+A LINK CAN NOW BE HALF STALE, AND THAT IS ITS OWN STATE. `BookingParams` splits into `valid` with the live hours plus the ones that passed, `expired` when EVERY hour has gone, and `unusable`. Measured: `?time=06.00 - 07.00&time=20.00 - 21.00` at 11:20 WITA opens the form with 20.00 chipped, names 06.00 as passed, and **rewrites the URL to the live hour** — the round trip cleaning up after the stale link. Silently shortening somebody's booking is the one outcome worse than telling them.
+
+THE CLOCK IS RE-READ AT SUBMIT. A form sits open while a name is typed, and an hour can start while it does. The submit now re-checks every selected hour with `isPastSlot` — the same function the picker and the availability split use — blocks, drops them, and names them. The server would have refused anyway; a generic 400 after a filled-in form is a worse answer than the reason.
+
+THE EXPIRED NOTICE LOOKED LIKE A WORKING PAGE. It wore `PANEL_CLASS`, the same navy-edged white plate as the payment panel and the form, so the one state on this route that is a PROBLEM was styled identically to the ones that are not. It takes the danger surface now — measured `rgb(254, 226, 226)` — with `role="alert"`, and the form still opens below it on that date.
+
+THREE TRIMS. The payment panel's "Transfer DP 50%…" sentence is gone at the user's instruction, and **the `DP 50%` row went with it**: a figure whose only explanation has just been deleted is a number a visitor cannot act on. `downPayment()` lost its only caller and left with its tests rather than staying as dead exported surface. `(opsional)` in the field labels drops to `--color-fg-muted` — measured `rgb(74, 90, 120)`.
+
+⚠️ THE WHATSAPP NUMBER IS A DEVELOPMENT NUMBER AS OF TODAY, AND IT MUST GO BACK. `WHATSAPP_NUMBER` is `62895410347567` (+62 895-4103-47567); **the client's own is `6289682620666`**. Nothing fails if this ships: the deep link opens, WhatsApp launches, the message is prefilled perfectly, and every booking reaches the wrong phone. Two places have to be reverted — `src/utils/whatsapp.ts` and the assertion in `src/utils/whatsapp.test.ts` — deliberately, so a half-done revert is a failing test rather than a silent misdelivery.
+
+`pnpm check`: typecheck clean, prettier clean, `check:domain` 8 identical, `check:docs` 15 checks over 131 files, **172 tests passed** (was 169; the params suite gained five cases for repeated, duplicate, half-stale and unrepairable `time` values, and the money suite lost the DP ones). In-browser: the URL gains and loses `time` values with the picker, a reload restores both hours, `wa.me/62895410347567` on the landing hand-off, and no horizontal overflow.
