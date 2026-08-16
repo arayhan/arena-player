@@ -4,7 +4,11 @@ import { bookingSubmissionWhatsappLink, slotWhatsappLink, WHATSAPP_NUMBER } from
 
 describe("whatsapp utils", () => {
   it("exports the verified client admin WhatsApp number", () => {
-    expect(WHATSAPP_NUMBER).toBe("6289682620666");
+    // THE DEVELOPMENT NUMBER, 2026-08-16. The client's own is 6289682620666 and
+    // this assertion is the second place the swap has to be undone before
+    // handover — deliberately, so a revert that misses one is a failing test
+    // rather than a booking sent to the wrong phone.
+    expect(WHATSAPP_NUMBER).toBe("62895410347567");
   });
 
   describe("slotWhatsappLink", () => {
