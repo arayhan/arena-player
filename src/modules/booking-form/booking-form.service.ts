@@ -72,15 +72,11 @@ export async function fetchPaymentAccounts(signal?: AbortSignal): Promise<Paymen
  * price must never be in a body the landing page receives. Prices arrive as
  * INTEGERS — formatting lives in `booking-form.money.ts`, so a currency decision
  * is never made in two places.
- *
- * TAKES `date`, SINCE 2026-08-17 — the real rate card prices weekday and
- * weekend hours differently from 16.00 onward, so the answer depends on which
- * date is being booked, the same reason `fetchAvailability` already takes one.
  */
 export type SlotRate = { slot: TimeSlot; price: number };
 
-export async function fetchRates(date: string, signal?: AbortSignal): Promise<SlotRate[]> {
-  const response = await apiClient.get("/rates", { params: { date }, signal });
+export async function fetchRates(signal?: AbortSignal): Promise<SlotRate[]> {
+  const response = await apiClient.get("/rates", { signal });
 
   if (response.status !== 200) {
     throw new Error(`rates request failed: ${response.status}`);
