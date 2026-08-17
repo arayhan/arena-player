@@ -13,7 +13,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { bookingWindow } from "@/domain/dates";
+import { bookingWindow, todayAtField } from "@/domain/dates";
 import { TIME_SLOTS } from "@/domain/slots";
 
 import { GET as availability } from "./availability/route";
@@ -22,6 +22,7 @@ import { GET as paymentAccounts } from "./payment-accounts/route";
 import { GET as rates } from "./rates/route";
 
 const BASE = "http://localhost:3000";
+const TODAY = todayAtField();
 
 function bookingForm(
   overrides: Record<string, string | Blob> = {},
@@ -44,18 +45,14 @@ const post = (form: FormData) =>
   bookings(new Request(`${BASE}/api/bookings`, { method: "POST", body: form }));
 
 describe("GET /api/availability", () => {
-  // THE HAPPY PATH MOVED OUT OF THIS SUITE ON 2026-08-17. `availabilityFor` now
-  // queries the client's real Supabase database, so a call that reaches it
-  // needs `DATABASE_URL` — exactly the live-credential dependency
-  // vitest.config.ts's comment on `check:setup` already reserves a separate,
-  // `check:unit`-excluded home for ("a preflight that actually connects to
-  // [the database] ... to confirm the migration ran and credentials work").
-  // Building that harness is Phase 4 scope, not this change's. What stays
-  // here is everything the ROUTE ITSELF is responsible for — URL parsing and
-  // the 400 contract — which never reaches `availabilityFor` at all. Canonical
-  // order and the three-status contract are re-proven with no database in
-  // `src/server/availability.test.ts`, against the same pure function the
-  // route calls.
+  it("returns eighteen entries in canonical order", async () => {
+    const res = await availability(new Request(`${BASE}/api/availability?date=${TODAY}`));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toHaveLength(TIME_SLOTS.length);
+    expect(body.map((r: { slot: string }) => r.slot)).toEqual([...TIME_SLOTS]);
+  });
+
   it("400s outside the window, on a malformed date, and on a missing one", async () => {
     const at = (query: string) => availability(new Request(`${BASE}/api/availability${query}`));
     expect((await at("?date=2030-01-01")).status).toBe(400);

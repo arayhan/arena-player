@@ -2,10 +2,6 @@
 
 Deep implementation contract for Neon Postgres + Cloudflare R2. Decision rationale is in [architecture.md](architecture.md); this doc is the exact schema and the gotchas that will bite again if not respected.
 
-> **THE LIVE DATABASE IS SUPABASE, NOT NEON — found 2026-08-17.** The client (`adminarenaplayer@gmail.com`) had already provisioned a Supabase Postgres project (`lrelwuikjiuqvlduxzdy`) before this doc's Neon plan was ever executed, matching `TIME_SLOTS` and `BOOKING_STATUSES` byte for byte. Everything below this notice — the DDL, the error-code contract, the WITA date discipline, the R2/proof ordering — is **unchanged in substance**: it is still Postgres, `23505` still means a unique-index conflict, `uniq_active_slot` is still the entire race guard, and it is verified present on the live database. Only the **connection** and the **driver** moved: `DATABASE_URL` now points at Supabase's transaction pooler (`.env.local.example`) and the client is `postgres` (postgres.js), not `@neondatabase/serverless` — see the driver note beside the schema below. R2 vs Supabase Storage for the proof upload is a **separate, still-open** decision; nothing in this doc's R2 sections has been touched by this correction.
->
-> **The live schema also has three tables this file did not previously document — `slot_blocks`, `site_settings`, `bank_accounts` — provisioned for the admin app.** `slot_blocks` is added below since `GET /api/availability` now reads it. `site_settings` and `bank_accounts` are seeded with **placeholder data that must never reach a visitor** (a fabricated address and DP percentage, and a bank account that is not either of the client's real two) — see `docs/PROGRESS.md`'s 2026-08-17 entry. Nothing in this repo reads either table.
-
 ## Schema
 
 ```sql
@@ -56,24 +52,6 @@ create index bookings_pending_expiry_idx
 commit;
 ```
 
-**`slot_blocks` — an admin-side manual block, verified live 2026-08-17, no migration file in this repo.** This repo does not write to it — `arena-player-admin` does, for maintenance windows or private hire — but `GET /api/availability` reads it, so its shape is recorded here rather than only in a query comment. Reconstructed from the live schema via the Supabase MCP connection, not from a migration this repo owns:
-
-```sql
-create table slot_blocks (
-  id uuid primary key default gen_random_uuid(),
-  block_date date not null,
-  time_slot text not null,       -- same time_slot_canonical list as bookings
-  reason text,                   -- check: reason is null or length(reason) <= 200
-  created_at timestamptz not null default now()
-);
-
--- One block per (date, slot) — unconditional, no partial WHERE. A block has
--- no "active" vs "inactive" state the way a booking's status does.
-create unique index uniq_slot_block on slot_blocks (block_date, time_slot);
-```
-
-`availability.ts`'s precedence: a `slot_blocks` row wins over a `bookings` row for the same slot, unconditionally — see the comment on `computeAvailability` in that file for why.
-
 **THIS BLOCK IS THE CURRENT SCHEMA, NOT A SINGLE MIGRATION FILE, SINCE 2026-08-15.** Until then `db/migrations/` held exactly one file and this block was byte-identical to it; that stopped being possible the day a second migration arrived. `db/migrations/20260809_create_bookings.sql` creates the table with the ORIGINAL nine 2-hour slots; `db/migrations/20260815_alter_time_slot_1h.sql` drops and re-adds `time_slot_canonical` with the eighteen 1-hour slots shown above. Never edit an applied migration — this block is what running both, in order, against a fresh database produces, kept as ONE reference rather than asking a reader to mentally apply a diff.
 
 `pnpm check:docs`'s `schema-value-drift` holds the LATEST migration, this block, and [PRD.md](PRD.md) (which carries a shorter comment-free variant of the same DDL) to the same values: `time_slot_canonical` matches `TIME_SLOTS`, `status_valid` matches `BOOKING_STATUSES`, `uniq_active_slot`'s `WHERE` matches `ACTIVE_STATUSES`, and `notes_length` is 500. An EARLIER migration's own constraint text is not compared — it is history, and is expected to show what the schema used to require, not what it requires now. Migration files are **never auto-applied** — the user runs them manually, in filename order, in the Neon SQL editor. Application code must fail loudly if the table doesn't exist yet, never silently `create table if not exists`.
@@ -113,31 +91,23 @@ slot `Harga menyusul` until it arrives, and no number is invented in the meantim
 
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 
-**Superseded 2026-08-17 — the client's Supabase project already exists.** The
-three steps below described creating a fresh Neon project; the client's
-database is already live (`lrelwuikjiuqvlduxzdy`, provisioned for the admin
-app) and the migration above is already applied — `uniq_active_slot` was
-verified present via the Supabase MCP connection before this note was
-written. What remains from this list: copy the **Transaction pooler**
-connection string (Supabase Dashboard → Project Settings → Database →
-Connection string → Transaction pooler; port `6543`, host
-`...pooler.supabase.com`) into `DATABASE_URL`. The **direct** string
-(`db.<ref>.supabase.co:5432`) is IPv6-only on a new project without the IPv4
-add-on and exhausts connections fast under concurrent serverless route
-invocations either way — the same non-optional rule the three steps below
-stated for Neon, unrelated vendor.
-
-1. ~~Create a Neon project.~~ Already exists, on Supabase.
-2. ~~Run the migration above in the Neon SQL editor.~~ Already applied.
+1. Create a Neon project.
+2. Run the migration above in the Neon SQL editor.
 3. Copy the **pooled** connection string (contains `-pooler` in the host) into `DATABASE_URL`. The direct string exhausts connections fast under concurrent serverless route invocations — this is not optional.
 
-## Database MCP — Supabase, connected 2026-08-17, reads only
+## Neon MCP — removed until Phase 4, deliberately
 
-**Superseded.** `.mcp.json` never wired up Neon's MCP server — it was there once, never approved, and taken out during Phase 1a. What is actually connected is Supabase's MCP, through claude.ai's connector rather than `.mcp.json`, authorized against the client's own Supabase account (`adminarenaplayer@gmail.com`). It is how the `slot_blocks` schema above and the placeholder data flagged in `docs/PROGRESS.md` were found, and how `uniq_active_slot`'s presence was verified rather than assumed.
+`.mcp.json` no longer wires up Neon's MCP server. It was there, it was never approved, and it was taken out during Phase 1a rather than left to be switched on by whoever reaches the backend first.
 
-**The rule this section always argued for still holds, now for Supabase instead of Neon: reads only.** `execute_sql` and `list_tables` were used to inspect schema, indexes, RLS policies and row contents. `apply_migration` has not been used and must not be, for the same reason this section originally gave — a migration applied by an agent with no human re-reading it is exactly the failure mode where `uniq_active_slot` silently fails to exist and nothing throws. Migrations against this project are still run by a human in the Supabase SQL editor.
+**The reason is the rule directly above.** Migrations here are run by hand in the Neon SQL editor. The MCP exists to give an agent SQL execution and migration application — the exact capability that rule forbids — and the failure it enables is the silent one this file already warns about: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that partial index is the only race guard in the system. One helpful tool call, no exception thrown, double bookings in production.
 
-No new credential was added to `.env.local.example` for this: the MCP connection authenticates through the connector, not through a key this repo's environment carries, so there is nothing parallel to the old `NEON_API_KEY` proposal to document here.
+Nothing was touched by it, because it never connected. But it was dormant by accident rather than by decision, and Phases 1a–3 run entirely against the MSW mock, so nothing needs it before Phase 4.
+
+**Conditions for bringing it back** — on the Phase 4 agenda in [PRD.md](PRD.md):
+
+- A written rule limiting agents to **reads**: inspect schema and connection state, never run DDL, never apply a migration.
+- `NEON_API_KEY` documented in `.env.local.example`, which it never was. It is a Neon **platform API key** from the console's API Keys page — a _different_ credential from `DATABASE_URL`, which is the Postgres connection itself. It is never committed; `.mcp.json` references `${NEON_API_KEY}` and the value lives in your own shell environment.
+- The package name verified against current docs. The previous entry (`@neondatabase/mcp-server-neon`) was written from training knowledge and never confirmed against `https://neon.tech/docs`.
 
 ## Error-code contract
 
@@ -171,14 +141,6 @@ const customTypes: CustomTypesConfig = {
 
 Verify this is working with: `types.getTypeParser(1082)('2026-08-01')` must return the string `'2026-08-01'`, not a `Date` instance. Any future "simplification" of the Neon client that drops this override reintroduces a silent booking-date corruption bug — this paragraph exists so that doesn't happen quietly.
 
-## Supabase/postgres.js date gotcha — same bug, different vendor, different fix
-
-**`src/server/db.ts` uses `postgres` (postgres.js), not `@neondatabase/serverless`**, and it has the identical default: `date`/`timestamptz` columns parse into JS `Date` objects, which shifts `booking_date` by a day on a WITA machine exactly as described above. The fix here is NOT a global type-parser override — `src/server/availability.ts` is the only caller today, and its query casts the column at the SQL level instead: `select booking_date::text ...` (in practice `time_slot`, which is already `text`, and `block_date::text` in the `slot_blocks` read). Casting in the query is easier to verify by reading the query than a driver-level option buried in `db.ts`.
-
-**If a second caller ever needs a date column from `sql`, it must cast it the same way.** Do not "fix this properly" with a global type-parser override without re-reading this paragraph and the comment on `sql` in `db.ts` — the two must not disagree about which mitigation is authoritative.
-
-`postgres.js` also needs `{ prepare: false }` when the connection is Supabase's transaction-mode pooler — pgbouncer in that mode does not support prepared statements, and postgres.js uses them by default. Already set in `db.ts`; recorded here so the reason survives a future "why is this off" question.
-
 ## R2 checksum gotcha
 
 R2 rejects the AWS SDK's default flexible-checksum headers on some upload paths. The `S3Client` config must set:
@@ -211,4 +173,4 @@ Single shared source for the upload constraint: 2MB size limit, `jpg`/`png`/`web
 
 ## Env vars
 
-Documented in `.env.local.example`. Five vars: `DATABASE_URL` (Supabase Postgres, transaction pooler — see the notice at the top of this file), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`. No values live in this doc — see the example file.
+Documented in `.env.local.example`. Five vars: `DATABASE_URL` (Neon, pooled), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`. No values live in this doc — see the example file.
