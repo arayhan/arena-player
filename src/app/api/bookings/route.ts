@@ -15,6 +15,8 @@ const ERROR_TRIGGERS = {
   TEST400: 400,
 } as const;
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request): Promise<Response> {
   const form = await request.formData();
   const teamName = String(form.get("teamName") ?? "");

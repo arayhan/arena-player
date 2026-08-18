@@ -7,6 +7,9 @@ import { availabilityFor } from "@/server/availability";
  * Reads active bookings (`bookings` with status pending/confirmed) and administrative
  * slot blocks (`slot_blocks`) from Supabase Postgres.
  */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request): Promise<Response> {
   const date = new URL(request.url).searchParams.get("date");
 
