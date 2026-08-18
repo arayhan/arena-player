@@ -60,7 +60,13 @@ export async function availabilityFor(
   date: string,
   now: Date = new Date(),
 ): Promise<SlotAvailability[]> {
-  if (!process.env.DATABASE_URL || process.env.NODE_ENV === "test") {
+  const dbUrl =
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_URL ??
+    process.env.SUPABASE_DATABASE_URL ??
+    process.env.POSTGRES_PRISMA_URL;
+
+  if (!dbUrl || process.env.NODE_ENV === "test") {
     return computeAvailability(date, [], [], now);
   }
 

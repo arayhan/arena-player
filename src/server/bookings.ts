@@ -46,7 +46,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   // Fallback placeholder for database text non-null column if optional phone was omitted
   const phoneToStore = normalisedPhone ?? "-";
 
-  if (!process.env.DATABASE_URL || process.env.NODE_ENV === "test") {
+  const dbUrl =
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_URL ??
+    process.env.SUPABASE_DATABASE_URL ??
+    process.env.POSTGRES_PRISMA_URL;
+
+  if (!dbUrl || process.env.NODE_ENV === "test") {
     return { success: true, id: crypto.randomUUID(), status: "pending" };
   }
 
