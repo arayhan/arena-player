@@ -8,7 +8,7 @@ import type { TimeSlot } from "@/domain/slots";
 import { useMotion } from "@/lib/motion";
 
 import { useAvailability } from "../home.queries";
-import { countAvailable, longestFreeRun, partitionSlots } from "@/utils/slot-display";
+import { countAvailable, partitionSlots } from "@/utils/slot-display";
 
 import { DatePills } from "./DatePills";
 import { SlotCell } from "./SlotCell";
@@ -225,11 +225,6 @@ export function OrderSection() {
   );
 
   const availableCount = countAvailable(live);
-
-  // Computed from `live`, never the raw response — elapsed hours must break a
-  // run rather than pad it. At most one cell on the page gets a badge, and on
-  // a busy day none does.
-  const freeRun = useMemo(() => longestFreeRun(live), [live]);
 
   return (
     // THE GHOST'S BAND, and the reason this wrapper exists at all. `pt-*`
@@ -517,7 +512,6 @@ export function OrderSection() {
                     // Reversible: tapping the selected slot clears it rather
                     // than forcing the visitor to pick a different one to escape.
                     onSelect={() => setSelected((cur) => (cur === s.slot ? null : s.slot))}
-                    runHours={freeRun?.startSlot === s.slot ? freeRun.hours : undefined}
                   />
                 </div>
               ))}

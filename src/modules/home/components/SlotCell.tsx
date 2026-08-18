@@ -54,22 +54,11 @@ export function SlotCell({
   status,
   selected,
   onSelect,
-  runHours,
 }: {
   slot: DisplaySlot["slot"];
   status: DisplaySlot["status"];
   selected: boolean;
   onSelect: () => void;
-  /**
-   * Set ONLY on the first slot of the day's longest free run, and only when
-   * that run is three slots or more. At most one cell on the page carries it.
-   *
-   * It answers the organiser's own question — *can we play longer?* — rather
-   * than saying "take this dead hour", which is the client's interest and not
-   * theirs. The two align on quiet hours, which is what makes it an affordance
-   * instead of a nudge. See `longestFreeRun` for the anti-dilution rules.
-   */
-  runHours?: number;
 }) {
   const selectable = status === "available";
   // "Dipilih" replaces the status label the instant a slot is selected —
@@ -240,32 +229,6 @@ export function SlotCell({
       >
         {label}
       </span>
-
-      {/* THE FREE-RUN AFFORDANCE. A quiet second line, not a coloured chip: the
-          state label is what the cell exists to carry, and a badge competing
-          with it would trade the primary reading for the secondary one.
-
-          THE SELECTED BRANCH FIXES A LIVE DEFECT, verified in the browser before
-          it was written rather than reasoned about. This span carried a flat
-          `text-[var(--color-interactive)]`, and a span's own colour beats the
-          `!text-...` the button sets on itself — so selecting the one badged
-          slot rendered `rgb(37, 99, 235)` text on a `rgb(37, 99, 235)` fill.
-          That is 1.00:1: the sentence did not fade, it disappeared, on the
-          single cell in the whole grid that has something extra to say. Read
-          live at 375px on 16.00 - 18.00 with `getComputedStyle`. The hover
-          branch is the same failure one step away, for the same reason. */}
-      {runHours ? (
-        <span
-          lang="id"
-          className={cn(
-            "text-[length:var(--text-xs)]",
-            "text-[var(--color-interactive)] pointer-fine:group-hover:text-[var(--color-interactive-on-band)]",
-            selected && "!text-[var(--color-fg-inverse)]",
-          )}
-        >
-          Bisa main {runHours} jam berturut-turut
-        </span>
-      ) : null}
 
       {/* The decorative half of the tap: a hard ring struck at the field's edge
           that expands and fades. SQUARE now, with the `rounded` dropped — a
