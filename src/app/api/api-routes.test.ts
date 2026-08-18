@@ -63,25 +63,21 @@ describe("GET /api/availability", () => {
 });
 
 describe("GET /api/rates", () => {
-  it("returns an empty rate card — the 2-hour figures do not survive 1-hour slots", async () => {
-    // TIME_SLOTS went from nine 2-hour slots to eighteen 1-hour ones on
-    // 2026-08-15, the same day the client's 400k/600k/800k figures arrived.
-    // Those numbers priced a 2-hour block; halving them would invent a number
-    // hard rule 2 forbids, so rateCard() reports no prices at all until an
-    // hourly figure exists. An empty array is a valid response under
-    // assertRates in booking-form.contract.ts.
-    const res = await rates();
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body).toEqual([]);
-  });
-
-  it("sends integers, never formatted strings, on any future row", async () => {
-    // Formatting is the client's job. A currency decision made in two places
-    // is a currency decision that disagrees with itself. Nothing to iterate
-    // over today, but the contract still holds for the day a row exists.
-    const body: { price: unknown }[] = await (await rates()).json();
-    expect(body.every((r) => typeof r.price === "number")).toBe(true);
+  // NO HAPPY-PATH TEST HERE. `rateCard(date)` queries the client's real
+  // `rate_card` table via src/server/db.ts, which needs a live
+  // `DATABASE_URL` this suite does not have — the same live-credential
+  // dependency vitest.config.ts's `check:setup` comment reserves a separate,
+  // `check:unit`-excluded home for. The pure weekday/weekend boundary logic
+  // (`isWeekendDate`) is unit-tested with no database in
+  // `src/server/rates.test.ts`. What stays here is the route's own
+  // responsibility — the `date` param's 400 contract, which this route
+  // shares this exact shape with `GET /api/availability`.
+  it("400s outside the window, on a malformed date, and on a missing one", async () => {
+    const at = (query: string) => rates(new Request(`${BASE}/api/rates${query}`));
+    expect((await at("?date=2030-01-01")).status).toBe(400);
+    expect((await at("?date=9-8-2026")).status).toBe(400);
+    expect((await at("?date=2026-02-31")).status).toBe(400);
+    expect((await at("")).status).toBe(400);
   });
 });
 

@@ -209,7 +209,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
   // rejects, and one that can fall out of step for a render. Derived from the
   // same rows in one place, the two cannot disagree at all.
   const availability = useBookingAvailability(bookingDate);
-  const rates = useRates();
+  const rates = useRates(bookingDate);
   const timeOptions = useMemo(
     () => buildTimeOptions(availability.data ?? [], bookingDate, rates.data ?? []),
     // The clock is deliberately NOT a dependency: an hour sliding into "sudah

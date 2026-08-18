@@ -28,11 +28,11 @@ Two consequences that shape the code: selecting a slot **holds nothing** — onl
 
 Written during Phase 1a task 5, before any UI consumes it. The demo routes in `src/app/api/` implement exactly these shapes — agents must read this section rather than inventing response bodies.
 
-> **MSW WAS RETIRED ON 2026-08-15, ahead of Phase 4, and this is what replaced it.** Four route handlers under `src/app/api/` serve the demo: `availability` (seeded per date, from `src/server/demo-availability.ts`), `rates` and `payment-accounts` (the client's own content), and `bookings` (validates, answers 201, **stores nothing**). `src/mocks/` is deleted, `public/mockServiceWorker.js` is gone, the msw dependency is out of package.json, and the ESLint ban on importing the package stays so nobody rebuilds the hazard.
+> **MSW WAS RETIRED ON 2026-08-15, ahead of Phase 4, and this is what replaced it.** Four route handlers under `src/app/api/` serve the demo: `availability` (seeded per date, from `src/server/demo-availability.ts`), `rates` (**live since 2026-08-17** — `src/server/rates.ts` queries Supabase's `rate_card` table) and `payment-accounts` (the client's own static content), and `bookings` (validates, answers 201, **stores nothing**). `src/mocks/` is deleted, `public/mockServiceWorker.js` is gone, the msw dependency is out of package.json, and the ESLint ban on importing the package stays so nobody rebuilds the hazard.
 >
 > **What forced it: the client asked for a link they could open.** A service worker is compiled out of production builds by hard rule, so a deployed URL had no API at all — the very gate that made MSW safe made it useless for a demo. Retiring it early also removes the failure this note used to warn about, permanently: a stray `mockServiceWorker.js` intercepting real requests and serving invented availability, with nothing in the console and nothing in the network tab that looks wrong.
 >
-> **The routes are still demo stubs and each says so at its top.** Availability is generated; no booking is stored. Phase 4 replaces the insides — Neon, the transaction, the `23505` catch — and the contract below does not move.
+> **Availability and bookings are still demo stubs and each says so at its top.** Availability is generated; no booking is stored. Phase 4 replaces the insides — the transaction, the `23505` catch — and the contract below does not move. **Rates is the one exception**, already reading the real Supabase database — see docs/database.md.
 >
 > **`curl` works now, and that is a real gain.** The old handlers ran in a service worker, so `curl localhost:3000/api/availability` reached Next's router and 404'd regardless; the routes are exercisable from a shell and unit-tested by calling the exported `GET`/`POST` directly in `src/app/api/api-routes.test.ts`.
 
@@ -567,7 +567,7 @@ Every version below was resolved against the registry on 2026-08-08 and is pinne
 | `typescript` (dev)                     | 5.9.3                                                                                                                       |
 | `eslint` (dev)                         | 9.39.5                                                                                                                      |
 | `vitest` (dev)                         | 4.1.10                                                                                                                      |
-| `@neondatabase/serverless`             | **not installed** — Phase 4                                                                                                 |
+| `postgres`                             | 3.4.9 — postgres.js, `src/server/db.ts` only. The live database is Supabase, not Neon; see docs/database.md's top notice    |
 | `@aws-sdk/client-s3`                   | **not installed** — Phase 4                                                                                                 |
 | `server-only`                          | 0.0.1                                                                                                                       |
 | pnpm (`packageManager`)                | 11.17.0                                                                                                                     |

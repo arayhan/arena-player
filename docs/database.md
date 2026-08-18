@@ -2,6 +2,21 @@
 
 Deep implementation contract for Neon Postgres + Cloudflare R2. Decision rationale is in [architecture.md](architecture.md); this doc is the exact schema and the gotchas that will bite again if not respected.
 
+> **THE LIVE DATABASE IS SUPABASE, NOT NEON — found 2026-08-17.** The client
+> (via `arena-player-admin`) had already provisioned a live Supabase Postgres
+> project (`lrelwuikjiuqvlduxzdy`, `ACTIVE_HEALTHY`) before this repo's own
+> Neon plan was ever executed. `bookings` matches this doc's schema exactly
+> (same `TIME_SLOTS`, same `uniq_active_slot`). RLS is enabled on every table
+> with **zero policies** — a direct Postgres connection using the `postgres`
+> role bypasses RLS by construction, so no policy work or service-role JWT is
+> needed for a server-side read/write; `DATABASE_URL` still names the same
+> secret, now pointed at Supabase's **transaction pooler** (port `6543`)
+> instead of a Neon pooled string. `src/server/db.ts` uses `postgres`
+> (postgres.js) rather than `@neondatabase/serverless` — see its header
+> comment for the `prepare: false` and date-parsing notes. Everywhere below
+> that says "Neon" is describing the schema/migration discipline this repo
+> still follows, not the vendor actually running it.
+
 ## Schema
 
 ```sql
@@ -85,29 +100,93 @@ directions. Recorded here instead, as blocking work rather than a nice-to-have.
    upload there is no R2 write, so the orphaned-proof sweeper below has nothing
    to sweep **while this stays hidden** — it is not solved, only dormant.
 
-A booking that spans several slots is also a **pricing** question the rate card
-has to answer: whether four hours costs twice two hours. The picker labels every
-slot `Harga menyusul` until it arrives, and no number is invented in the meantime.
+A booking that spans several slots is also a **pricing** question — resolved
+now that the rate card is hourly (see below): each slot in the selection
+carries its own price and the total is additive, so "does four hours cost
+twice two hours" has a real per-hour answer instead of an open question.
+
+## `rate_card` and `public_holidays` — the pricing schema
+
+Authored and applied by `arena-player-admin`
+(`db/migrations/20260817_add_rate_card_and_holidays.sql` — **untracked in
+this repo**, not this repo's migration to own, but the table it created is
+what `src/server/rates.ts` reads):
+
+```sql
+create table rate_card (
+  id           uuid primary key default gen_random_uuid(),
+  time_slot    text not null,
+  day_type     text not null,
+  price_rupiah integer not null,
+  updated_at   timestamptz not null default now(),
+
+  constraint rate_card_time_slot_canonical check (time_slot in (
+    '06.00 - 07.00','07.00 - 08.00','08.00 - 09.00','09.00 - 10.00','10.00 - 11.00','11.00 - 12.00',
+    '12.00 - 13.00','13.00 - 14.00','14.00 - 15.00','15.00 - 16.00','16.00 - 17.00','17.00 - 18.00',
+    '18.00 - 19.00','19.00 - 20.00','20.00 - 21.00','21.00 - 22.00','22.00 - 23.00','23.00 - 24.00'
+  )),
+  constraint rate_card_day_type_valid check (day_type in ('weekday','weekend')),
+  constraint rate_card_price_positive check (price_rupiah > 0)
+);
+create unique index uniq_rate_card_slot on rate_card (time_slot, day_type);
+
+create table public_holidays (
+  id           uuid primary key default gen_random_uuid(),
+  holiday_date date not null unique,
+  label        text not null,
+  created_at   timestamptz not null default now(),
+  constraint public_holidays_label_length check (length(label) between 1 and 100)
+);
+```
+
+**The client's own pricelist, seeded 36 rows, verified against the pricelist
+image supplied 2026-08-17:**
+
+| Hours         | Weekday | Weekend / holiday |
+| ------------- | ------- | ----------------- |
+| 06.00 – 16.00 | 200.000 | 200.000           |
+| 16.00 – 18.00 | 300.000 | 350.000           |
+| 18.00 – 24.00 | 400.000 | 450.000           |
+
+`day_type` is resolved in `src/server/rates.ts`'s `dayTypeOf(date)`: Saturday
+or Sunday reads as `weekend` outright; any other date is checked against
+`public_holidays` (`holiday_date::text = date`) and reads as `weekend` if
+listed, `weekday` otherwise. `2026-08-17` itself is seeded as a national
+holiday, so that Monday prices as a weekend day. This mirrors
+`arena-player-admin`'s own `src/server/pricing.ts` — a deliberate, accepted
+duplication rather than a shared `src/domain/` contract, since
+`src/domain/dates.ts` stays dependency-light and this logic is pure calendar
+arithmetic plus one table lookup, not shared booking vocabulary.
 
 ## Setup (3 steps, documented again in `db/README.md` at build time)
 
-1. Create a Neon project.
-2. Run the migration above in the Neon SQL editor.
-3. Copy the **pooled** connection string (contains `-pooler` in the host) into `DATABASE_URL`. The direct string exhausts connections fast under concurrent serverless route invocations — this is not optional.
+1. ~~Create a Neon project.~~ **Already done, and it's Supabase, not Neon** — see the notice at the top of this file.
+2. ~~Run the migration above in the Neon SQL editor.~~ **`bookings` already exists live**, matching this doc's schema.
+3. Copy the **transaction pooler** connection string (Project Settings > Database > Connection string > Transaction pooler; port `6543`, host ending `...pooler.supabase.com`) into `DATABASE_URL`. The direct string exhausts connections fast under concurrent serverless route invocations, and is IPv6-only on new Supabase projects besides — this is not optional.
 
-## Neon MCP — removed until Phase 4, deliberately
+## Database MCP — Supabase, connected 2026-08-17, reads only
 
-`.mcp.json` no longer wires up Neon's MCP server. It was there, it was never approved, and it was taken out during Phase 1a rather than left to be switched on by whoever reaches the backend first.
+`.mcp.json` wires up Supabase's MCP server, authorized against the client's
+own Supabase account (via `adminarenaplayer@gmail.com`). Use it to inspect
+schema and run read-only queries (`execute_sql` for verification, never for
+seeding fabricated content) — the same "reads only" discipline the old Neon
+MCP note asked for before it was removed. It is not a substitute for the
+manual-migration discipline above: schema changes still go through a
+reviewed `db/migrations/*.sql` file, run by a human, never through the MCP
+connection.
 
-**The reason is the rule directly above.** Migrations here are run by hand in the Neon SQL editor. The MCP exists to give an agent SQL execution and migration application — the exact capability that rule forbids — and the failure it enables is the silent one this file already warns about: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that partial index is the only race guard in the system. One helpful tool call, no exception thrown, double bookings in production.
+**The reason for "reads only" is the rule directly above.** Migrations here are run by hand, never through the MCP connection — the failure that would enable is the silent one this file already warns about: a `bookings` table created without `uniq_active_slot` turns off anti-double-booking with no error anywhere, and that partial index is the only race guard in the system. One helpful tool call, no exception thrown, double bookings in production.
 
-Nothing was touched by it, because it never connected. But it was dormant by accident rather than by decision, and Phases 1a–3 run entirely against the MSW mock, so nothing needs it before Phase 4.
+## Supabase/postgres.js date gotcha — same bug, different vendor, different fix
 
-**Conditions for bringing it back** — on the Phase 4 agenda in [PRD.md](PRD.md):
-
-- A written rule limiting agents to **reads**: inspect schema and connection state, never run DDL, never apply a migration.
-- `NEON_API_KEY` documented in `.env.local.example`, which it never was. It is a Neon **platform API key** from the console's API Keys page — a _different_ credential from `DATABASE_URL`, which is the Postgres connection itself. It is never committed; `.mcp.json` references `${NEON_API_KEY}` and the value lives in your own shell environment.
-- The package name verified against current docs. The previous entry (`@neondatabase/mcp-server-neon`) was written from training knowledge and never confirmed against `https://neon.tech/docs`.
+postgres.js parses `date`/`timestamptz` columns into a JS `Date` object by
+default, the same silent day-shift class the Neon gotcha above documents.
+Rather than a global type-parser override (`src/server/db.ts` sets none),
+every query that touches a date/timestamptz column casts it to `::text` at
+the SQL level — see `dayTypeOf` in `src/server/rates.ts`'s
+`holiday_date::text` comparison. This sidesteps the parser entirely for the
+one column each query actually needs, and is easier to verify by reading the
+query than a driver option would be.
 
 ## Error-code contract
 
@@ -173,4 +252,4 @@ Single shared source for the upload constraint: 2MB size limit, `jpg`/`png`/`web
 
 ## Env vars
 
-Documented in `.env.local.example`. Five vars: `DATABASE_URL` (Neon, pooled), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`. No values live in this doc — see the example file.
+Documented in `.env.local.example`. Five vars: `DATABASE_URL` (Supabase, transaction pooler), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`. No values live in this doc — see the example file.

@@ -1,27 +1,36 @@
+import { isWithinBookingWindow } from "@/domain/dates";
 import { rateCard } from "@/server/rates";
 
 /**
- * `GET /api/rates` — nine `{ slot, price }` entries, canonical order.
+ * `GET /api/rates?date=YYYY-MM-DD` — the rate card for one booking date.
  *
  * ITS OWN ENDPOINT, AND THAT IS HARD RULE 2 MADE STRUCTURAL. The landing page
  * renders no number of any kind and `/booking` is the exception; `/` fetches
- * availability, so keeping the prices out of THAT payload means the landing page
- * never receives a figure it could accidentally render. A `price` field on the
- * availability rows would have worked identically today and left the rule
- * depending on somebody remembering it.
+ * availability, so keeping the prices out of THAT payload means the landing
+ * page never receives a figure it could accidentally render. A `price` field
+ * on the availability rows would have worked identically today and left the
+ * rule depending on somebody remembering it.
  *
- * The figures are the client's own, supplied 2026-08-15 — see
- * `src/server/rates.ts` for the two brackets whose edges were confirmed rather
- * than guessed. **Prices are integers in rupiah**; formatting is the client's
- * job, so a currency decision never has to be made in two places.
+ * `date` GAINED 2026-08-17, mirroring `GET /api/availability`'s contract —
+ * weekday, weekend, and public-holiday hours price differently, so the rate
+ * card is no longer a single flat list. Same 400 on missing/malformed/
+ * out-of-window as availability.
  *
- * CACHED FOR A DAY at the edge. Rates change about once a year, and unlike
- * availability nothing here depends on the clock. `no-store` for the browser is
- * deliberate too: a visitor who reloads after the client changes a price should
- * see the new one without clearing anything.
+ * **Prices are integers in rupiah**; formatting is the client's job, so a
+ * currency decision is never made in two places.
+ *
+ * CACHED FOR A DAY at the edge, per date. Rates change about once a year,
+ * and once resolved for a given date the answer doesn't depend on the clock
+ * the way availability does.
  */
-export async function GET(): Promise<Response> {
-  return Response.json(rateCard(), {
+export async function GET(request: Request): Promise<Response> {
+  const date = new URL(request.url).searchParams.get("date");
+
+  if (!date || !isWithinBookingWindow(date)) {
+    return Response.json({ error: "invalid_date" }, { status: 400 });
+  }
+
+  return Response.json(await rateCard(date), {
     headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
   });
 }
