@@ -12,7 +12,6 @@ import { bookingSubmissionWhatsappLink } from "@/utils/whatsapp";
 
 import { buildTimeOptions } from "./booking-form.options";
 import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
-import { formatRupiah, isFullyPriced, sumRates } from "./booking-form.money";
 import {
   useBookingAvailability,
   useCreateBooking,
@@ -664,29 +663,6 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
                 Jam {passedSlots.join(", ")} sudah lewat dan dilepas dari pilihanmu. Pilih jam yang
                 masih tersedia.
               </p>
-            ) : null}
-
-            {/* THE TOTAL. It carried a `DP 50%` row beside it until 2026-08-16,
-                when the sentence promising a half-deposit was removed from the
-                payment panel — a figure whose only explanation had just been
-                deleted is a number a visitor cannot act on, so it went with it.
-                Two hours at 800rb still reads very differently from one row
-                saying 800.000, which is why the sum itself stays.
-
-                IT ONLY RENDERS WHEN EVERY SELECTED HOUR IS PRICED. A partial sum
-                is a wrong number a visitor transfers against — see
-                `isFullyPriced`, which is the gate rather than a nicety. */}
-            {isFullyPriced(selectedSlots, rates.data ?? []) ? (
-              <dl className="mt-3 border-2 border-[var(--color-band)] bg-[var(--color-bg-subtle)] px-3 py-2 text-[length:var(--text-sm)]">
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt lang="id" className="text-[var(--color-fg-muted)]">
-                    Total sewa
-                  </dt>
-                  <dd className="font-semibold tabular-nums">
-                    {formatRupiah(sumRates(selectedSlots, rates.data ?? []))}
-                  </dd>
-                </div>
-              </dl>
             ) : null}
 
             {errors.slots ? (
