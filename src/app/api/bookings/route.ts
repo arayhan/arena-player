@@ -4,10 +4,10 @@ import { isTimeSlot, type TimeSlot } from "@/domain/slots";
 import { createBooking } from "@/server/bookings";
 
 /**
- * `POST /api/bookings` — live booking submission to Supabase Postgres & Storage.
+ * `POST /api/bookings` — live booking submission to Supabase Postgres.
  *
- * Atomically inserts active booking records into `bookings` and uploads payment
- * proof to Supabase Storage. Guarantees anti-double-booking via `uniq_active_slot`.
+ * Atomically inserts active booking records into `bookings`.
+ * Guarantees anti-double-booking via `uniq_active_slot`.
  */
 const ERROR_TRIGGERS = {
   TEST409: 409,
@@ -46,16 +46,6 @@ export async function POST(request: Request): Promise<Response> {
   if (teamName.trim().length < 2) fields.teamName = "too_short";
   if (phone.trim().length > 0 && !isValidIndonesianMobile(phone)) fields.phone = "invalid_format";
 
-  const proof = form.get("proof");
-  let proofFile: File | null = null;
-  if (proof !== null) {
-    if (proof instanceof File) {
-      proofFile = proof.size > 0 ? proof : null;
-    } else {
-      fields.proof = "invalid";
-    }
-  }
-
   if (Object.keys(fields).length > 0) {
     return Response.json({ error: "validation_failed", fields }, { status: 400 });
   }
@@ -66,7 +56,6 @@ export async function POST(request: Request): Promise<Response> {
     teamName,
     phone,
     notes,
-    proof: proofFile,
   });
 
   if (!result.success) {

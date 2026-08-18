@@ -1,11 +1,5 @@
 /**
  * The form contract, pinned where it can drift silently.
- *
- * TWO OF THESE FIELDS ARE HIDDEN FROM THE UI (`SHOW_PHONE_FIELD` and
- * `SHOW_PROOF_FIELD` in BookingForm.tsx), and a hidden field's rule is exactly
- * the kind that rots unnoticed: nothing on screen exercises it, so a rule that
- * quietly hardened back to "required" would make the form unsubmittable with
- * its error attached to an input nobody can see. These tests are what notices.
  */
 import { describe, expect, it } from "vitest";
 
@@ -19,7 +13,6 @@ const valid = {
   phone: "",
   notes: "",
   website: "",
-  proof: null,
 };
 
 describe("slots — one booking, several hours", () => {
@@ -47,7 +40,7 @@ describe("slots — one booking, several hours", () => {
 });
 
 describe("phone — validated if present, required never", () => {
-  it("accepts an empty string, which is what the hidden field submits", () => {
+  it("accepts an empty string", () => {
     expect(bookingFormSchema.safeParse({ ...valid, phone: "" }).success).toBe(true);
   });
 
@@ -59,19 +52,6 @@ describe("phone — validated if present, required never", () => {
     for (const phone of ["081234567890", "6281234567890", "+6281234567890"]) {
       expect(bookingFormSchema.safeParse({ ...valid, phone }).success).toBe(true);
     }
-  });
-});
-
-describe("proof — optional while the dropzone is hidden, checked when it arrives", () => {
-  it("accepts null", () => {
-    expect(bookingFormSchema.safeParse({ ...valid, proof: null }).success).toBe(true);
-  });
-
-  it("still refuses the wrong type", () => {
-    const pdf = new File(["x"], "bukti.pdf", { type: "application/pdf" });
-    const result = bookingFormSchema.safeParse({ ...valid, proof: pdf });
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0].message).toBe("Format harus JPG, PNG, atau WEBP");
   });
 });
 

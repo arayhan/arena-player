@@ -3,7 +3,6 @@ import "server-only";
 import { normalisePhone } from "@/domain/phone";
 import { type TimeSlot } from "@/domain/slots";
 import sql from "@/server/db";
-import { uploadProof } from "@/server/storage";
 
 export type CreateBookingInput = {
   date: string;
@@ -11,7 +10,6 @@ export type CreateBookingInput = {
   teamName: string;
   phone?: string | null;
   notes?: string | null;
-  proof?: File | null;
 };
 
 export type CreateBookingResult =
@@ -27,9 +25,8 @@ export type CreateBookingResult =
  *
  * Rules:
  * 1. Validates and normalises mobile phone to `628xxxxxxxxx` if provided.
- * 2. Uploads payment proof image to Supabase Storage if provided.
- * 3. Runs an atomic transaction inserting one row per slot.
- * 4. Fails atomically if any slot is blocked in `slot_blocks` or already active in `bookings` (Postgres 23505).
+ * 2. Runs an atomic transaction inserting one row per slot.
+ * 3. Fails atomically if any slot is blocked in `slot_blocks` or already active in `bookings` (Postgres 23505).
  */
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   const rawPhone = input.phone?.trim() ?? "";
@@ -48,15 +45,6 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
   // Fallback placeholder for database text non-null column if optional phone was omitted
   const phoneToStore = normalisedPhone ?? "-";
-
-  let proofKey: string | null = null;
-  if (input.proof && input.proof instanceof File && input.proof.size > 0) {
-    try {
-      proofKey = await uploadProof(input.proof, input.date);
-    } catch (e) {
-      console.error("Error uploading payment proof:", e);
-    }
-  }
 
   if (!process.env.DATABASE_URL || process.env.NODE_ENV === "test") {
     return { success: true, id: crypto.randomUUID(), status: "pending" };
@@ -94,7 +82,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
             ${input.teamName},
             ${phoneToStore},
             ${input.notes ?? null},
-            ${proofKey},
+            null,
             'pending'
           )
           returning id;

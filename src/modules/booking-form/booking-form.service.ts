@@ -137,7 +137,6 @@ export async function createBooking(
   body.append("notes", values.notes ?? "");
   // Present and empty. The server distinguishes "absent" from "empty".
   body.append("website", values.website);
-  if (values.proof) body.append("proof", values.proof);
 
   const response = await apiClient.post<{ fields?: Record<string, string> } & BookingCreated>(
     "/bookings",

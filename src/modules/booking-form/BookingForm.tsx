@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiImage } from "react-icons/fi";
 import { useForm } from "react-hook-form";
 
 import { bookingWindow, isPastSlot, isWithinBookingWindow, todayAtField } from "@/domain/dates";
@@ -11,7 +10,6 @@ import { cn } from "@/lib/cn";
 import { bookingSubmissionWhatsappLink } from "@/utils/whatsapp";
 
 import { buildTimeOptions } from "./booking-form.options";
-import { checkProof, PROOF_ACCEPT, type ProofProblem } from "./booking-form.proof";
 import {
   useBookingAvailability,
   useCreateBooking,
@@ -62,45 +60,18 @@ export interface BookingFormProps {
  * db/migrations still contradict that — recorded in database.md as Phase 4 debt.
  */
 const SHOW_PHONE_FIELD = true;
-const SHOW_PROOF_FIELD = true;
 
-// A PANEL OF ONE PLATE, NOT A CARD — carbonized 2026-08-14 from the
-// layout round the user accepted on /booking. It was
-// `rounded-[14px] border border-[var(--color-border)]`, which is a
-// rounded card floating in a gap: the exact arrangement "Pelat Enamel"
-// was defined against, and the one the landing page spent its whole
-// rewrite removing. Three stacked cards are now three panels divided by
-// the plate's own 2px navy rules, which is what the order panel does.
-//
-// `border-b` ONLY. The plate draws its outer edge once, on the wrapper;
-// a panel that also drew left, right and top would double every seam.
 const PANEL_CLASS = "border-b-2 border-[var(--color-band)] bg-[var(--color-bg)] px-4 py-4 md:px-6";
 
 const CTA_CLASS =
   "type-display mt-4 inline-flex h-14 items-center justify-center bg-[var(--color-accent-strong)] px-6 text-[length:var(--text-label)] font-medium tracking-[0.06em] text-[var(--color-fg-inverse)] uppercase transition-colors hover:bg-[var(--color-accent-strong-hover)]";
 
 const INPUT_CLASS =
-  // SQUARE, AND A 2px NAVY RULE RATHER THAN A GREY HAIRLINE. `rounded.control`
-  // is 0px system-wide since 2026-08-13, and on this plate a field is a
-  // ruled box like a slot cell rather than a floating input.
   "h-12 w-full border-2 border-[var(--color-band)] bg-[var(--color-bg)] px-3 text-[var(--color-fg)] outline-none";
-// THE MERGE ORDER IS LOAD-BEARING HERE. This class is passed to `cn()` AFTER
-// `INPUT_CLASS`, so tailwind-merge drops the navy above and keeps whatever
-// border colour this string names. It said `--color-border` — a grey #e5e7eb
-// hairline — from the carbonize round until 2026-08-15, which is why the two
-// text inputs rendered grey while the textarea and the dropzone beside them,
-// neither of which goes through this constant, rendered navy. Nothing in the
-// file said "grey": the navy was written and silently overridden.
 const INPUT_VALID_CLASS = "border-[var(--color-band)]";
 const INPUT_ERROR_CLASS = "border-[var(--color-danger-line)] bg-[var(--color-danger-surface)]";
 
 const LABEL_CLASS = "block text-[length:var(--text-sm)] font-semibold text-[var(--color-fg)]";
-
-const PROOF_ERROR_MESSAGE: Record<ProofProblem, string> = {
-  missing: "Bukti transfer wajib diunggah",
-  wrong_type: "Format harus JPG, PNG, atau WEBP",
-  too_large: "Ukuran file maksimal 2MB",
-};
 
 // Duplicated rather than imported from BookingEntry.tsx on purpose, same
 // reasoning that file already states: feature modules never import each
@@ -194,12 +165,10 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
       phone: "",
       notes: "",
       website: "",
-      proof: null,
     },
   });
 
   const notes = watch("notes") ?? "";
-  const proofFile = watch("proof");
   const chosenSlots = watch("slots") ?? [];
 
   // THE ROWS LIVE HERE, NOT IN THE PICKER, because the selection they have to
@@ -421,62 +390,6 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
     setUnmappedFields([]);
     resultRef.current?.focus();
   }, [outcome, setError, submittedBooking]);
-
-  // ONE ACCEPTANCE PATH FOR BOTH ENTRY POINTS. The picker and the drop target
-  // must validate identically or the dropzone becomes a way to smuggle a file
-  // past `checkProof` — a 12MB HEIC that the button would have refused.
-  function acceptProof(file: File | null) {
-    setValue("proof", file, { shouldDirty: true });
-    const problem = checkProof(file);
-    if (problem) {
-      setError("proof", { type: "manual", message: PROOF_ERROR_MESSAGE[problem] });
-    } else {
-      clearErrors("proof");
-    }
-  }
-
-  function onProofChange(event: React.ChangeEvent<HTMLInputElement>) {
-    acceptProof(event.target.files?.[0] ?? null);
-  }
-
-  // DRAG DEPTH, NOT A BOOLEAN. `dragleave` fires every time the pointer crosses
-  // into a CHILD of the zone, so a plain boolean flickers the highlight off and
-  // on as the cursor moves over the text inside it. Counting enters against
-  // leaves is the standard fix and the only one that survives nested content.
-  const dragDepth = useRef(0);
-  const [dragging, setDragging] = useState(false);
-
-  function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    dragDepth.current += 1;
-    setDragging(true);
-  }
-
-  function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    dragDepth.current -= 1;
-    if (dragDepth.current <= 0) {
-      dragDepth.current = 0;
-      setDragging(false);
-    }
-  }
-
-  // `dragover` MUST preventDefault or `drop` never fires. That is the single
-  // most common reason a hand-rolled dropzone silently does nothing.
-  function onDragOver(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-  }
-
-  function onDrop(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    dragDepth.current = 0;
-    setDragging(false);
-    // ONE file. The field takes a single proof of transfer, and a multi-file
-    // drop should land the first rather than be refused outright — the visitor
-    // dropped something, and silence is the worst answer available.
-    acceptProof(event.dataTransfer.files?.[0] ?? null);
-  }
 
   // Terminal states with nothing left to fix: the form is retired rather
   // than left sitting behind the message. `created` is done; `slot_taken`
@@ -852,102 +765,6 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
               {...register("website")}
             />
           </div>
-
-          {SHOW_PROOF_FIELD ? (
-            <div>
-              <label htmlFor="proof" className={LABEL_CLASS}>
-                Bukti Transfer{" "}
-                <span className="font-normal text-[var(--color-fg-muted)]">(opsional)</span>
-              </label>
-              {/* A DROPZONE THAT IS STILL A REAL FILE INPUT. The `<input>` below is
-                  `sr-only`, not `hidden` — it keeps its place in the tab order, so a
-                  keyboard visitor reaches it and opens the picker with Enter exactly
-                  as before. A `display: none` input would have removed the only
-                  accessible way to attach a file.
-
-                  The zone shows the input's focus ring with `has-[:focus-visible]`,
-                  so focus is visible on the thing a sighted keyboard user is looking
-                  at rather than on a 1px offscreen box.
-
-                  DASHED AT REST, SOLID SIGNAL BLUE WHILE DRAGGING. Dashed is the one
-                  border treatment on this plate that is NOT a rule, and that is the
-                  point: every other edge here is a fixed division, so a broken edge
-                  reads as "something goes in here". The switch to a solid accent edge
-                  plus the blue wash is the same "this is live, take it" vocabulary the
-                  slot grid uses, and it changes border WEIGHT and FILL, not colour
-                  alone.
-
-                  SIZED TO BE FOUND. At the 112px it started as, this was the quietest
-                  control on a plate of hard-ruled fields — and it is the only one that
-                  has to explain itself to somebody who has never used a dropzone.
-                  160px tall with a 44px mark: the same object, loud enough to be the
-                  step it actually is. THE LABEL STAYS AT `label` SIZE — it went to h3
-                  on the way in and came back on 2026-08-15. The mark is what carries
-                  the emphasis; a 20-32px label made the zone shout twice and put the
-                  type out of step with every other label on the plate. */}
-              <div
-                onDragEnter={onDragEnter}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
-                className={cn(
-                  "mt-1 flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed px-4 py-7 text-center transition-colors duration-200",
-                  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-focus)]",
-                  dragging
-                    ? "border-solid border-[var(--color-interactive)] bg-[var(--color-wash)]"
-                    : "border-[var(--color-band)] bg-[var(--color-bg)] hover:bg-[var(--color-bg-subtle)]",
-                )}
-                onClick={() => document.getElementById("proof")?.click()}
-              >
-                <input
-                  id="proof"
-                  type="file"
-                  accept={PROOF_ACCEPT}
-                  aria-invalid={Boolean(errors.proof)}
-                  aria-describedby={describedBy(errors.proof && "proof-error")}
-                  onChange={onProofChange}
-                  className="sr-only"
-                />
-                {/* react-icons — the library PRODUCT.md names. Never an emoji, and
-                    never a generated glyph: those drift in stroke weight and optical
-                    grid the moment a second one is added. */}
-                <FiImage
-                  aria-hidden="true"
-                  className="size-11 shrink-0 text-[var(--color-fg-muted)]"
-                />
-                <span
-                  lang="id"
-                  className="type-display text-[length:var(--text-label)] font-medium tracking-[0.06em] uppercase"
-                >
-                  {dragging ? "Lepas di sini" : "Tarik gambar ke sini"}
-                </span>
-                <span
-                  lang="id"
-                  className="text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
-                >
-                  atau klik untuk memilih file · JPG, PNG, WebP
-                </span>
-              </div>
-              {proofFile ? (
-                <p
-                  lang="id"
-                  className="mt-1 text-[length:var(--text-sm)] text-[var(--color-fg-muted)]"
-                >
-                  Terpilih: {proofFile.name}
-                </p>
-              ) : null}
-              {errors.proof ? (
-                <p
-                  id="proof-error"
-                  role="alert"
-                  lang="id"
-                  className="mt-1 text-[length:var(--text-sm)] text-[var(--color-danger-strong)]"
-                >
-                  {errors.proof.message}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
 
           {/* THE 400 THAT NAMES A FIELD THIS FORM DOES NOT RENDER. With phone
               and proof hidden, a server rejecting either would otherwise mark

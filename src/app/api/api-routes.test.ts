@@ -36,7 +36,6 @@ function bookingForm(
   form.set("teamName", "Rajawali FC");
   form.set("phone", "081234567890");
   form.set("website", ""); // honeypot: present and empty
-  form.set("proof", new File(["x"], "bukti.jpg", { type: "image/jpeg" }));
   for (const [key, value] of Object.entries(overrides)) form.set(key, value);
   return form;
 }
