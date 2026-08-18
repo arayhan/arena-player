@@ -61,8 +61,8 @@ export interface BookingFormProps {
  * fabricating a phone number. `phone not null` and `proof_key not null` in
  * db/migrations still contradict that — recorded in database.md as Phase 4 debt.
  */
-const SHOW_PHONE_FIELD = false;
-const SHOW_PROOF_FIELD = false;
+const SHOW_PHONE_FIELD = true;
+const SHOW_PROOF_FIELD = true;
 
 // A PANEL OF ONE PLATE, NOT A CARD — carbonized 2026-08-14 from the
 // layout round the user accepted on /booking. It was

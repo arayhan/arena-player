@@ -9,7 +9,7 @@ export type CreateBookingInput = {
   date: string;
   slots: readonly TimeSlot[];
   teamName: string;
-  phone: string;
+  phone?: string | null;
   notes?: string | null;
   proof?: File | null;
 };
@@ -26,20 +26,28 @@ export type CreateBookingResult =
  * Creates booking records in Supabase Postgres.
  *
  * Rules:
- * 1. Validates and normalises mobile phone to `628xxxxxxxxx`.
+ * 1. Validates and normalises mobile phone to `628xxxxxxxxx` if provided.
  * 2. Uploads payment proof image to Supabase Storage if provided.
  * 3. Runs an atomic transaction inserting one row per slot.
  * 4. Fails atomically if any slot is blocked in `slot_blocks` or already active in `bookings` (Postgres 23505).
  */
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
-  const normalisedPhone = normalisePhone(input.phone);
-  if (!normalisedPhone) {
-    return {
-      success: false,
-      error: "validation_failed",
-      fields: { phone: "invalid_format" },
-    };
+  const rawPhone = input.phone?.trim() ?? "";
+  let normalisedPhone: string | null = null;
+
+  if (rawPhone.length > 0) {
+    normalisedPhone = normalisePhone(rawPhone);
+    if (!normalisedPhone) {
+      return {
+        success: false,
+        error: "validation_failed",
+        fields: { phone: "invalid_format" },
+      };
+    }
   }
+
+  // Fallback placeholder for database text non-null column if optional phone was omitted
+  const phoneToStore = normalisedPhone ?? "-";
 
   let proofKey: string | null = null;
   if (input.proof && input.proof instanceof File && input.proof.size > 0) {
@@ -84,7 +92,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
             ${input.date},
             ${slot},
             ${input.teamName},
-            ${normalisedPhone},
+            ${phoneToStore},
             ${input.notes ?? null},
             ${proofKey},
             'pending'
