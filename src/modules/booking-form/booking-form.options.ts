@@ -80,7 +80,7 @@ export function buildTimeOptions(
       // so this is their number rather than a placeholder sentence — and if the
       // rates request has not landed, the row shows no price instead of a
       // guessed one. An invented price is the one placeholder a visitor acts on.
-      ...(selectable && price !== undefined ? { priceLabel: formatRupiah(price) } : {}),
+      ...(price !== undefined ? { priceLabel: formatRupiah(price) } : {}),
     };
   });
 }

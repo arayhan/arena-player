@@ -13,7 +13,13 @@ import { describe, expect, it } from "vitest";
 import { TIME_SLOTS } from "@/domain/slots";
 
 import type { AvailabilityRow, DisplaySlot } from "./slot-display";
-import { countAvailable, formatFullDate, longestFreeRun, partitionSlots } from "./slot-display";
+import {
+  countAvailable,
+  formatFullDate,
+  formatRupiah,
+  longestFreeRun,
+  partitionSlots,
+} from "./slot-display";
 
 const allAvailable: AvailabilityRow[] = TIME_SLOTS.map((slot) => ({
   slot,
@@ -284,5 +290,13 @@ describe("formatFullDate — the message's date", () => {
     expect(formatFullDate("2026-08-11")).toBe("11 Agu 2026");
     expect(formatFullDate("2026-01-01")).toBe("1 Jan 2026");
     expect(formatFullDate("2026-12-31")).toBe("31 Des 2026");
+  });
+});
+
+describe("formatRupiah — currency formatting", () => {
+  it("formats integer amounts to standard Rupiah format", () => {
+    expect(formatRupiah(150000)).toBe("Rp 150.000");
+    expect(formatRupiah(400000)).toBe("Rp 400.000");
+    expect(formatRupiah(0)).toBe("Rp 0");
   });
 });

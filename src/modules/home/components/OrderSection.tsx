@@ -7,7 +7,7 @@ import { bookingWindow, todayAtField } from "@/domain/dates";
 import type { TimeSlot } from "@/domain/slots";
 import { useMotion } from "@/lib/motion";
 
-import { useAvailability } from "../home.queries";
+import { useAvailability, useRates } from "../home.queries";
 import { countAvailable, partitionSlots } from "@/utils/slot-display";
 
 import { DatePills } from "./DatePills";
@@ -73,6 +73,12 @@ export function OrderSection() {
   const [selected, setSelected] = useState<TimeSlot | null>(null);
 
   const { data, isPending, isError, refetch } = useAvailability(date);
+  const { data: ratesData } = useRates(date);
+
+  const priceOf = useMemo(
+    () => new Map(ratesData?.map((r) => [r.slot, r.price]) ?? []),
+    [ratesData],
+  );
 
   const { elapsed, live } = useMemo(
     () => partitionSlots(data ?? [], date),
@@ -460,6 +466,7 @@ export function OrderSection() {
                           status={s.status}
                           selected={false}
                           onSelect={() => {}}
+                          price={priceOf.get(s.slot)}
                         />
                       </div>
                     ))}
@@ -512,6 +519,7 @@ export function OrderSection() {
                     // Reversible: tapping the selected slot clears it rather
                     // than forcing the visitor to pick a different one to escape.
                     onSelect={() => setSelected((cur) => (cur === s.slot ? null : s.slot))}
+                    price={priceOf.get(s.slot)}
                   />
                 </div>
               ))}

@@ -213,3 +213,8 @@ export function formatFullDate(date: string): string {
   const [year, month, dayOfMonth] = date.split("-").map(Number);
   return `${dayOfMonth} ${MONTH_NAMES[month - 1]} ${year}`;
 }
+
+/** `150000` -> `Rp 150.000`. */
+export function formatRupiah(amount: number): string {
+  return `Rp ${new Intl.NumberFormat("id-ID").format(amount)}`;
+}

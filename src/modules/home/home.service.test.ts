@@ -17,10 +17,15 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { TIME_SLOTS } from "@/domain/slots";
 import { todayAtField } from "@/domain/dates";
+import { TIME_SLOTS } from "@/domain/slots";
 
-import { AvailabilityRequestError, fetchAvailability } from "./home.service";
+import {
+  AvailabilityRequestError,
+  RatesRequestError,
+  fetchAvailability,
+  fetchRates,
+} from "./home.service";
 
 const TODAY = todayAtField();
 
@@ -142,5 +147,29 @@ describe("fetchAvailability — cancellation", () => {
     const controller = new AbortController();
     controller.abort();
     await expect(fetchAvailability(TODAY, controller.signal)).rejects.toThrow();
+  });
+});
+
+describe("fetchRates", () => {
+  const sampleRates = [{ slot: "06.00 - 07.00", price: 150000 }];
+
+  it("returns rates list on success", async () => {
+    respondWith(sampleRates);
+    const rates = await fetchRates(TODAY);
+    expect(rates).toEqual(sampleRates);
+  });
+
+  it("surfaces a 500 when request fails", async () => {
+    respondWith({ error: "server_error" }, 500);
+    const error = await fetchRates(TODAY).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(RatesRequestError);
+    expect(error).toMatchObject({ status: 500 });
+  });
+
+  it("rejects malformed rates body", async () => {
+    respondWith({ foo: "bar" });
+    const error = await fetchRates(TODAY).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(RatesRequestError);
+    expect(error).toMatchObject({ code: "malformed_rates" });
   });
 });

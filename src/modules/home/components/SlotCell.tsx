@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/cn";
 
-import type { DisplaySlot } from "@/utils/slot-display";
+import { formatRupiah, type DisplaySlot } from "@/utils/slot-display";
 
 const STATE_LABEL: Record<DisplaySlot["status"], string> = {
   available: "Tersedia",
@@ -54,16 +54,19 @@ export function SlotCell({
   status,
   selected,
   onSelect,
+  price,
 }: {
   slot: DisplaySlot["slot"];
   status: DisplaySlot["status"];
   selected: boolean;
   onSelect: () => void;
+  price?: number;
 }) {
   const selectable = status === "available";
   // "Dipilih" replaces the status label the instant a slot is selected —
   // DESIGN.md's Slot Cell spec, and the label the fill is answering for.
   const label = selected ? "Dipilih" : STATE_LABEL[status];
+  const priceLabel = price !== undefined ? formatRupiah(price) : null;
 
   return (
     <button
@@ -211,24 +214,40 @@ export function SlotCell({
           The hovered row is the one that would have been missed: `blue-600` on
           `navy-900` computes 3.30:1, under AA, which is precisely the failure
           the on-band token row exists to prevent. */}
-      <span
-        className={cn(
-          "text-[length:var(--text-sm)] whitespace-nowrap",
-          // Only the available branch differs from the ink the button already
-          // sets: the three unavailable states want their label in exactly the
-          // state ink their hour is in, so they inherit and say nothing here.
-          selectable &&
-            "text-[var(--color-interactive)] pointer-fine:group-hover:text-[var(--color-interactive-on-band)]",
-          // FULL WHITE WHEN SELECTED, NEVER 85%. DESIGN.md said 85% until
-          // 2026-08-12 and DESIGN.html had already overruled it: white at 85%
-          // over blue-600 composites to rgb(222,232,252) and computes 4.19:1
-          // against the fill, under AA. Full white is 5.17:1. The label
-          // separates from the hour by size and face, not by transparency.
-          selected && "!text-[var(--color-fg-inverse)]",
-        )}
-      >
-        {label}
-      </span>
+      <div className="flex w-full items-center justify-between gap-2">
+        <span
+          className={cn(
+            "text-[length:var(--text-sm)] whitespace-nowrap",
+            // Only the available branch differs from the ink the button already
+            // sets: the three unavailable states want their label in exactly the
+            // state ink their hour is in, so they inherit and say nothing here.
+            selectable &&
+              "text-[var(--color-interactive)] pointer-fine:group-hover:text-[var(--color-interactive-on-band)]",
+            // FULL WHITE WHEN SELECTED, NEVER 85%. DESIGN.md said 85% until
+            // 2026-08-12 and DESIGN.html had already overruled it: white at 85%
+            // over blue-600 composites to rgb(222,232,252) and computes 4.19:1
+            // against the fill, under AA. Full white is 5.17:1. The label
+            // separates from the hour by size and face, not by transparency.
+            selected && "!text-[var(--color-fg-inverse)]",
+          )}
+        >
+          {label}
+        </span>
+
+        {priceLabel ? (
+          <span
+            className={cn(
+              "type-display text-[length:var(--text-sm)] font-bold tracking-[0.02em] whitespace-nowrap",
+              selectable &&
+                "text-[var(--color-fg)] pointer-fine:group-hover:text-[var(--color-fg-inverse)]",
+              !selectable && "opacity-85",
+              selected && "!text-[var(--color-fg-inverse)]",
+            )}
+          >
+            {priceLabel}
+          </span>
+        ) : null}
+      </div>
 
       {/* The decorative half of the tap: a hard ring struck at the field's edge
           that expands and fades. SQUARE now, with the `rounded` dropped — a

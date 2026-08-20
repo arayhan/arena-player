@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { isWithinBookingWindow } from "@/domain/dates";
 
-import { fetchAvailability } from "./home.service";
+import { fetchAvailability, fetchRates } from "./home.service";
 
 /**
  * Exported so a later invalidation, prefetch, or optimistic update names the
@@ -29,5 +29,16 @@ export function useAvailability(date: string) {
     // to be told so wastes a round trip on the slow connection this site is
     // designed for. The domain already knows the answer.
     enabled: isWithinBookingWindow(date),
+  });
+}
+
+export const ratesKey = (date: string) => ["rates", date] as const;
+
+export function useRates(date: string) {
+  return useQuery({
+    queryKey: ratesKey(date),
+    queryFn: ({ signal }) => fetchRates(date, signal),
+    enabled: isWithinBookingWindow(date),
+    staleTime: 60 * 60 * 1000,
   });
 }

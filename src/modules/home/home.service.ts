@@ -12,7 +12,7 @@
 import { SLOT_STATUSES } from "@/domain/status";
 import { TIME_SLOTS } from "@/domain/slots";
 
-import type { SlotAvailability } from "./home.types";
+import type { SlotAvailability, SlotRate } from "./home.types";
 
 /**
  * Origin the availability request is sent to.
@@ -35,6 +35,16 @@ export class AvailabilityRequestError extends Error {
   ) {
     super(`availability request failed: ${status} ${code}`);
     this.name = "AvailabilityRequestError";
+  }
+}
+
+export class RatesRequestError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string,
+  ) {
+    super(`rates request failed: ${status} ${code}`);
+    this.name = "RatesRequestError";
   }
 }
 
@@ -70,6 +80,20 @@ function assertContract(body: unknown): asserts body is SlotAvailability[] {
   });
 }
 
+function assertRatesContract(body: unknown): asserts body is SlotRate[] {
+  if (!Array.isArray(body)) {
+    throw new RatesRequestError(200, "malformed_rates");
+  }
+  body.forEach((entry) => {
+    const valid =
+      typeof entry === "object" &&
+      entry !== null &&
+      typeof (entry as SlotRate).slot === "string" &&
+      typeof (entry as SlotRate).price === "number";
+    if (!valid) throw new RatesRequestError(200, "malformed_rates");
+  });
+}
+
 export async function fetchAvailability(
   date: string,
   signal?: AbortSignal,
@@ -85,5 +109,20 @@ export async function fetchAvailability(
 
   const body: unknown = await response.json();
   assertContract(body);
+  return body;
+}
+
+export async function fetchRates(date: string, signal?: AbortSignal): Promise<SlotRate[]> {
+  const response = await fetch(`${BASE_URL}/api/rates?date=${encodeURIComponent(date)}`, {
+    signal,
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ error: "unknown" }));
+    throw new RatesRequestError(response.status, String(body.error ?? "unknown"));
+  }
+
+  const body: unknown = await response.json();
+  assertRatesContract(body);
   return body;
 }

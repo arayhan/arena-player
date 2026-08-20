@@ -11,3 +11,9 @@ export interface SlotAvailability {
 export interface AvailabilityError {
   error: string;
 }
+
+/** One slot's rate from GET /api/rates. */
+export interface SlotRate {
+  slot: TimeSlot;
+  price: number;
+}

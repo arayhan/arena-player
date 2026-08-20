@@ -73,7 +73,7 @@ describe("buildTimeOptions", () => {
     expect(options.every((o) => o.priceLabel === undefined)).toBe(true);
   });
 
-  it("quotes the client's own figure on selectable hours only", () => {
+  it("quotes the client's own figure on slot hours", () => {
     // TIME_SLOTS[6] is "12.00 - 13.00" — the afternoon bracket in this
     // fixture's own formula (< 18 -> 600_000), not the evening one.
     const mixed: AvailabilityRow[] = [
@@ -82,7 +82,7 @@ describe("buildTimeOptions", () => {
     ];
     const [free, taken] = buildTimeOptions(mixed, "2026-08-11", rates, at(0));
     expect(free.priceLabel).toBe("Rp 600.000");
-    expect(taken.priceLabel).toBeUndefined();
+    expect(taken.priceLabel).toBe("Rp 600.000");
   });
 
   it("carries the Indonesian state word for every status", () => {
