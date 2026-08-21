@@ -86,10 +86,6 @@ describe("GET /api/payment-accounts", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
-    expect(body.length).toBeGreaterThanOrEqual(1);
-    expect(body[0]).toHaveProperty("bank");
-    expect(body[0]).toHaveProperty("accountNumber");
-    expect(body[0]).toHaveProperty("accountHolder");
   });
 });
 

@@ -33,6 +33,8 @@ function getClient(): postgres.Sql {
     client = postgres(requireDatabaseUrl(), {
       prepare: false,
       types: customTypes,
+      ssl: "require",
+      connect_timeout: 10,
     });
   }
   return client;

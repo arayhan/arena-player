@@ -36,7 +36,7 @@ export async function getActivePaymentAccounts(): Promise<PaymentAccount[]> {
       order by sort_order asc, created_at asc
     `;
 
-    if (rows && rows.length > 0) {
+    if (Array.isArray(rows)) {
       return rows.map((r) => ({
         bank: r.bank,
         accountNumber: r.account_number,
@@ -44,9 +44,9 @@ export async function getActivePaymentAccounts(): Promise<PaymentAccount[]> {
       }));
     }
 
-    return [...FALLBACK_PAYMENT_ACCOUNTS];
+    return [];
   } catch (error) {
     console.error("[payment-accounts] Failed to fetch bank_accounts from DB:", error);
-    return [...FALLBACK_PAYMENT_ACCOUNTS];
+    return [];
   }
 }
