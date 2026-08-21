@@ -27,8 +27,18 @@ import {
   fetchAvailability,
   fetchPaymentAccounts,
   fetchRates,
+  fetchSiteSettings,
   type BookingOutcome,
 } from "./booking-form.service";
+
+export function useSiteSettings() {
+  return useQuery({
+    queryKey: ["site-settings"] as const,
+    queryFn: ({ signal }) => fetchSiteSettings(signal),
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+}
 
 export function useCreateBooking(date: string) {
   return useMutation<BookingOutcome, Error, BookingFormValues>({

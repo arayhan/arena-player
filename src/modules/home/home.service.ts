@@ -126,3 +126,29 @@ export async function fetchRates(date: string, signal?: AbortSignal): Promise<Sl
   assertRatesContract(body);
   return body;
 }
+
+export interface ClientSiteSettings {
+  whatsapp_number: string;
+  address: string;
+  operating_hours: string;
+  maps_embed_url: string;
+  dp_percent: string;
+}
+
+export async function fetchSiteSettings(signal?: AbortSignal): Promise<ClientSiteSettings> {
+  const response = await fetch(`${BASE_URL}/api/site-settings`, {
+    signal,
+  });
+
+  if (!response.ok) {
+    return {
+      whatsapp_number: "6289682620666",
+      address: "Selebung Ketangga, Kec. Keruak, Kab. Lombok Timur, Nusa Tenggara Barat",
+      operating_hours: "06.00–24.00 WITA",
+      maps_embed_url: "",
+      dp_percent: "50",
+    };
+  }
+
+  return response.json();
+}

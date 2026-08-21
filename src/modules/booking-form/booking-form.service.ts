@@ -161,3 +161,25 @@ export async function createBooking(
       return { kind: "server_error" };
   }
 }
+
+export interface SiteSettings {
+  whatsapp_number: string;
+  address: string;
+  operating_hours: string;
+  maps_embed_url: string;
+  dp_percent: string;
+}
+
+export async function fetchSiteSettings(signal?: AbortSignal): Promise<SiteSettings> {
+  const response = await apiClient.get<SiteSettings>("/site-settings", { signal });
+  if (response.status !== 200) {
+    return {
+      whatsapp_number: "6289682620666",
+      address: "Selebung Ketangga, Kec. Keruak, Kab. Lombok Timur, Nusa Tenggara Barat",
+      operating_hours: "06.00–24.00 WITA",
+      maps_embed_url: "",
+      dp_percent: "50",
+    };
+  }
+  return response.data;
+}

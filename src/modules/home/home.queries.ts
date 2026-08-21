@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { isWithinBookingWindow } from "@/domain/dates";
 
-import { fetchAvailability, fetchRates } from "./home.service";
+import { fetchAvailability, fetchRates, fetchSiteSettings } from "./home.service";
 
 /**
  * Exported so a later invalidation, prefetch, or optimistic update names the
@@ -40,5 +40,16 @@ export function useRates(date: string) {
     queryFn: ({ signal }) => fetchRates(date, signal),
     enabled: isWithinBookingWindow(date),
     staleTime: 60 * 60 * 1000,
+  });
+}
+
+export const siteSettingsKey = () => ["site-settings"] as const;
+
+export function useSiteSettings() {
+  return useQuery({
+    queryKey: siteSettingsKey(),
+    queryFn: ({ signal }) => fetchSiteSettings(signal),
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }

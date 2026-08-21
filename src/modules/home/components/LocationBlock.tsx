@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { useMotion } from "@/lib/motion";
 
 import { FIELD_ADDRESS, MAP_COORDINATES, MAP_EMBED_SRC, WHATSAPP_NUMBER } from "../home.constants";
+import { useSiteSettings } from "../home.queries";
 
 /**
  * "Is the client actually running?", asked the way React 19 wants it asked.
@@ -100,35 +101,22 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
  * arrive at a pitch, so its own legibility outranks the page's colour
  * discipline. The frame does the designing instead.
  */
-function MapPlate() {
+function extractCoordinates(embedUrl: string): string {
+  const latMatch = embedUrl.match(/!3d(-?[\d.]+)/);
+  const lngMatch = embedUrl.match(/!2d(-?[\d.]+)/);
+  if (latMatch && lngMatch) {
+    const lat = parseFloat(latMatch[1]).toFixed(6);
+    const lng = parseFloat(lngMatch[1]).toFixed(6);
+    return `${lat}, ${lng}`;
+  }
+  return MAP_COORDINATES;
+}
+
+function MapPlate({ embedSrc = MAP_EMBED_SRC }: { embedSrc?: string }) {
   // The clip-path sweep's target AND the motion scope. One element, so cleanup
   // ownership and the tween target cannot drift apart.
   const frameRef = useRef<HTMLElement>(null);
 
-  // THE TOUCH GATE, CHOSEN BY THE USER 2026-08-15. Below 980px the embed is
-  // inert until a tap; a Google map pans on a one-finger drag, so a visitor
-  // scrolling the page with a finger anywhere on a 60svh map panned the map
-  // instead of the page. Above 980px there is no gate at all: a cursor has
-  // none of this problem, and a click that only arms a map it could already
-  // have dragged is a tax on the pointer that never had the bug.
-  //
-  // This is not the drag-fighting the reveal was written to avoid. That rule is
-  // about not parking scroll-driven work over a live embed — `once: true` plus
-  // `clearProps` settles it, and neither is involved here. This is the opposite
-  // duty: not taking a scroll the visitor never offered.
-  //
-  // TWO PIECES OF STATE, NOT ONE, AND THE FIRST ONE IS THE NO-JS ANSWER.
-  // `gateArmed` is false in the server tree and true only once the client is
-  // running, so the overlay exists exclusively where JavaScript does. With JS
-  // disabled, with a hydration failure, or with the chunk 404ing across a
-  // deploy, no overlay is ever rendered and the map is immediately draggable —
-  // the pre-gate behaviour, which is the LESS BAD of the two failure states. A
-  // map held permanently inert by a button that can never be clicked is
-  // unusable; a map that pans is merely the nuisance this gate exists to fix.
-  // The safe state is the one that survives its own machinery being absent.
-  //
-  // It also means SSR renders no overlay and hydration matches exactly, rather
-  // than the server guessing at a viewport it cannot see.
   const gateArmed = useSyncExternalStore(
     subscribeToNothing,
     clientIsRunning,
@@ -142,118 +130,44 @@ function MapPlate() {
         const frame = frameRef.current;
         if (!frame) return;
 
-        // A `fromTo`, NOT a `from`, AND THAT IS CORRECTNESS RATHER THAN STYLE.
-        // A from-tween ends at the element's computed value, which here is
-        // `clip-path: none` — and `none` is not interpolatable with `inset()`,
-        // so the sweep would snap instead of travelling. Both ends are stated,
-        // both are `inset()`, both carry four values in the same unit, which is
-        // what lets GSAP's complex-string interpolation walk them.
         gsap.fromTo(
           frame,
           { clipPath: "inset(0% 100% 0% 0%)" },
           {
             clipPath: "inset(0% 0% 0% 0%)",
             duration: 0.9,
-            // Behind the page-wide reveal's 700ms rise on the parent, so the
-            // composition arrives first and the map opens second. Two entrances
-            // firing on the same frame read as one busy event; sequenced, they
-            // read as a plate being uncovered.
             delay: 0.15,
-            // The same curve family as every other entrance on this page —
-            // DESIGN.md names `cubic-bezier(0.22, 1, 0.36, 1)` and `power3.out`
-            // reaches it without loading `CustomEase` as a second download.
             ease: "power3.out",
             scrollTrigger: {
               trigger: frame,
               start: "top 88%",
-              // ONCE, AND THIS IS THE FIRST OF THREE REASONS THE SWEEP CANNOT
-              // FIGHT A DRAG. The trigger kills itself after firing, so from
-              // that moment there is no scroll-driven work of any kind sitting
-              // over an interactive embed. Nothing is scrubbed, nothing is
-              // pinned, nothing parallaxes — a map that pans under the finger
-              // and a section that also moves under the finger is a surface
-              // nobody can aim at.
               once: true,
             },
-            // REASON TWO: THE CLIP IS REMOVED, NOT LEFT AT ITS END VALUE. A
-            // resting `clip-path: inset(0 0 0 0)` is still a clip — it makes a
-            // containing block, it keeps the element on its own paint path, and
-            // it clips hit-testing. Cleared, the finished state is exactly the
-            // markup with no inline property at all, so a drag lands on the
-            // iframe through nothing.
             onComplete: () => {
               gsap.set(frame, { clearProps: "clipPath" });
             },
           },
         );
-
-        // REASON THREE, and it is the choice of target: the tween writes to the
-        // FRAME, never to the `<iframe>`. No inline transform, opacity or clip
-        // ever lands on the embed itself, and no overlay or scrim is used to
-        // fake the wipe — the usual way a "designed" embed ends up eating the
-        // gesture it exists to offer.
       },
-      // EMPTY ON PURPOSE, NOT BY OMISSION — the same contract `ScrollReveal`
-      // states. Nothing here starts clipped in the markup: the start state is
-      // written by GSAP and only by GSAP, so a reduced-motion preference, a
-      // chunk 404 or JS switched off all leave a complete, draggable map.
       settle: () => {},
     },
     { scope: frameRef },
   );
+
+  const coordinates = extractCoordinates(embedSrc);
 
   return (
     <figure
       ref={frameRef}
       lang="id"
       className={cn(
-        // ORDER-FIRST BELOW 980px. The user's composition puts the map above
-        // the text on a phone. DOM order stays name -> address -> hours ->
-        // WhatsApp -> map, because that is the order the content actually reads
-        // in and the order a screen reader should get; only the visual stacking
-        // inverts.
         "order-first flex flex-col min-[980px]:order-none",
-        // 48svh STACKED, 80svh BESIDE THE TEXT — trimmed from 60/100 on
-        // 2026-08-15 at the user's instruction. A full-viewport map made the
-        // section a scroll of its own: on a phone the address and hours below it
-        // never shared a screen with the pin, and at 980px+ the plate pushed the
-        // metadata list past the fold entirely. 80svh still reads as a plate
-        // rather than a thumbnail.
-        //
-        // `svh` rather than `vh` because in-app browsers lie about `vh` and the
-        // primary visitor arrives inside one.
         "h-[48svh] min-[980px]:h-[80svh]",
-        // THE BLEED. The map's width is 50vw of the VIEWPORT, but this element
-        // sits inside the container's padding, inside the page's max-width
-        // gutter, and inside `Section`'s numeral indent. `--map-bleed` (defined
-        // on the grid below) is the distance from this column's right edge back
-        // out to the viewport's, so a negative right margin of exactly that
-        // makes the plate finish at the screen edge — the only anchoring that
-        // keeps the text column readable, see the grid's own note.
         "min-[980px]:mr-[calc(-1*var(--map-bleed))]",
-        // SQUARE, 2px NAVY, NO RADIUS AND NO SHADOW. The world is square; the
-        // 22px `--radius-panel` the old placeholder carried was the last
-        // rounded corner on the page and it goes with it. Navy rather than the
-        // order plate's blue-600, because blue marks the thing you act on.
         "border-2 border-[var(--color-fg)]",
-        // NO RIGHT EDGE WHERE IT BLEEDS. A plate running off the screen must
-        // not draw the edge it runs off, or the composition reads as a box that
-        // happens to be clipped rather than as a surface continuing past the
-        // page. Stacked, it is a bounded object and keeps all four.
         "min-[980px]:border-r-0",
       )}
     >
-      {/* THE NAMEPLATE. Same uppercase micro-label as the `Field` labels an inch
-          to its left, so the plate is legibly part of this section's object and
-          not a widget parked in it. `blue-50` on `navy-900` is DESIGN.md's
-          documented band pair at 15.69:1 — the semantic on-band tokens, never a
-          raw hue, and no new colour is introduced here.
-
-          IT CARRIES THE COORDINATES, WHICH IS THE PLACEHOLDER'S REPLACEMENT
-          RATHER THAN ITS REMOVAL. The old surface's whole job was a visible,
-          honest "koordinat menyusul" note; the coordinates have now arrived, so
-          the same slot in the composition states them. `tabular-nums` because
-          two signed decimal figures beside each other are a readout. */}
       <figcaption
         className={cn(
           "flex shrink-0 items-baseline justify-between gap-4",
@@ -263,22 +177,13 @@ function MapPlate() {
         )}
       >
         <span>Koordinat</span>
-        <span>{MAP_COORDINATES}</span>
+        <span>{coordinates}</span>
       </figcaption>
 
-      {/* WIDTH AND HEIGHT ATTRIBUTES DROPPED, per the sizing decision: the
-          supplied 600x450 would fight the CSS at every breakpoint and win the
-          intrinsic-ratio argument before layout, which is what makes an embed
-          jump. The frame states the size; the iframe fills it.
-
-          `title` IS THE ACCESSIBLE NAME and is not optional — an untitled frame
-          is announced as "frame" and a screen-reader user has no way to know
-          what they have entered. `loading="lazy"` and the supplied
-          `referrerpolicy` are kept exactly as the client sent them. */}
       <div className="relative min-h-0 w-full flex-1">
         <iframe
           title="Peta lokasi Arena Player Soccer di Google Maps"
-          src={MAP_EMBED_SRC}
+          src={embedSrc}
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
@@ -382,6 +287,13 @@ function MapPlate() {
  * every width decision below is still checked against that one measurement.
  */
 export function LocationBlock() {
+  const { data: settings } = useSiteSettings();
+
+  const address = settings?.address?.trim() || FIELD_ADDRESS;
+  const operatingHours = settings?.operating_hours?.trim() || "06.00–24.00 WITA";
+  const whatsappNumber = settings?.whatsapp_number?.trim() || WHATSAPP_NUMBER;
+  const mapEmbedSrc = settings?.maps_embed_url?.trim() || MAP_EMBED_SRC;
+
   return (
     // THE COLUMNS ARE NO LONGER 1.25fr / 0.75fr — the map is a fixed 50vw and
     // the text takes the remainder, per the user's sizing decision.
@@ -550,48 +462,24 @@ export function LocationBlock() {
               beside it, rather than in the muted ink a placeholder note takes.
               The map embed above is the client's own too, so the pin and the
               words finally agree. */}
-          <Field label="Alamat">{FIELD_ADDRESS}</Field>
+          <Field label="Alamat">{address}</Field>
 
-          {/* WITA, not WIB — the field is in Lombok and the date layer pins
-              Asia/Makassar. An established fact, not a placeholder. */}
-          {/* THE ONLY ESTABLISHED FACT IN THE LIST, AND IT IS SET AS ONE. The
-              other two values are a placeholder note and a link; this is the
-              one line a visitor can act on today, so it takes `--color-fg` at
-              600 while they stay muted or underlined.
-
-              NOT IN THE DISPLAY FACE, THOUGH THE HOURS ARE THE PRODUCT AND
-              `SlotCell` DOES SET THEM THERE. Measured rather than assumed:
-              Panchang sets "06.00–24.00 WITA" at **14.593em** against the body
-              face's 9.364em, so at the `h3` step it would want 392.5px inside
-              the narrowest column this block gets — the same overflow the
-              display lines above just stopped causing, one element further down.
-              The body face sets it at 131.1px on the `sm` step, which clears
-              every column width by a wide margin. */}
           <Field label="Jam operasional">
-            <span className="font-semibold text-[color:var(--color-fg)]">06.00–24.00 WITA</span>
+            <span className="font-semibold text-[color:var(--color-fg)]">{operatingHours}</span>
           </Field>
 
           <Field label="WhatsApp">
-            {/* navy-900 (--color-fg), NOT the interactive blue. DESIGN.md
-                never clears --color-interactive text sitting directly on
-                the flat blue-50 page ground — every documented blue-600
-                contrast figure in the Colors section is "on white". The
-                existing WhatsApp link elsewhere on this page makes the same
-                choice for the same reason; this follows it rather than
-                introducing an untested combination. The underline is what
-                carries the affordance instead, and it thickens on hover so
-                the signal is not colour alone. */}
             <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              href={`https://wa.me/${whatsappNumber}`}
               className="inline-flex min-h-11 items-center text-[color:var(--color-fg)] underline decoration-[var(--color-fg-muted)] decoration-1 underline-offset-4 transition-[text-decoration-color] hover:decoration-[var(--color-fg)]"
             >
-              {formatWhatsAppDisplay(WHATSAPP_NUMBER)}
+              {formatWhatsAppDisplay(whatsappNumber)}
             </a>
           </Field>
         </dl>
       </div>
 
-      <MapPlate />
+      <MapPlate embedSrc={mapEmbedSrc} />
     </div>
   );
 }

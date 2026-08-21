@@ -20,6 +20,7 @@ import { GET as availability } from "./availability/route";
 import { POST as bookings } from "./bookings/route";
 import { GET as paymentAccounts } from "./payment-accounts/route";
 import { GET as rates } from "./rates/route";
+import { GET as siteSettings } from "./site-settings/route";
 
 const BASE = "http://localhost:3000";
 const TODAY = todayAtField();
@@ -86,6 +87,19 @@ describe("GET /api/payment-accounts", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
+  });
+});
+
+describe("GET /api/site-settings", () => {
+  it("returns site configuration", async () => {
+    const res = await siteSettings();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toHaveProperty("whatsapp_number");
+    expect(body).toHaveProperty("address");
+    expect(body).toHaveProperty("operating_hours");
+    expect(body).toHaveProperty("maps_embed_url");
+    expect(body).toHaveProperty("dp_percent");
   });
 });
 

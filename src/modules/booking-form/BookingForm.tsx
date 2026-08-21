@@ -15,6 +15,7 @@ import {
   useCreateBooking,
   useRates,
   useRefreshAvailability,
+  useSiteSettings,
 } from "./booking-form.queries";
 import type { BookingFormValues } from "./booking-form.schema";
 import type { BookingOutcome } from "./booking-form.service";
@@ -178,6 +179,8 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
   // same rows in one place, the two cannot disagree at all.
   const availability = useBookingAvailability(bookingDate);
   const rates = useRates(bookingDate);
+  const { data: siteSettings } = useSiteSettings();
+  const adminWaNumber = siteSettings?.whatsapp_number?.trim() || undefined;
   const timeOptions = useMemo(
     () => buildTimeOptions(availability.data ?? [], bookingDate, rates.data ?? []),
     // The clock is deliberately NOT a dependency: an hour sliding into "sudah
@@ -354,6 +357,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
           slots: submittedBooking.slots,
           teamName: submittedBooking.teamName,
           notes: submittedBooking.notes,
+          numberInWaForm: adminWaNumber,
         });
         window.location.href = waUrl;
       }
@@ -389,7 +393,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
 
     setUnmappedFields([]);
     resultRef.current?.focus();
-  }, [outcome, setError, submittedBooking]);
+  }, [adminWaNumber, outcome, setError, submittedBooking]);
 
   // Terminal states with nothing left to fix: the form is retired rather
   // than left sitting behind the message. `created` is done; `slot_taken`
@@ -866,6 +870,7 @@ export function BookingForm({ date, slots, expired }: BookingFormProps) {
                     slots: submittedBooking.slots,
                     teamName: submittedBooking.teamName,
                     notes: submittedBooking.notes,
+                    numberInWaForm: adminWaNumber,
                   })}
                   className={CTA_CLASS}
                 >
