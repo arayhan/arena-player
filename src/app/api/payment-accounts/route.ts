@@ -11,6 +11,9 @@ export const dynamic = "force-dynamic";
 export async function GET(): Promise<Response> {
   const accounts = await getActivePaymentAccounts();
   return Response.json(accounts, {
-    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
+    headers: {
+      "Cache-Control": "private, no-cache, no-store, must-revalidate, max-age=0",
+      Pragma: "no-cache",
+    },
   });
 }

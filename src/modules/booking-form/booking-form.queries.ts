@@ -75,7 +75,8 @@ export function usePaymentAccounts() {
   return useQuery({
     queryKey: ["payment-accounts"] as const,
     queryFn: ({ signal }) => fetchPaymentAccounts(signal),
-    staleTime: 60 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
     retry: 1,
   });
 }
