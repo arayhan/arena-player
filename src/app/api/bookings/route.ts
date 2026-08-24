@@ -52,20 +52,25 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "validation_failed", fields }, { status: 400 });
   }
 
-  const result = await createBooking({
-    date,
-    slots: slots as TimeSlot[],
-    teamName,
-    phone,
-    notes,
-  });
+  try {
+    const result = await createBooking({
+      date,
+      slots: slots as TimeSlot[],
+      teamName,
+      phone,
+      notes,
+    });
 
-  if (!result.success) {
-    if (result.error === "slot_taken") {
-      return Response.json({ error: "slot_taken" }, { status: 409 });
+    if (!result.success) {
+      if (result.error === "slot_taken") {
+        return Response.json({ error: "slot_taken" }, { status: 409 });
+      }
+      return Response.json({ error: result.error, fields: result.fields }, { status: 400 });
     }
-    return Response.json({ error: result.error, fields: result.fields }, { status: 400 });
-  }
 
-  return Response.json({ id: result.id, status: result.status }, { status: 201 });
+    return Response.json({ id: result.id, status: result.status }, { status: 201 });
+  } catch (err) {
+    console.error("[api/bookings] Unhandled error creating booking:", err);
+    return Response.json({ error: "server_error" }, { status: 500 });
+  }
 }

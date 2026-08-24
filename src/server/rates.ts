@@ -36,6 +36,49 @@ export function isWeekendDate(date: string): boolean {
   return weekday === 0 || weekday === 6;
 }
 
+const DEFAULT_RATES: Record<DayType, Record<string, number>> = {
+  weekday: {
+    "06.00 - 07.00": 200_000,
+    "07.00 - 08.00": 200_000,
+    "08.00 - 09.00": 200_000,
+    "09.00 - 10.00": 200_000,
+    "10.00 - 11.00": 200_000,
+    "11.00 - 12.00": 200_000,
+    "12.00 - 13.00": 200_000,
+    "13.00 - 14.00": 200_000,
+    "14.00 - 15.00": 200_000,
+    "15.00 - 16.00": 200_000,
+    "16.00 - 17.00": 300_000,
+    "17.00 - 18.00": 300_000,
+    "18.00 - 19.00": 400_000,
+    "19.00 - 20.00": 400_000,
+    "20.00 - 21.00": 400_000,
+    "21.00 - 22.00": 400_000,
+    "22.00 - 23.00": 400_000,
+    "23.00 - 24.00": 400_000,
+  },
+  weekend: {
+    "06.00 - 07.00": 200_000,
+    "07.00 - 08.00": 200_000,
+    "08.00 - 09.00": 200_000,
+    "09.00 - 10.00": 200_000,
+    "10.00 - 11.00": 200_000,
+    "11.00 - 12.00": 200_000,
+    "12.00 - 13.00": 200_000,
+    "13.00 - 14.00": 200_000,
+    "14.00 - 15.00": 200_000,
+    "15.00 - 16.00": 200_000,
+    "16.00 - 17.00": 350_000,
+    "17.00 - 18.00": 350_000,
+    "18.00 - 19.00": 450_000,
+    "19.00 - 20.00": 450_000,
+    "20.00 - 21.00": 450_000,
+    "21.00 - 22.00": 450_000,
+    "22.00 - 23.00": 450_000,
+    "23.00 - 24.00": 450_000,
+  },
+};
+
 /**
  * Weekend pricing also covers any date the admin has listed as a public
  * holiday — `public_holidays` is the one admin-managed override on top of
@@ -44,10 +87,14 @@ export function isWeekendDate(date: string): boolean {
  */
 async function dayTypeOf(date: string): Promise<DayType> {
   if (isWeekendDate(date)) return "weekend";
-  const holidayRows = await sql<{ exists: boolean }[]>`
-    select exists(select 1 from public_holidays where holiday_date::text = ${date}) as exists
-  `;
-  return holidayRows[0]?.exists ? "weekend" : "weekday";
+  try {
+    const holidayRows = await sql<{ exists: boolean }[]>`
+      select exists(select 1 from public_holidays where holiday_date::text = ${date}) as exists
+    `;
+    return holidayRows[0]?.exists ? "weekend" : "weekday";
+  } catch {
+    return "weekday";
+  }
 }
 
 /**
@@ -58,12 +105,25 @@ async function dayTypeOf(date: string): Promise<DayType> {
  */
 export async function rateCard(date: string): Promise<SlotRate[]> {
   const dayType = await dayTypeOf(date);
-  const rows = await sql<{ time_slot: TimeSlot; price_rupiah: number }[]>`
-    select time_slot, price_rupiah from rate_card where day_type = ${dayType}
-  `;
-  const priceOf = new Map(rows.map((row) => [row.time_slot, row.price_rupiah]));
-  return TIME_SLOTS.filter((slot) => priceOf.has(slot)).map((slot) => ({
+
+  try {
+    const rows = await sql<{ time_slot: TimeSlot; price_rupiah: number }[]>`
+      select time_slot, price_rupiah from rate_card where day_type = ${dayType}
+    `;
+    if (Array.isArray(rows) && rows.length > 0) {
+      const priceOf = new Map(rows.map((row) => [row.time_slot, row.price_rupiah]));
+      return TIME_SLOTS.filter((slot) => priceOf.has(slot)).map((slot) => ({
+        slot,
+        price: priceOf.get(slot)!,
+      }));
+    }
+  } catch (error) {
+    console.error(`[rates] Failed to query rate_card from DB:`, error);
+  }
+
+  const fallback = DEFAULT_RATES[dayType];
+  return TIME_SLOTS.map((slot) => ({
     slot,
-    price: priceOf.get(slot)!,
+    price: fallback[slot] ?? 200_000,
   }));
 }
