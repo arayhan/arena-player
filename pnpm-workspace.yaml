@@ -35,3 +35,16 @@ allowBuilds:
 # pnpm 11 reads this key from here, not from .npmrc — the `node-linker` line in
 # .npmrc is kept only in case the host runs an older pnpm.
 nodeLinker: hoisted
+
+# sharp is next's optional dependency for /image optimization — nothing here
+# imports it directly, which is why it is not in package.json.
+#
+# CVE-2026-84383: sharp below 0.35.4 bundles libheif 1.23.x, whose AVIF decoder
+# has two CVSSv3-critical RCE bugs reachable from untrusted image input. This
+# app takes exactly that input — the payment-proof upload on /booking — so the
+# "not processing untrusted images" escape hatch does not apply.
+#
+# A range, not an exact pin, unlike package.json: this override exists to stay
+# ahead of a decoder CVE, and pinning 0.35.4 would block the next patch too.
+overrides:
+  sharp: ">=0.35.4"
