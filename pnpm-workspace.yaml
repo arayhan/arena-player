@@ -21,3 +21,17 @@ allowBuilds:
   # copy mockServiceWorker.js back into public/ — the exact file this change set
   # removed, and the exact way a retired mock comes back to life.
   msw: false
+
+# Real, flat node_modules instead of pnpm's symlink farm.
+#
+# Hostinger's hbuilds deploy copies node_modules into the release directory and
+# does not preserve symlinks. With the default linker, `node_modules/next`
+# arrives as a real folder while next's own dependencies stay behind in
+# `.pnpm/next@16.3.0_.../node_modules/`, so the first server request dies with
+#   Cannot find module '@swc/helpers/_/_interop_require_default'
+# and every other next dependency (@next/env, styled-jsx, postcss) is one fix
+# away from the same failure. Hoisting is what makes the tree survive the copy.
+#
+# pnpm 11 reads this key from here, not from .npmrc — the `node-linker` line in
+# .npmrc is kept only in case the host runs an older pnpm.
+nodeLinker: hoisted
