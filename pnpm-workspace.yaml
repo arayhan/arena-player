@@ -44,10 +44,13 @@ nodeLinker: hoisted
 # app takes exactly that input — the payment-proof upload on /booking — so the
 # "not processing untrusted images" escape hatch does not apply.
 #
-# A range, not an exact pin, unlike package.json: this override exists to stay
-# ahead of a decoder CVE, and pinning 0.35.4 would block the next patch too.
+# A range rather than an exact pin, unlike package.json: this entry exists to
+# stay ahead of a decoder CVE, and pinning 0.35.4 would block the next patch.
+# The upper bound is still required — sharp is 0.x, so 0.36 is a breaking
+# release of a native library, and an open `>=` would take it on some future
+# install with no diff to review.
 overrides:
-  sharp: ">=0.35.4"
+  sharp: ">=0.35.4 <0.36"
   # CVE-2026-84375: js-yaml below 4.3.2 does not count empty mappings against
   # maxTotalMergeKeys, so a ~50 KB document with repeated merges of a sequence
   # of empty mappings burns O(N*K) CPU. Merge is on by default in v4, which is
