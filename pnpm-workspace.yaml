@@ -48,3 +48,22 @@ nodeLinker: hoisted
 # ahead of a decoder CVE, and pinning 0.35.4 would block the next patch too.
 overrides:
   sharp: ">=0.35.4"
+  # CVE-2026-84375: js-yaml below 4.3.2 does not count empty mappings against
+  # maxTotalMergeKeys, so a ~50 KB document with repeated merges of a sequence
+  # of empty mappings burns O(N*K) CPU. Merge is on by default in v4, which is
+  # why the 4.x line scores higher than v5.
+  #
+  # Reached only through the eslint toolchain, so the exposure is a lint run
+  # over a hostile config, not a request path.
+  #
+  # Upper bound, not a bare `>=`: an open range let pnpm resolve 5.4.1 here and
+  # nanoid 6.0.1 below — a security override silently performing two major
+  # upgrades, which is a different change than the one being asked for. Bounded
+  # to the major eslint and postcss already expect, so patches still flow.
+  js-yaml: ">=4.3.2 <5"
+
+  # nanoid below 3.3.18 loops forever when a custom generator is called with
+  # size zero. This one is NOT dev-only — it arrives through next and
+  # @tailwindcss/postcss, both of which ship, so it belongs in the same commit
+  # class as a runtime dependency rather than a tooling one.
+  nanoid: ">=3.3.18 <4"
